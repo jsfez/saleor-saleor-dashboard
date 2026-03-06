@@ -239,8 +239,8 @@ jobs:
         with:
           BASE_URL: ${{ needs.initialize-cloud.outputs.BASE_URL }}
           API_URL: ${{ needs.initialize-cloud.outputs.API_URL }}
-          E2E_USER_NAME: ${{ secrets.E2E_USER_NAME }}
-          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+          E2E_USER_NAME: ${{ env.E2E_USER_NAME }}
+          E2E_USER_PASSWORD: ${{ env.E2E_USER_PASSWORD }}
           E2E_ENCODE_PASS: ${{ secrets.E2E_ENCODE_PASS }}
           E2E_PERMISSIONS_USERS_PASSWORD: ${{ secrets.E2E_PERMISSIONS_USERS_PASSWORD }}
 
@@ -251,7 +251,7 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           E2E_USER_NAME: "op://Continuous Integration/E2E_USER/username"
           E2E_USER_PASSWORD: "op://Continuous Integration/E2E_USER/password"
-          E2E_PERMISSIONS_USERS_PASSWORD: "op://Continuous Integration/E2E_PERMISSIONS_USERS_PASSWORD/password"
+          E2E_PERMISSIONS_USERS_PASSWORD: "op://Continuous Integration/NEW_E2E_PERMISSIONS_USERS_PASSWORD/password"
           MAILPITURL: "op://Continuous Integration/MAILPITURL_STAGING/password"
 
       - name: Run playwright tests
