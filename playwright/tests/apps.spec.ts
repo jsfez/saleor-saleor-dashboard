@@ -18,7 +18,7 @@ test.beforeEach(({ page }) => {
 });
 const INSTALLATION_PENDING_TIMEOUT = 50 * 1000;
 
-test("TC: SALEOR_119 User should be able to install and configure app from manifest #e2e", async () => {
+test("TC: SALEOR_119 User should be able to install app from manifest #e2e", async () => {
   await extensionsPage.gotoInstalledExtensionsList();
   await extensionsPage.addExtensionsOpenDropdownButton.click();
   await extensionsPage.installCustomExtensionOption.click();

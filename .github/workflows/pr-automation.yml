@@ -287,4 +287,4 @@ jobs:
       - name: Merge playwright reports
         uses: ./.github/actions/merge-pw-reports
         with:
-          PASSWORD_FOR_DECODING_ARTIFACT: ${{ secrets.TESTS_RESULT_PASSWORD }}
+          PASSWORD_FOR_DECODING_ARTIFACT: ${{ env.TESTS_RESULT_PASSWORD }}

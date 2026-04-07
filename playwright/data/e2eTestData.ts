@@ -398,9 +398,9 @@ export const PRODUCTS = {
     price: 50,
   },
   productWithPriceLowerThan20: {
-    id: "UHJvZHVjdDoxNDQ=",
-    name: "DRY Sunglasses",
-    variantSKU: "550n97455",
+    id: "UHJvZHVjdDoxNTM=",
+    name: "Bean Juice",
+    variantSKU: "bean-juice-001",
     price: 15,
   },
   productWithDiscountChannelPLN: {

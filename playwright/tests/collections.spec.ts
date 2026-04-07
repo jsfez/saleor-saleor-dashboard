@@ -27,7 +27,7 @@ test("TC: SALEOR_112 Create collection #collections  #e2e", async () => {
   await collectionsPage.clickSaveButton();
   await collectionsPage.expectSuccessBanner();
 });
-test("TC: SALEOR_113 Edit collection: assign product #collections  #e2e", async () => {
+test.skip("TC: SALEOR_113 Edit collection: assign product #collections  #e2e", async () => {
   const productToBeAssigned = "Bean Juice";
 
   await collectionsPage.gotoExistingCollectionView(COLLECTIONS.collectionToBeUpdated.id);

@@ -48,12 +48,6 @@ export const APP_SMOKE_DATA: Record<string, AppSmokeEntry[]> = {
       assertContent: expectInputValue("PUBLIC_TOKEN", "test_token"),
     },
     {
-      identifier: "saleor.app.dummy.tax",
-      name: "Dummy Tax",
-      heading: "Welcome to Saleor Dummy Tax App",
-      assertContent: expectText("See what your app can do"),
-    },
-    {
       identifier: "saleor.app.search",
       name: "Search",
       heading: "Configuration",
@@ -84,12 +78,6 @@ export const APP_SMOKE_DATA: Record<string, AppSmokeEntry[]> = {
       name: "Klaviyo",
       heading: "Configuration",
       assertContent: expectInputValue("PUBLIC_TOKEN", "test_token"),
-    },
-    {
-      identifier: "saleor.app.dummy.tax",
-      name: "Dummy Tax",
-      heading: "Welcome to Saleor Dummy Tax App",
-      assertContent: expectText("See what your app can do"),
     },
     {
       identifier: "saleor.app.search",
@@ -154,13 +142,7 @@ export const APP_SMOKE_DATA: Record<string, AppSmokeEntry[]> = {
       identifier: "saleor.app.klaviyo",
       name: "Klaviyo",
       heading: "Configuration",
-      assertContent: expectInputValue("PUBLIC_TOKEN", "test_token"),
-    },
-    {
-      identifier: "saleor.app.dummy.tax",
-      name: "Dummy Tax",
-      heading: "Welcome to Saleor Dummy Tax App",
-      assertContent: expectText("See what your app can do"),
+      assertContent: expectInputValue("CUSTOMER_CREATED_METRIC", "CUSTOMER_CREATED_METRIC"),
     },
     {
       identifier: "saleor.app.search",
@@ -226,12 +208,6 @@ export const APP_SMOKE_DATA: Record<string, AppSmokeEntry[]> = {
       name: "Klaviyo",
       heading: "Configuration",
       assertContent: expectInputValue("PUBLIC_TOKEN", "test_token"),
-    },
-    {
-      identifier: "saleor.app.dummy.tax",
-      name: "Dummy Tax",
-      heading: "Welcome to Saleor Dummy Tax App",
-      assertContent: expectText("See what your app can do"),
     },
     {
       identifier: "saleor.app.search",
