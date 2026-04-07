@@ -54,11 +54,6 @@ describe("prepareCataloguePredicate", () => {
         type: "is",
         value: [{ label: "3", value: "3" }],
       },
-      {
-        id: "product",
-        type: "is",
-        value: [],
-      },
     ]);
   });
 });

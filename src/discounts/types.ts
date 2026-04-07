@@ -45,27 +45,21 @@ export type OrderConditions = "baseSubtotalPrice" | "baseTotalPrice";
 export interface CataloguePredicateAPI {
   OR?: CataloguePredicateAPI[];
   AND?: CataloguePredicateAPI[];
-  productPredicate?: {
-    ids: string[];
-  };
-  categoryPredicate?: {
-    ids: string[];
-  };
-  collectionPredicate?: {
-    ids: string[];
-  };
-  variantPredicate?: {
-    ids: string[];
-  };
+  productPredicate?: Record<string, unknown>;
+  categoryPredicate?: Record<string, unknown>;
+  collectionPredicate?: Record<string, unknown>;
+  variantPredicate?: Record<string, unknown>;
 }
 
 export interface OrderPredicateAPI {
   OR?: OrderPredicateAPI[];
   AND?: OrderPredicateAPI[];
-  discountedObjectPredicate: {
-    baseSubtotalPrice?: DecimalFilterInput;
-    baseTotalPrice?: DecimalFilterInput;
-    AND?: Array<OrderPredicateAPI["discountedObjectPredicate"]>;
-    OR?: Array<OrderPredicateAPI["discountedObjectPredicate"]>;
-  };
+  discountedObjectPredicate?: OrderDiscountedObjectPredicateAPI;
+}
+
+interface OrderDiscountedObjectPredicateAPI {
+  baseSubtotalPrice?: DecimalFilterInput;
+  baseTotalPrice?: DecimalFilterInput;
+  AND?: Array<OrderDiscountedObjectPredicateAPI>;
+  OR?: Array<OrderDiscountedObjectPredicateAPI>;
 }

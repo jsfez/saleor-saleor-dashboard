@@ -116,8 +116,12 @@ export function getConditionValue(conditionValue: DecimalFilterInput) {
 
 const ALLOW_KEYS = ["ids", "eq", "oneOf", "range"];
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export function hasPredicateNestedConditions(
-  predicate: OrderPredicateAPI | CataloguePredicateAPI,
+  predicate: OrderPredicateAPI | CataloguePredicateAPI | Record<string, unknown>,
 ): boolean {
   const keys = Object.keys(predicate);
 
@@ -131,44 +135,52 @@ export function hasPredicateNestedConditions(
     return innerKeys.every(key => !ALLOW_KEYS.includes(key));
   }
 
-  if (predicate.OR && predicate.OR?.some(checkDeeplyNestedPredicate)) {
+  if (Array.isArray(predicate.OR) && predicate.OR.some(checkDeeplyNestedPredicate)) {
     return true;
   }
 
-  if ("discountedObjectPredicate" in predicate) {
-    return hasPredicateNestedConditions(predicate.discountedObjectPredicate);
+  if (
+    "discountedObjectPredicate" in predicate &&
+    isRecord(predicate.discountedObjectPredicate) &&
+    hasPredicateNestedConditions(predicate.discountedObjectPredicate)
+  ) {
+    return true;
   }
 
   return false;
 }
 
-function checkDeeplyNestedPredicate(
-  nestedPredicate: OrderPredicateAPI | CataloguePredicateAPI,
-): boolean {
+function checkDeeplyNestedPredicate(nestedPredicate: unknown): boolean {
+  if (!isRecord(nestedPredicate)) {
+    return false;
+  }
+
   const keys = Object.keys(nestedPredicate);
 
   if (keys.includes("AND") || keys.includes("OR")) {
     return true;
   }
 
-  type keyType = keyof typeof nestedPredicate;
-
   for (const key in nestedPredicate) {
     if (ALLOW_KEYS.includes(key)) {
       continue;
     }
 
-    const innerKeys = Object.keys(nestedPredicate[key as keyType] ?? {});
+    const nestedValue = nestedPredicate[key];
+
+    if (!isRecord(nestedValue)) {
+      continue;
+    }
+
+    const innerKeys = Object.keys(nestedValue);
     const hasNotAllowedKeys = innerKeys.every(key => !ALLOW_KEYS.includes(key));
 
     if (hasNotAllowedKeys) {
       return true;
     }
 
-    if (typeof nestedPredicate[key as keyType] === "object") {
-      return checkDeeplyNestedPredicate(
-        nestedPredicate[key as keyType] as OrderPredicateAPI | CataloguePredicateAPI,
-      );
+    if (checkDeeplyNestedPredicate(nestedValue)) {
+      return true;
     }
   }
 

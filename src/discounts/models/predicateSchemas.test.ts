@@ -31,16 +31,22 @@ describe("parseOrderPredicate", () => {
   it("should parse order predicate with nested OR/AND", () => {
     // Arrange
     const input: OrderPredicateAPI = {
-      OR: [
+      AND: [
         {
           discountedObjectPredicate: {
             baseTotalPrice: { eq: "50" },
           },
         },
+        {
+          OR: [
+            {
+              discountedObjectPredicate: {
+                baseSubtotalPrice: { range: { gte: "10" } },
+              },
+            },
+          ],
+        },
       ],
-      discountedObjectPredicate: {
-        baseSubtotalPrice: { range: { gte: "10" } },
-      },
     };
 
     // Act
@@ -48,6 +54,64 @@ describe("parseOrderPredicate", () => {
 
     // Assert
     expect(result).toEqual(input);
+  });
+
+  it("should parse order predicate with OR at root level", () => {
+    // Arrange
+    const input: OrderPredicateAPI = {
+      OR: [
+        {
+          discountedObjectPredicate: {
+            baseSubtotalPrice: { range: { gte: 20 } },
+          },
+        },
+        {
+          discountedObjectPredicate: {
+            baseTotalPrice: { eq: "100" },
+          },
+        },
+      ],
+    };
+
+    // Act
+    const result = parseOrderPredicate(input);
+
+    // Assert
+    expect(result).toEqual(input);
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it("should return null and report to Sentry when mixing operator and flat fields", () => {
+    // Arrange
+    const input = {
+      discountedObjectPredicate: {
+        OR: [{ baseSubtotalPrice: { range: { gte: 20 } } }],
+        baseTotalPrice: { eq: "50" },
+      },
+    };
+
+    // Act
+    const result = parseOrderPredicate(input);
+
+    // Assert
+    expect(result).toBeNull();
+    expect(Sentry.captureException).toHaveBeenCalled();
+  });
+
+  it("should return null and report to Sentry when using multiple operations in decimal filter", () => {
+    // Arrange
+    const input = {
+      discountedObjectPredicate: {
+        baseSubtotalPrice: { eq: "20", oneOf: ["20", "30"] },
+      },
+    };
+
+    // Act
+    const result = parseOrderPredicate(input);
+
+    // Assert
+    expect(result).toBeNull();
+    expect(Sentry.captureException).toHaveBeenCalled();
   });
 
   it("should return null and report to Sentry for invalid data", () => {
@@ -121,6 +185,37 @@ describe("parseCataloguePredicate", () => {
 
     // Assert
     expect(result).toEqual(input);
+  });
+
+  it("should parse catalogue predicate with where-style filters", () => {
+    // Arrange
+    const input: CataloguePredicateAPI = {
+      productPredicate: {
+        name: { eq: "Sneakers" },
+      },
+    };
+
+    // Act
+    const result = parseCataloguePredicate(input);
+
+    // Assert
+    expect(result).toEqual(input);
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it("should return null and report to Sentry when mixing operator and flat fields", () => {
+    // Arrange
+    const input = {
+      OR: [{ productPredicate: { ids: ["p1"] } }],
+      categoryPredicate: { ids: ["c1"] },
+    };
+
+    // Act
+    const result = parseCataloguePredicate(input);
+
+    // Assert
+    expect(result).toBeNull();
+    expect(Sentry.captureException).toHaveBeenCalled();
   });
 
   it("should return null and report to Sentry for invalid data", () => {
