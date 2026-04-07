@@ -5,7 +5,7 @@ import { type OutputData } from "@editorjs/editorjs";
 import { useCallback, useEffect } from "react";
 
 export function useRichTextSubmit(
-  initial: string,
+  initial: string | null | undefined,
   onSubmit: (data: OutputData) => SubmitPromise,
   loading: boolean,
 ) {

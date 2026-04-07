@@ -14,7 +14,7 @@ import { useRichTextSubmit } from "./useRichTextSubmit";
 interface TranslationFieldsRichProps {
   disabled: boolean;
   edit: boolean;
-  initial: string;
+  initial: string | null;
   saveButtonState: ConfirmButtonTransitionState;
   resetKey: string;
   onDiscard: () => void;

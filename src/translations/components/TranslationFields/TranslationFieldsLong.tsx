@@ -10,7 +10,7 @@ import TranslationFieldsSave from "./TranslationFieldsSave";
 interface TranslationFieldsLongProps {
   disabled: boolean;
   edit: boolean;
-  initial: string;
+  initial: string | null;
   saveButtonState: ConfirmButtonTransitionState;
   onDiscard: () => void;
   onSubmit: (data: string) => SubmitPromise;
@@ -31,8 +31,8 @@ const TranslationFieldsLong = ({
   return edit ? (
     <Form
       confirmLeave
-      initial={{ translation: initial }}
-      onSubmit={data => onSubmit(data.translation)}
+      initial={{ translation: initial ?? "" }}
+      onSubmit={data => onSubmit(data.translation ?? "")}
     >
       {({ change, data, submit }) => (
         <div>
