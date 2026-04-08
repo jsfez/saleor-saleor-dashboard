@@ -93,7 +93,11 @@ runs:
           echo "BASE_URL_DOMAIN=v${VERSION_SLUG}.staging.saleor.cloud" >> $GITHUB_OUTPUT
           echo "POOL_NAME=${CURRENT_BRANCH} Staging" >> $GITHUB_OUTPUT
           echo "POOL_INSTANCE=https://v${VERSION_SLUG}.staging.saleor.cloud/" >> $GITHUB_OUTPUT
-          echo "BACKUP_NAMESPACE=snapshot-automation-tests-${CURRENT_BRANCH}" >> $GITHUB_OUTPUT
+          if [[ "$DESTINATION_BRANCH" == "3.21" ]]; then
+              echo "BACKUP_NAMESPACE=snapshot-automation-tests-${DESTINATION_BRANCH}" >> $GITHUB_OUTPUT
+            else
+              echo "BACKUP_NAMESPACE=snapshot-e2e-tests-${DESTINATION_BRANCH}" >> $GITHUB_OUTPUT
+            fi
           echo "SALEOR_CLOUD_SERVICE=saleor-master-staging" >> $GITHUB_OUTPUT
           echo "RUN_SLUG=${CURRENT_BRANCH}" >> $GITHUB_OUTPUT
 
@@ -106,7 +110,7 @@ runs:
           echo "BASE_URL_DOMAIN=automation-dashboard.staging.saleor.cloud" >> $GITHUB_OUTPUT
           echo "POOL_NAME=automation-dashboard" >> $GITHUB_OUTPUT
           echo "POOL_INSTANCE=https://automation-dashboard.staging.saleor.cloud" >> $GITHUB_OUTPUT
-          echo "BACKUP_NAMESPACE=snapshot-automation-tests" >> $GITHUB_OUTPUT
+          echo "BACKUP_NAMESPACE=snapshot-e2e-tests" >> $GITHUB_OUTPUT
           echo "SALEOR_CLOUD_SERVICE=saleor-master-staging" >> $GITHUB_OUTPUT
           VERSION=$(cat package.json | jq -r .version)
           echo "RUN_SLUG=$VERSION" >> $GITHUB_OUTPUT
@@ -122,7 +126,7 @@ runs:
           echo "BASE_URL_DOMAIN=v${VERSION_SLUG}.staging.saleor.cloud" >> "$GITHUB_OUTPUT"
           echo "POOL_NAME=${VERSION} Staging" >> "$GITHUB_OUTPUT"
           echo "POOL_INSTANCE=https://v${VERSION_SLUG}.staging.saleor.cloud/" >> "$GITHUB_OUTPUT"
-          echo "BACKUP_NAMESPACE=snapshot-automation-tests-${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "BACKUP_NAMESPACE=snapshot-e2e-tests-${VERSION}" >> "$GITHUB_OUTPUT"
           echo "SALEOR_CLOUD_SERVICE=saleor-staging-v${VERSION_SLUG}" >> $GITHUB_OUTPUT
           echo "RUN_SLUG=$VERSION" >> $GITHUB_OUTPUT
 
