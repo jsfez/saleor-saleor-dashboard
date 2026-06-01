@@ -10,8 +10,8 @@ import { ListItem, ListItemCell } from "@saleor/macaw-ui";
 import { Box, Button, type Option } from "@saleor/macaw-ui-next";
 import { Trash2 } from "lucide-react";
 
+import { type TaxCountryConfiguration } from "../helpers";
 import { useStyles } from "../styles";
-import { type TaxCountryConfiguration } from "../TaxChannelsPage";
 
 interface TaxCountryExceptionListItemProps {
   country: TaxCountryConfiguration | undefined;

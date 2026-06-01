@@ -12,7 +12,6 @@ import {
   type CountryCode,
   type CountryFragment,
   type TaxConfigurationFragment,
-  type TaxConfigurationPerCountryFragment,
   type TaxConfigurationUpdateInput,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
@@ -25,7 +24,14 @@ import { List, ListHeader, ListItem, ListItemCell, PageTab, PageTabs } from "@sa
 import { Box, Button, Skeleton } from "@saleor/macaw-ui-next";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { getSelectedTaxStrategy, getTaxAppId, getTaxCalculationStrategy } from "./helpers";
+import {
+  getSelectedTaxStrategy,
+  getTaxAppId,
+  getTaxCalculationStrategy,
+  type TaxConfigurationFormData,
+  type TaxCountryConfiguration,
+} from "./helpers";
+import { ProductTaxPreview } from "./ProductTaxPreview/ProductTaxPreview";
 import { useStyles } from "./styles";
 import { TaxChannelsMenu } from "./TaxChannelsMenu";
 import TaxCountryExceptionListItem from "./TaxCountryExceptionListItem";
@@ -43,22 +49,6 @@ interface TaxChannelsPageProps {
   onSubmit: (input: TaxConfigurationUpdateInput) => void;
   savebarState: ConfirmButtonTransitionState;
   disabled: boolean;
-}
-
-export type TaxCountryConfiguration = Omit<
-  TaxConfigurationPerCountryFragment,
-  "taxCalculationStrategy"
-> & {
-  taxCalculationStrategy: string;
-};
-
-export interface TaxConfigurationFormData {
-  chargeTaxes: boolean;
-  taxCalculationStrategy: string;
-  displayGrossPrices: boolean;
-  pricesEnteredWithTax: boolean;
-  updateCountriesConfiguration: TaxCountryConfiguration[];
-  removeCountriesConfiguration: CountryCode[];
 }
 
 const TaxChannelsPage = (props: TaxChannelsPageProps) => {
@@ -260,6 +250,13 @@ const TaxChannelsPage = (props: TaxChannelsPageProps) => {
                         </List>
                       )}
                     </Card>
+                    <VerticalSpacer spacing={3} />
+                    <ProductTaxPreview
+                      allCountries={allCountries}
+                      taxConfiguration={currentTaxConfiguration}
+                      values={data}
+                      disabled={disabled}
+                    />
                   </div>
                 </Grid>
 

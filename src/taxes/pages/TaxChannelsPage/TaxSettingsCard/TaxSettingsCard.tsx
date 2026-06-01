@@ -18,7 +18,7 @@ import {
 import { type Option } from "@saleor/macaw-ui-next";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { type TaxConfigurationFormData } from "../TaxChannelsPage";
+import { type TaxConfigurationFormData } from "../helpers";
 import { useStyles } from "./styles";
 
 interface TaxSettingsCardProps {

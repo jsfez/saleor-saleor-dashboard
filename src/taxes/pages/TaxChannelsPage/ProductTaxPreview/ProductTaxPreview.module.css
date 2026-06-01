@@ -1,0 +1,153 @@
+.section {
+  display: grid;
+  gap: 12px;
+}
+
+.sectionLabel {
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.controls {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.previewAccordion {
+  background: var(--mu-colors-background-surface-default1);
+  border: 1px solid var(--mu-colors-border-default1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.previewTrigger {
+  padding: 16px 20px;
+}
+
+.previewContent {
+  border-top: 1px solid var(--mu-colors-border-default1);
+  display: grid;
+  gap: 20px;
+  padding: 20px;
+}
+
+.calculationPanel {
+  background: var(--mu-colors-background-surface-default1);
+  border: 1px solid var(--mu-colors-border-default1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.storySteps {
+  display: grid;
+  gap: 0;
+  padding: 16px 20px 16px 18px;
+}
+
+.storyStep {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  position: relative;
+}
+
+.storyStep:not(:last-child) {
+  padding-bottom: 18px;
+}
+
+.storyStep:not(:last-child)::before {
+  background: var(--mu-colors-border-default1);
+  bottom: 2px;
+  content: "";
+  left: 13px;
+  position: absolute;
+  top: 30px;
+  width: 1px;
+}
+
+.storyStepMarker {
+  align-items: center;
+  background: var(--mu-colors-background-surface-default2);
+  border: 1px solid var(--mu-colors-border-default1);
+  border-radius: 50%;
+  color: var(--mu-colors-foreground-default2);
+  display: flex;
+  font-size: 12px;
+  height: 28px;
+  justify-content: center;
+  line-height: 1;
+  position: relative;
+  width: 28px;
+  z-index: 1;
+}
+
+.storyStepBody {
+  display: grid;
+  gap: 8px;
+  padding-top: 3px;
+}
+
+.storyMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.storyToken {
+  background: var(--mu-colors-background-surface-default2);
+  border: 1px solid var(--mu-colors-border-default1);
+  border-radius: 6px;
+  display: grid;
+  gap: 2px;
+  min-width: 144px;
+  padding: 8px 10px;
+}
+
+.priceLines {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+}
+
+.priceLine,
+.priceLineSeparated {
+  align-items: baseline;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.priceLineSeparated {
+  border-top: 1px solid var(--mu-colors-border-default1);
+  margin-top: 2px;
+  padding-top: 8px;
+}
+
+.storefrontLine {
+  align-items: baseline;
+  border-top: 1px solid var(--mu-colors-border-default1);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 2px;
+  padding-top: 8px;
+}
+
+.stubNotice {
+  border: 1px solid var(--mu-colors-border-caution1);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+@media (max-width: 960px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+}

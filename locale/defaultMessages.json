@@ -234,6 +234,10 @@
     "context": "creation label",
     "string": "Creation"
   },
+  "/B3Ap7": {
+    "context": "tax preview gross price label",
+    "string": "Gross"
+  },
   "/BJQIq": {
     "context": "dialog header",
     "string": "Add Tracking Code"
@@ -605,6 +609,10 @@
     "context": "Scheduled date for availability",
     "string": "scheduled {date}"
   },
+  "1HX3rZ": {
+    "context": "tax preview configuration source label",
+    "string": "Configuration source"
+  },
   "1J/bhZ": {
     "context": "expiry date section header",
     "string": "Expiry date"
@@ -675,6 +683,10 @@
   },
   "1wyZpQ": {
     "string": "These passwords are too similar"
+  },
+  "1yA2Fz": {
+    "context": "tax preview story money step description",
+    "string": "These are the line values Saleor derives from the preview price."
   },
   "1zuQ2P": {
     "context": "unassign country",
@@ -1038,6 +1050,10 @@
   "45aV8u": {
     "context": "gift card bulk create modal bottom explanation",
     "string": "After creation Saleor will create a list of gift card codes that you will be able to download."
+  },
+  "47E3KR": {
+    "context": "tax preview missing channel message",
+    "string": "Select a tax channel to preview product taxes."
   },
   "48dMqY": {
     "context": "Dry run trigger button",
@@ -1583,6 +1599,10 @@
   "7Chrsf": {
     "string": "Passwords do not match"
   },
+  "7E5N02": {
+    "context": "tax preview gross input context",
+    "string": "Price entered with tax"
+  },
   "7EDqed": {
     "context": "tab name",
     "string": "All gift cards"
@@ -1598,6 +1618,10 @@
   "7H2D5m": {
     "context": "attribute value deleted",
     "string": "Value deleted"
+  },
+  "7HJazX": {
+    "context": "tax preview story source step description",
+    "string": "Saleor uses {source} for orders shipped to {country}. This decides whether taxes are charged and how prices are displayed."
   },
   "7Hdiw2": {
     "string": "Rule name is required"
@@ -2083,6 +2107,10 @@
   "A+g/VP": {
     "string": "Unsaved preset"
   },
+  "A/AFx4": {
+    "context": "tax preview story source step title",
+    "string": "Based on"
+  },
   "A02NDR": {
     "context": "plain text attribute value was truncated",
     "string": "Attribute value too long and truncated at {length} characters."
@@ -2213,6 +2241,10 @@
   },
   "AyQkmp": {
     "string": "Sorting by this column is not available"
+  },
+  "Az6sOC": {
+    "context": "tax preview tax amount label",
+    "string": "Tax"
   },
   "AzMSmb": {
     "context": "caption",
@@ -2768,6 +2800,10 @@
   },
   "EEWsPs": {
     "string": "Plugin built-in to Saleor's core codebase"
+  },
+  "EFsMl1": {
+    "context": "tax preview price mode label",
+    "string": "Price mode"
   },
   "EGycu/": {
     "context": "voucher status active",
@@ -3796,6 +3832,10 @@
   "JRfJD9": {
     "string": "The plugin may stop working after this field is cleared. Are you sure you want to proceed?"
   },
+  "JRlLbn": {
+    "context": "tax preview story price mode step title",
+    "string": "Price treatment"
+  },
   "JTcz2G": {
     "context": "csv file exporting has finished, header",
     "string": "Exporting CSV finished"
@@ -3861,6 +3901,10 @@
   "JjeZEG": {
     "context": "section header",
     "string": "Organize Product"
+  },
+  "Jk04Tv": {
+    "context": "tax preview story tax class step title",
+    "string": "Product tax class"
   },
   "JkO0jp": {
     "context": "input description",
@@ -3977,6 +4021,10 @@
   },
   "KYMCYg": {
     "string": "Shipping rate deleted"
+  },
+  "Ka/f5l": {
+    "context": "tax preview story flat rate step description",
+    "string": "A {rate}% flat rate is applied to the preview price. {rateSource} provides the rate."
   },
   "KcsJKm": {
     "context": "error with activatation alert message",
@@ -4232,6 +4280,10 @@
     "context": "Number of warehouses configured",
     "string": "{count, plural, one {# warehouse} other {# warehouses}}"
   },
+  "MFJZZR": {
+    "context": "tax preview card subtitle",
+    "string": "Preview how channel and country tax settings affect a product variant."
+  },
   "MFUQrr": {
     "context": "Placeholder for date picker",
     "string": "dd/mm/yyyy, --:--"
@@ -4239,6 +4291,10 @@
   "MFirbo": {
     "context": "Button label to dismiss all problems for an app",
     "string": "Dismiss all problems raised by the app"
+  },
+  "MGN47G": {
+    "context": "tax preview net price label",
+    "string": "Net"
   },
   "MH1qA1": {
     "string": "Test Action"
@@ -4286,6 +4342,10 @@
   },
   "MS86iy": {
     "string": "The extension identifier is already in use. ({errorCode})"
+  },
+  "MSEoHc": {
+    "context": "tax preview storefront price label",
+    "string": "Storefront"
   },
   "MSItJD": {
     "string": "You are about to leave the Dashboard. Do you want to continue?"
@@ -4448,6 +4508,10 @@
     "context": "dialog content",
     "string": "Are you sure you want to delete {voucherCode}?"
   },
+  "NEMrmj": {
+    "context": "tax preview story price mode step description",
+    "string": "Saleor treats the preview price as {priceMode}, then calculates net, tax, and gross values from it."
+  },
   "NGWTE4": {
     "string": "Create webhook/extension manually"
   },
@@ -4506,6 +4570,10 @@
   "NZtcLb": {
     "context": "gift card bulk create success dialog content",
     "string": "We have issued all of your requested gift cards. You can download the list of new gift cards using the button below."
+  },
+  "NcyOgB": {
+    "context": "tax preview channel defaults source",
+    "string": "Channel defaults"
   },
   "NelCIl": {
     "context": "content section name",
@@ -4888,6 +4956,10 @@
   "PcPMjC": {
     "context": "order history message",
     "string": "Fulfillment awaits approval"
+  },
+  "PcPuwW": {
+    "context": "tax preview tax rate label",
+    "string": "Rate"
   },
   "PcQRxi": {
     "context": "gift card history message",
@@ -5322,6 +5394,10 @@
     "context": "search placeholder",
     "string": "Search by product name, attribute, product type etc..."
   },
+  "S4QNA4": {
+    "context": "tax preview storefront net label",
+    "string": "Storefront will render net"
+  },
   "S5/nSq": {
     "context": "grant refund table, column header",
     "string": "Quantity"
@@ -5659,6 +5735,10 @@
     "context": "Label for published toggle",
     "string": "Published"
   },
+  "U7iwsw": {
+    "context": "tax preview calculation accordion trigger description",
+    "string": "Open the product and tax overview for the current channel."
+  },
   "U86VKF": {
     "context": "number of structures",
     "string": "Items"
@@ -5737,6 +5817,10 @@
   "UYKEsx": {
     "context": "collection filter published",
     "string": "Published"
+  },
+  "UcX1iR": {
+    "context": "tax preview story rate step title",
+    "string": "Applied rate"
   },
   "UcrXYE": {
     "context": "Description for scheduled status when publication date is in the future",
@@ -5983,6 +6067,10 @@
   "W0kQd+": {
     "context": "dialog title",
     "string": "Add Address"
+  },
+  "W1tLAR": {
+    "context": "tax preview calculation accordion trigger",
+    "string": "See how your taxes calculate"
   },
   "W2OIhn": {
     "string": "Use app: {name}"
@@ -6883,6 +6971,10 @@
   "aheQdn": {
     "string": "Last Name"
   },
+  "ajEopg": {
+    "context": "tax preview empty products message",
+    "string": "No products with a priced variant were found for this channel."
+  },
   "ak62Oe": {
     "context": "plugin details page header",
     "string": "{pluginName} details"
@@ -6968,6 +7060,10 @@
   "bDHiYK": {
     "context": "gift card export success alert description",
     "string": "We are currently exporting your gift card codes. As soon as your file is available it will be sent to your email address"
+  },
+  "bE3xgu": {
+    "context": "tax preview app stub rate field label",
+    "string": "Assumed app rate"
   },
   "bGqAdR": {
     "context": "seo complete text",
@@ -7844,6 +7940,10 @@
   "gVqSnA": {
     "string": "Assign and save"
   },
+  "gX6Vcm": {
+    "context": "tax preview country default flat rate source",
+    "string": "Country default rate"
+  },
   "gaOXvo": {
     "context": "notification, form submitted",
     "string": "Refund grant for order #{orderNumber} was updated"
@@ -7964,6 +8064,10 @@
   "hJZwTS": {
     "string": "Email address"
   },
+  "hKQC/q": {
+    "context": "tax preview product tax class flat rate source",
+    "string": "Tax class rate"
+  },
   "hLOEeb": {
     "context": "button",
     "string": "Set as default billing address"
@@ -8053,6 +8157,10 @@
     "context": "Warning when scheduling a visible product for the future",
     "string": "Product will be hidden until {date}."
   },
+  "hpRAU1": {
+    "context": "tax preview story app rate step description",
+    "string": "Because this channel uses app taxes, the tax app is not called. This preview uses a stubbed {rate}% app response."
+  },
   "hptDxW": {
     "context": "money",
     "string": "to {money}"
@@ -8070,6 +8178,10 @@
   },
   "htvX+Z": {
     "string": "Deny"
+  },
+  "hu4E30": {
+    "context": "tax preview product selector label",
+    "string": "Product"
   },
   "hw9Fah": {
     "context": "button",
@@ -8095,6 +8207,10 @@
   "i+Vox0": {
     "context": "invoice generating has finished, header",
     "string": "Invoice Generated"
+  },
+  "i/ElwG": {
+    "context": "tax preview story tax class step description",
+    "string": "The selected product resolves to {taxClass}. Saleor uses it to look for a matching flat-rate rule for the purchase country."
   },
   "i/ZhxL": {
     "context": "section header returned",
@@ -8620,6 +8736,10 @@
   "kv3FWU": {
     "context": "btn label",
     "string": "Go to orders"
+  },
+  "l/ny6E": {
+    "context": "tax preview card title",
+    "string": "Product tax preview"
   },
   "l0a2tU": {
     "context": "onboarding step description",
@@ -9465,6 +9585,10 @@
     "context": "voucher usage limit, header",
     "string": "Usage Limit"
   },
+  "pzssSl": {
+    "context": "tax preview price field label",
+    "string": "Price"
+  },
   "q/FMPM": {
     "context": "dialog header",
     "string": "Publish models"
@@ -9559,6 +9683,10 @@
   "qNeXG1": {
     "context": "User registration",
     "string": "User registration"
+  },
+  "qOSQFP": {
+    "context": "tax preview story money step title",
+    "string": "Tax will be calculated as"
   },
   "qOXgxv": {
     "context": "gift card history message",
@@ -9674,6 +9802,10 @@
   "qwp4zK": {
     "context": "Health check subtitle when product can be purchased",
     "string": "Product is visible in store and available for purchase"
+  },
+  "qxrGrN": {
+    "context": "tax preview country exception source",
+    "string": "Country exception"
   },
   "qy/XqL": {
     "string": "Select transaction"
@@ -9965,6 +10097,10 @@
   "sfErC+": {
     "string": "Voucher Name"
   },
+  "sfmKC1": {
+    "context": "tax preview variant selector label",
+    "string": "Variant"
+  },
   "shmSDX": {
     "context": "no products placeholder",
     "string": "No products are available in the channel assigned to this order."
@@ -10074,6 +10210,10 @@
   "tTuCYj": {
     "context": "all gift cards label",
     "string": "All Gift Cards"
+  },
+  "tUVHhE": {
+    "context": "tax preview storefront gross label",
+    "string": "Storefront will render gross"
   },
   "tUlsq+": {
     "string": "Translating"
@@ -10212,6 +10352,10 @@
   "u9WrRb": {
     "string": "Add Custom Extensions"
   },
+  "uBgj4Y": {
+    "context": "tax preview no tax class value",
+    "string": "No product tax class"
+  },
   "uCn/rd": {
     "context": "dialog header",
     "string": "Delete Image"
@@ -10230,6 +10374,10 @@
   "uKlrEk": {
     "context": "all selected items message",
     "string": "All available {itemsName} have been selected"
+  },
+  "uKy/82": {
+    "context": "tax app stub notice",
+    "string": "Tax app is not called. This preview uses a stubbed {rate}% app response for calculation."
   },
   "uN88fb": {
     "context": "button, submit form",
@@ -10493,6 +10641,10 @@
     "context": "name",
     "string": "Product name"
   },
+  "vWVSTJ": {
+    "context": "tax preview net input context",
+    "string": "Price entered without tax"
+  },
   "vWapBZ": {
     "context": "card title",
     "string": "Order Weight"
@@ -10547,6 +10699,10 @@
   },
   "vfG+nh": {
     "string": "Confirm Password"
+  },
+  "vfucYP": {
+    "context": "tax preview calculation section label",
+    "string": "Tax Overview"
   },
   "viFkCw": {
     "context": "site settings section name",
@@ -10965,6 +11121,10 @@
     "context": "dialog title when opening generator with unsaved changes",
     "string": "Unsaved changes"
   },
+  "y9gbe5": {
+    "context": "tax preview country selector label",
+    "string": "Purchase country"
+  },
   "yAFaVK": {
     "context": "Webhook details synchronous events",
     "string": "Synchronous"
@@ -11026,6 +11186,10 @@
   "ychKsb": {
     "context": "error message",
     "string": "Shipping method is required for this order"
+  },
+  "yd1V3G": {
+    "context": "tax preview controls section label",
+    "string": "Product Overview"
   },
   "yeX6fA": {
     "context": "extensions page subheader",
@@ -11184,6 +11348,10 @@
   },
   "zSOvI0": {
     "string": "Filters"
+  },
+  "zShjJM": {
+    "context": "tax preview tax class label",
+    "string": "Tax class"
   },
   "zT1CvH": {
     "string": "Learn more about {extendingSaleor}"
