@@ -2518,6 +2518,9 @@
   "Bl6896": {
     "string": "Refund amount"
   },
+  "BngYqa": {
+    "string": "Unsupported image format. Allowed formats: AVIF, BMP, GIF, JPEG, PNG, TIFF, WEBP."
+  },
   "Bphmwe": {
     "context": "header",
     "string": "Translation Collection \"{collectionName}\" - {languageCode}"
@@ -5354,6 +5357,9 @@
   "QVNg8A": {
     "context": "product field",
     "string": "Charge Taxes"
+  },
+  "QVz0PI": {
+    "string": "Image is too large. Maximum size is {maxSize} MB."
   },
   "QX0gQb": {
     "context": "radio button label",
