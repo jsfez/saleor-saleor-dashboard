@@ -32,6 +32,7 @@ describe("mapToExtensionsItems", () => {
 
   const mockExtension: Extension = {
     id: "test-extension",
+    identifier: null,
     label: "Test Extension",
     app: mockApp,
     url: "/test",
@@ -272,6 +273,7 @@ describe("getMenuItemExtension", () => {
 
   const baseMockExtension: Extension = {
     id: "base-id",
+    identifier: null,
     label: "Base Label",
     app: mockAppDefinition,
     url: "/base-url",
@@ -287,6 +289,7 @@ describe("getMenuItemExtension", () => {
   const mockExtension: Extension = {
     ...baseMockExtension,
     id: "test-extension",
+    identifier: null,
     label: "Test Extension",
     app: mockAppDefinition,
     url: "/test",

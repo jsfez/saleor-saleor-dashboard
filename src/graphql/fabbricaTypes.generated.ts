@@ -1126,6 +1126,11 @@ export type AppExtension = Node & {
   app: App;
   /** The ID of the app extension. */
   id: Scalars['ID']['output'];
+  /**
+   * App-defined identifier of the extension, unique per app. Used to reference a
+   * specific extension (e.g. opening a POPUP extension from a widget).
+   */
+  identifier: Maybe<Scalars['String']['output']>;
   /** Label of the extension to show in the dashboard. */
   label: Scalars['String']['output'];
   /**

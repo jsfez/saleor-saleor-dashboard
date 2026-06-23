@@ -9618,6 +9618,7 @@ export const ExtensionListDocument = gql`
       node {
         id
         label
+        identifier
         url
         mountName
         targetName

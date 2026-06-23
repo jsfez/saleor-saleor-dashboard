@@ -2554,6 +2554,11 @@ export type OptionalAppExtension = {
   app?: OptionalApp | undefined;
   /** The ID of the app extension. */
   id?: AppExtension['id'] | undefined;
+  /**
+ * App-defined identifier of the extension, unique per app. Used to reference a
+ * specific extension (e.g. opening a POPUP extension from a widget).
+ */
+  identifier?: AppExtension['identifier'] | undefined;
   /** Label of the extension to show in the dashboard. */
   label?: AppExtension['label'] | undefined;
   /**

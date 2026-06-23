@@ -78,6 +78,12 @@ export interface Extension {
   accessToken: string;
   permissions: PermissionEnum[];
   label: string;
+  /**
+   * App-defined identifier, unique per app. Used to reference a specific
+   * extension - e.g. when a widget opens a POPUP extension via the `openPopup`
+   * App Bridge action. Null for apps/extensions that don't declare it.
+   */
+  identifier: string | null;
   mountName: AllAppExtensionMounts;
   url: string;
   open: () => void;
