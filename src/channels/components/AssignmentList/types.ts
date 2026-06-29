@@ -1,4 +1,4 @@
-import { FetchMoreProps, ReorderAction } from "@dashboard/types";
+import { type FetchMoreProps, type ReorderAction } from "@dashboard/types";
 
 export interface AssignItem {
   id: string;
@@ -18,4 +18,5 @@ export interface AssignmentListProps {
   removeItem: (id: string) => void;
   reorderItem?: ReorderAction;
   searchItems: (searchPhrase: string) => void;
+  getItemHref?: (item: AssignItem) => string | undefined;
 }

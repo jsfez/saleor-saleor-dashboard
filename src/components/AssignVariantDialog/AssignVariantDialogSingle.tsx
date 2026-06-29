@@ -1,31 +1,41 @@
-import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import {
+  ConfirmButton,
+  type ConfirmButtonTransitionState,
+} from "@dashboard/components/ConfirmButton";
 import { InfiniteScroll } from "@dashboard/components/InfiniteScroll";
 import { DashboardModal } from "@dashboard/components/Modal";
 import Money from "@dashboard/components/Money";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import TableCellAvatar from "@dashboard/components/TableCellAvatar";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import { SearchProductsQuery } from "@dashboard/graphql";
+import { SaleorThrobber } from "@dashboard/components/Throbber";
+import { type ProductWhereInput, type SearchProductsQuery } from "@dashboard/graphql";
 import useModalDialogOpen from "@dashboard/hooks/useModalDialogOpen";
-import useSearchQuery from "@dashboard/hooks/useSearchQuery";
+import { useModalSearchWithFilters } from "@dashboard/hooks/useModalSearchWithFilters";
 import { maybe, renderCollection } from "@dashboard/misc";
-import { Container, FetchMoreProps, RelayToFlat } from "@dashboard/types";
-import { CircularProgress, Radio, TableBody, TableCell, TextField } from "@material-ui/core";
+import { type Container, type FetchMoreProps, type RelayToFlat } from "@dashboard/types";
+import { Radio, TableBody, TableCell, TextField } from "@material-ui/core";
 import { Text } from "@saleor/macaw-ui-next";
 import { Fragment, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { AssignContainerDialogProps } from "../AssignContainerDialog";
+import { type AssignContainerDialogProps } from "../AssignContainerDialog";
 import BackButton from "../BackButton";
+import { useModalProductFilterContext } from "../ModalFilters/entityConfigs/ModalProductFilterProvider";
+import { ModalFilters } from "../ModalFilters/ModalFilters";
 import { messages } from "./messages";
 import { useStyles } from "./styles";
-import { getCompositeLabel, VariantWithProductLabel } from "./utils";
+import { getCompositeLabel, type VariantWithProductLabel } from "./utils";
 
 interface AssignVariantDialogSingleProps extends FetchMoreProps {
   confirmButtonState: ConfirmButtonTransitionState;
   products: RelayToFlat<SearchProductsQuery["search"]>;
   loading: boolean;
-  onFetch: (value: string) => void;
+  onFilterChange?: (
+    filterVariables: ProductWhereInput,
+    channel: string | undefined,
+    query: string,
+  ) => void;
   onSubmit: (data: Container[]) => void;
   onClose: () => void;
   selectedId?: string;
@@ -43,7 +53,7 @@ export const AssignVariantDialogSingle = (props: AssignVariantDialogSingleProps)
     loading,
     products,
     onClose,
-    onFetch,
+    onFilterChange,
     onFetchMore,
     onSubmit,
     selectedId,
@@ -51,15 +61,26 @@ export const AssignVariantDialogSingle = (props: AssignVariantDialogSingleProps)
   } = props;
   const classes = useStyles(props);
   const intl = useIntl();
-  const [query, onQueryChange, queryReset] = useSearchQuery(onFetch);
   const [selectedVariantId, setSelectedVariantId] = useState<string>(selectedId ?? "");
+  const { combinedFilters, clearFilters } = useModalProductFilterContext();
+
+  const { query, onQueryChange, resetQuery } = useModalSearchWithFilters({
+    filterVariables: combinedFilters,
+    open,
+    onFetch: (filters, query) => onFilterChange?.(filters.where, filters.channel, query),
+  });
 
   const handleClose = () => {
-    queryReset();
+    resetQuery();
+    clearFilters();
     onClose();
   };
 
   useModalDialogOpen(open, {
+    onOpen: () => {
+      resetQuery();
+      clearFilters();
+    },
     onClose: handleClose,
   });
 
@@ -113,9 +134,11 @@ export const AssignVariantDialogSingle = (props: AssignVariantDialogSingleProps)
         fullWidth
         InputProps={{
           autoComplete: "off",
-          endAdornment: loading && <CircularProgress size={16} />,
+          endAdornment: loading && <SaleorThrobber size={16} />,
         }}
       />
+
+      <ModalFilters />
 
       <InfiniteScroll
         id={scrollableTargetId}
@@ -136,16 +159,14 @@ export const AssignVariantDialogSingle = (props: AssignVariantDialogSingleProps)
                 <Fragment key={product ? product.id : "skeleton"}>
                   {/* Product header row (non-selectable) */}
                   <TableRowLink>
-                    <TableCell padding="checkbox" className={classes.productCheckboxCell}>
+                    <TableCell padding="checkbox">
                       {/* No checkbox for products in single mode */}
                     </TableCell>
                     <TableCellAvatar
                       className={classes.avatar}
                       thumbnail={product ? maybe(() => product.thumbnail?.url) : undefined}
                     />
-                    <TableCell className={classes.colName} colSpan={2}>
-                      {product ? maybe(() => product.name) : null}
-                    </TableCell>
+                    <TableCell colSpan={2}>{product ? maybe(() => product.name) : null}</TableCell>
                   </TableRowLink>
                   {/* Variant rows (selectable) */}
                   {(product?.variants || [])
@@ -170,7 +191,7 @@ export const AssignVariantDialogSingle = (props: AssignVariantDialogSingleProps)
                               name="variant-selection"
                             />
                           </TableCell>
-                          <TableCell className={classes.colName}>
+                          <TableCell>
                             <div>{variant.name}</div>
                             <div className={classes.grayText}>
                               <FormattedMessage

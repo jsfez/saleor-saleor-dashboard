@@ -1,8 +1,8 @@
-import { FilterContainer, FilterElement } from "../FilterElement";
+import { type FilterContainer, FilterElement } from "../FilterElement";
 import { FilterQueryVarsBuilderResolver } from "./FilterQueryVarsBuilderResolver";
 import {
-  FilterQuery,
-  QueryVarsBuilder,
+  type FilterQuery,
+  type QueryVarsBuilder,
   supportsFilterApi,
   supportsWhereApi,
 } from "./queryVarsBuilders/types";
@@ -141,7 +141,7 @@ export class FiltersQueryBuilder<
   private getValidElements(): FilterElement[] {
     return this.filterContainer.filter(
       (item): item is FilterElement =>
-        typeof item !== "string" && !Array.isArray(item) && FilterElement.isCompatible(item),
+        typeof item !== "string" && !Array.isArray(item) && FilterElement.isFilterElement(item),
     );
   }
 }

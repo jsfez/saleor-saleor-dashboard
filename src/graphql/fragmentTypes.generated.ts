@@ -6,10 +6,6 @@
       }
       const result: PossibleTypesResultData = {
   "possibleTypes": {
-    "AppExtensionPossibleOptions": [
-      "AppExtensionOptionsNewTab",
-      "AppExtensionOptionsWidget"
-    ],
     "AssignedAttribute": [
       "AssignedBooleanAttribute",
       "AssignedDateAttribute",
@@ -38,7 +34,9 @@
     ],
     "CheckoutProblem": [
       "CheckoutLineProblemInsufficientStock",
-      "CheckoutLineProblemVariantNotAvailable"
+      "CheckoutLineProblemVariantNotAvailable",
+      "CheckoutProblemDeliveryMethodInvalid",
+      "CheckoutProblemDeliveryMethodStale"
     ],
     "DeliveryMethod": [
       "ShippingMethod",
@@ -85,6 +83,7 @@
       "CollectionMetadataUpdated",
       "CollectionUpdated",
       "CustomerCreated",
+      "CustomerDeleted",
       "CustomerMetadataUpdated",
       "CustomerUpdated",
       "DraftOrderCreated",
@@ -154,10 +153,15 @@
       "ProductMetadataUpdated",
       "ProductUpdated",
       "ProductVariantBackInStock",
+      "ProductVariantBackInStockForClickAndCollect",
+      "ProductVariantBackInStockInChannel",
       "ProductVariantCreated",
       "ProductVariantDeleted",
+      "ProductVariantDiscountedPriceUpdated",
       "ProductVariantMetadataUpdated",
       "ProductVariantOutOfStock",
+      "ProductVariantOutOfStockForClickAndCollect",
+      "ProductVariantOutOfStockInChannel",
       "ProductVariantStockUpdated",
       "ProductVariantUpdated",
       "PromotionCreated",
@@ -222,6 +226,7 @@
       "App",
       "AppExtension",
       "AppInstallation",
+      "AppProblem",
       "AppToken",
       "Attribute",
       "AttributeTranslatableContent",
@@ -240,8 +245,6 @@
       "CollectionTranslatableContent",
       "CollectionTranslation",
       "CustomerEvent",
-      "DigitalContent",
-      "DigitalContentUrl",
       "EventDelivery",
       "EventDeliveryAttempt",
       "ExportEvent",
@@ -330,7 +333,6 @@
       "Checkout",
       "CheckoutLine",
       "Collection",
-      "DigitalContent",
       "Fulfillment",
       "GiftCard",
       "Invoice",
@@ -364,6 +366,7 @@
     ],
     "PaymentMethodDetails": [
       "CardPaymentMethodDetails",
+      "GiftCardPaymentMethodDetails",
       "OtherPaymentMethodDetails"
     ],
     "PromotionEvent": [

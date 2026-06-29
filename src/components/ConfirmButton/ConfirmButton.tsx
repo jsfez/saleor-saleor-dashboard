@@ -1,11 +1,22 @@
-import { buttonMessages, commonMessages } from "@dashboard/intl";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import CheckIcon from "@material-ui/icons/Check";
-import { Button, ButtonProps, sprinkles } from "@saleor/macaw-ui-next";
+import { SaleorThrobber } from "@dashboard/components/Throbber";
+import { buttonMessages } from "@dashboard/intl";
+import { Button, type ButtonProps, sprinkles } from "@saleor/macaw-ui-next";
+import clsx from "clsx";
+import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useIntl } from "react-intl";
+import { defineMessages, useIntl } from "react-intl";
+
+import styles from "./ConfirmButton.module.css";
 
 const DEFAULT_NOTIFICATION_SHOW_TIME = 3000;
+
+const messages = defineMessages({
+  tryAgain: {
+    id: "Oy1LhB",
+    defaultMessage: "Try again",
+    description: "button error state label",
+  },
+});
 
 export type ConfirmButtonTransitionState = "default" | "loading" | "success" | "error";
 
@@ -30,16 +41,21 @@ export const ConfirmButton = ({
   disabled,
   children,
   variant,
+  className,
   ...props
 }: ConfirmButtonProps) => {
   const intl = useIntl();
   const [displayCompletedActionState, setDisplayCompletedActionState] = useState(false);
   const timeout = useRef<number>();
+  const isLoading = transitionState === "loading";
   const isCompleted = noTransition ? transitionState !== "default" : displayCompletedActionState;
+  const isSaveDisabled = !isCompleted && !!disabled;
+  const isSuccess = transitionState === "success" && isCompleted;
   const isError = transitionState === "error" && isCompleted;
+  const isInteractionLocked = isLoading || isSuccess;
   const defaultLabels: ConfirmButtonLabels = {
     confirm: intl.formatMessage(buttonMessages.save),
-    error: intl.formatMessage(commonMessages.error),
+    error: intl.formatMessage(messages.tryAgain),
   };
   const componentLabels: ConfirmButtonLabels = {
     ...defaultLabels,
@@ -79,9 +95,8 @@ export const ConfirmButton = ({
     if (transitionState === "loading") {
       return (
         // TODO: Replace with new component when it will be ready https://github.com/saleor/macaw-ui/issues/443
-        <CircularProgress
+        <SaleorThrobber
           size={20}
-          color="inherit"
           data-test-id="button-progress"
           className={sprinkles({
             position: "absolute",
@@ -93,7 +108,7 @@ export const ConfirmButton = ({
     if (transitionState === "success" && isCompleted) {
       return (
         // TODO: Replace with new component when it will be ready https://github.com/saleor/macaw-ui/issues/443
-        <CheckIcon
+        <Check
           data-test-id="button-success"
           className={sprinkles({
             position: "absolute",
@@ -115,9 +130,12 @@ export const ConfirmButton = ({
   return (
     <Button
       {...props}
+      className={clsx(className, isInteractionLocked && styles.noInteraction)}
       variant={isError ? "error" : variant}
-      disabled={!isCompleted && disabled}
-      onClick={transitionState === "loading" ? undefined : onClick}
+      disabled={isSaveDisabled}
+      aria-busy={isLoading}
+      tabIndex={isInteractionLocked ? -1 : undefined}
+      onClick={isInteractionLocked ? undefined : onClick}
       data-test-state={isCompleted ? transitionState : "default"}
     >
       {renderContent()}

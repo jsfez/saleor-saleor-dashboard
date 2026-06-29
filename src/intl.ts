@@ -1,9 +1,21 @@
-import { defineMessages, IntlShape } from "react-intl";
+import { defineMessages, type IntlShape } from "react-intl";
 
 export const commonMessages = defineMessages({
   availability: {
     id: "hOxIeP",
     defaultMessage: "Availability",
+  },
+  success: {
+    id: "xrKHS6",
+    defaultMessage: "Success",
+  },
+  info: {
+    id: "we4Lby",
+    defaultMessage: "Info",
+  },
+  warning: {
+    id: "3SVI5p",
+    defaultMessage: "Warning",
   },
   products: {
     id: "7NFfmz",
@@ -340,6 +352,11 @@ export const buttonMessages = defineMessages({
     defaultMessage: "Manage",
     description: "button",
   },
+  moreOptions: {
+    id: "oIS3NK",
+    defaultMessage: "Show more",
+    description: "button",
+  },
   nextStep: {
     id: "wlQTfb",
     defaultMessage: "Next",
@@ -403,6 +420,11 @@ export const buttonMessages = defineMessages({
   close: {
     id: "rbrahO",
     defaultMessage: "Close",
+  },
+  copyToClipboard: {
+    id: "ZGmd4h",
+    defaultMessage: "Copy to clipboard",
+    description: "button",
   },
   proceed: {
     id: "VNX4fn",
@@ -631,9 +653,9 @@ export const sectionNames = defineMessages({
     description: "installed extensions section name",
   },
   refundsSettings: {
-    id: "mFr9YY",
-    defaultMessage: "Refunds Settings",
-    description: "configuration section name for refund settings",
+    id: "bW4TOw",
+    defaultMessage: "Refunds & returns settings",
+    description: "configuration section name for refund and return settings",
   },
 });
 

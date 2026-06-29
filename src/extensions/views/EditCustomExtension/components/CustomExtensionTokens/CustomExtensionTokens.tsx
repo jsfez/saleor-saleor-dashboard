@@ -1,12 +1,14 @@
 // @ts-strict-ignore
 import { DashboardCard } from "@dashboard/components/Card";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import TableButtonWrapper from "@dashboard/components/TableButtonWrapper";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import { AppUpdateMutation } from "@dashboard/graphql";
+import { type AppUpdateMutation } from "@dashboard/graphql";
 import { renderCollection } from "@dashboard/misc";
 import { TableBody, TableCell, TableHead } from "@material-ui/core";
-import { Box, Button, Skeleton, Text, TrashBinIcon } from "@saleor/macaw-ui-next";
+import { Box, Button, Skeleton, Text } from "@saleor/macaw-ui-next";
+import { Trash2 } from "lucide-react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { useStyles } from "./styles";
@@ -80,7 +82,9 @@ export const CustomExtensionTokens = (props: CustomAppTokensProps) => {
                     variant="tertiary"
                     onClick={() => onDelete(token.id)}
                     data-test-id={`delete-token-${token.id}`}
-                    icon={<TrashBinIcon />}
+                    icon={
+                      <Trash2 size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />
+                    }
                   />
                 </TableButtonWrapper>
               </Box>
@@ -117,7 +121,7 @@ export const CustomExtensionTokens = (props: CustomAppTokensProps) => {
         </DashboardCard.Toolbar>
       </DashboardCard.Header>
 
-      <DashboardCard.Content paddingX={0}>
+      <DashboardCard.Content>
         <ResponsiveTable>
           {hasManagedAppsPermission && (
             <TableHead>
@@ -132,13 +136,7 @@ export const CustomExtensionTokens = (props: CustomAppTokensProps) => {
                     description="custom app token key"
                   />
                 </TableCell>
-                <TableCell className={classes.colActions}>
-                  <FormattedMessage
-                    id="VHuzgq"
-                    defaultMessage="Actions"
-                    description="table actions"
-                  />
-                </TableCell>
+                <TableCell />
               </TableRowLink>
             </TableHead>
           )}

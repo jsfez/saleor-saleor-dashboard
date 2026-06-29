@@ -4,9 +4,8 @@ import {
   useTaxConfigurationUpdateMutation,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import useShop from "@dashboard/hooks/useShop";
-import { commonMessages } from "@dashboard/intl";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { useIntl } from "react-intl";
@@ -14,9 +13,9 @@ import { useIntl } from "react-intl";
 import TaxChannelsPage from "../pages/TaxChannelsPage";
 import {
   taxConfigurationListUrl,
-  TaxesUrlDialog,
-  TaxesUrlQueryParams,
-  TaxTab,
+  type TaxesUrlDialog,
+  type TaxesUrlQueryParams,
+  type TaxTab,
   taxTabPath,
 } from "../urls";
 import { useTaxUrlRedirect } from "../utils/useTaxUrlRedirect";
@@ -41,7 +40,7 @@ const TaxChannelsList = ({ id, params }: TaxChannelsListProps) => {
         if (errors.length === 0) {
           notify({
             status: "success",
-            text: intl.formatMessage(commonMessages.savedChanges),
+            text: intl.formatMessage({ id: "MpOBnD", defaultMessage: "Tax settings updated" }),
           });
         }
       },

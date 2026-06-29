@@ -27,6 +27,7 @@ export const singleRefundableTransaction = [
           __typename: "App" as const,
           id: "QXBwOjY1",
           name: "Dummy Payment App",
+          brand: null,
         },
         externalUrl: "",
       },
@@ -87,5 +88,7 @@ export const singleRefundableTransaction = [
       amount: 0,
       currency: "EUR",
     },
+    createdBy: null,
+    paymentMethodDetails: null,
   },
 ];

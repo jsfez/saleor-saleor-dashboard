@@ -1,13 +1,13 @@
 // @ts-strict-ignore
 import {
-  CollectionErrorFragment,
-  PageErrorFragment,
-  ProductErrorFragment,
+  type CollectionErrorFragment,
+  type PageErrorFragment,
+  type ProductErrorFragment,
 } from "@dashboard/graphql";
 import { getFieldError, getProductErrorMessage } from "@dashboard/utils/errors";
 import getPageErrorMessage from "@dashboard/utils/errors/page";
 import { Accordion, Box, Input, Text, Textarea } from "@saleor/macaw-ui-next";
-import * as React from "react";
+import type * as React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { DashboardCard } from "../Card";
@@ -83,7 +83,7 @@ export const SeoForm = (props: SeoFormProps) => {
           <Accordion.Item value="seo-accordion">
             <Accordion.Trigger>
               <Box display="grid" gap={2}>
-                <Text size={5} fontWeight="bold">
+                <Text size={6} fontWeight="medium">
                   <FormattedMessage defaultMessage="Search Engine Preview" id="TGX4T1" />
                 </Text>
                 <Text size={2} color="default2">

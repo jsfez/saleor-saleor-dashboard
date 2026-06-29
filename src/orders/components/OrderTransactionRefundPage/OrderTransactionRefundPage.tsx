@@ -7,30 +7,31 @@ import { Pill } from "@dashboard/components/Pill";
 import { hasPermissions } from "@dashboard/components/RequirePermissions";
 import { Savebar } from "@dashboard/components/Savebar";
 import { useCustomSidebarBreakpoint } from "@dashboard/components/Sidebar/SidebarContext";
-import {
-  OrderDetailsGrantRefundFragment,
-  PermissionEnum,
-  useModelsOfTypeQuery,
-} from "@dashboard/graphql";
-import { SubmitPromise } from "@dashboard/hooks/useForm";
+import { type OrderDetailsGrantRefundFragment, PermissionEnum } from "@dashboard/graphql";
+import { type SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { pageListUrl } from "@dashboard/modeling/urls";
 import { refundReasonSelectHelperMessages } from "@dashboard/orders/messages";
-import { rippleNewRefundReasons } from "@dashboard/orders/ripples/newRefundReasons";
 import { orderUrl } from "@dashboard/orders/urls";
 import { refundsSettingsPath } from "@dashboard/refundsSettings/urls";
-import { Ripple } from "@dashboard/ripples/components/Ripple";
-import { ConfirmButtonTransitionState } from "@saleor/macaw-ui";
-import { Box, Select, Skeleton, Text } from "@saleor/macaw-ui-next";
+import { type ConfirmButtonTransitionState } from "@saleor/macaw-ui";
+import { Box, Text } from "@saleor/macaw-ui-next";
 import { useState } from "react";
-import { Control, SubmitHandler, useController, useFieldArray, useForm } from "react-hook-form";
+import {
+  type Control,
+  type SubmitHandler,
+  useController,
+  useFieldArray,
+  useForm,
+} from "react-hook-form";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { ReasonReferenceModal } from "../ReasonReferenceModal/ReasonReferenceModal";
+import { ModelsPicker } from "./components/ModelsPicker/ModelsPicker";
 import { RefundWithLinesOrderTransactionReason } from "./components/OrderTransactionReason/RefundWithLinesOrderTransactionReason";
-import { OrderTransactionReasonModal } from "./components/OrderTransactionReasonModal/OrderTransactionReasonModal";
 import { OrderTransactionSummary } from "./components/OrderTransactionRefundSummary/OrderTransactionSummary";
 import {
-  OrderRefundTransactionDatagridError,
+  type OrderRefundTransactionDatagridError,
   OrderTransactionRefundTable,
 } from "./components/OrderTransactionRefundTable/OrderTransactionRefundTable";
 import { OrderTransactionTiles } from "./components/OrderTransactionTiles/OrderTransactionTiles";
@@ -45,7 +46,7 @@ import {
   getSelectedProductsValue,
   handleLinesToRefundChange,
   handleReasonChange,
-  RefundQuantityChange,
+  type RefundQuantityChange,
   useRecalculateTotalAmount,
 } from "./utils";
 
@@ -75,6 +76,7 @@ interface OrderTransactionRefundPageProps {
 export interface LineToRefund {
   quantity: number | string;
   reason: string;
+  reasonReference: string;
 }
 
 export interface OrderTransactionRefundPageFormData {
@@ -86,50 +88,40 @@ export interface OrderTransactionRefundPageFormData {
   reasonReference: string;
 }
 
-type ModelPickerProps = {
+const ModelsPickerTransactionRefund = (props: {
   referenceModelTypeId: string;
   control: Control<OrderTransactionRefundPageFormData>;
   disabled: boolean;
-};
-
-/**
- * This component can be written to be reused with Manual Refund, however, since we rewrite the Order page, it is not worth the effort now.
- * If edited before that time, remember to update both of them
- *
- */
-const ModelsPicker = (props: ModelPickerProps) => {
-  const { field } = useController({ name: "reasonReference", control: props.control });
+}) => {
   const intl = useIntl();
-
-  const { data, loading } = useModelsOfTypeQuery({
-    variables: {
-      pageTypeId: props.referenceModelTypeId,
+  // When a reason reference type is configured (not disabled), selecting a reason is required.
+  const isRequired = !props.disabled;
+  const { field, fieldState } = useController({
+    name: "reasonReference",
+    control: props.control,
+    rules: {
+      validate: value =>
+        isRequired && !value
+          ? intl.formatMessage(refundReasonSelectHelperMessages.reasonRequiredError)
+          : true,
     },
-    skip: props.disabled,
   });
 
-  if (loading) {
-    return <Skeleton />;
-  }
-
-  const options =
-    data?.pages?.edges.map(model => ({
-      value: model.node.id,
-      label: model.node.title,
-    })) ?? [];
-
-  const optionsWithEmpty = [
-    {
-      value: "",
-      label: intl.formatMessage({
+  return (
+    <ModelsPicker
+      referenceModelTypeId={props.referenceModelTypeId}
+      disabled={props.disabled}
+      field={field}
+      sortByName
+      skip={props.disabled}
+      error={!!fieldState.error}
+      helperText={fieldState.error?.message}
+      emptyOptionLabel={intl.formatMessage({
         defaultMessage: "Select a reason type",
         id: "vSLaZ7",
-      }),
-    },
-    ...options,
-  ];
-
-  return <Select disabled={props.disabled} options={optionsWithEmpty} {...field} />;
+      })}
+    />
+  );
 };
 
 const OrderTransactionRefundPage = ({
@@ -243,9 +235,10 @@ const OrderTransactionRefundPage = ({
     });
   };
 
-  const onReasonChange = (reason: string, index: number) => {
+  const onReasonChange = (reason: string, reasonReference: string, index: number) => {
     handleReasonChange({
       reason,
+      reasonReference,
       index,
       linesToRefund,
       refundFieldsUpdate,
@@ -313,12 +306,16 @@ const OrderTransactionRefundPage = ({
               <DashboardCard>
                 <DashboardCard.Header>
                   <DashboardCard.Title>Refund reason</DashboardCard.Title>
-                  <Box marginLeft={4}>
-                    <Ripple model={rippleNewRefundReasons} />
-                  </Box>
                 </DashboardCard.Header>
                 <DashboardCard.Content>
-                  <ModelsPicker
+                  {modelForRefundReasonRefId && (
+                    <Box marginBottom={2}>
+                      <Text color="default2" size={3}>
+                        {intl.formatMessage(refundReasonSelectHelperMessages.reasonRequired)}
+                      </Text>
+                    </Box>
+                  )}
+                  <ModelsPickerTransactionRefund
                     disabled={!modelForRefundReasonRefId}
                     referenceModelTypeId={modelForRefundReasonRefId ?? ""}
                     control={control}
@@ -326,14 +323,14 @@ const OrderTransactionRefundPage = ({
                   <Box marginTop={2}>
                     {canManageSettings && modelForRefundReasonRefId && (
                       <Link href={pageListUrl()}>
-                        <Text color="inherit">
+                        <Text color="inherit" size={2}>
                           {intl.formatMessage(refundReasonSelectHelperMessages.manageReasons)}
                         </Text>
                       </Link>
                     )}
                     {canManageSettings && !modelForRefundReasonRefId && (
                       <Link href={refundsSettingsPath}>
-                        <Text color="inherit">
+                        <Text color="inherit" size={2}>
                           {intl.formatMessage(
                             refundReasonSelectHelperMessages.enableReasonsInSettings,
                           )}
@@ -341,7 +338,7 @@ const OrderTransactionRefundPage = ({
                       </Link>
                     )}
                     {!canManageSettings && (
-                      <Text color="default2">
+                      <Text color="default2" size={2}>
                         {intl.formatMessage(refundReasonSelectHelperMessages.noPermissionsHint)}
                       </Text>
                     )}
@@ -367,12 +364,14 @@ const OrderTransactionRefundPage = ({
             {submitBehavior.submitLabels.confirm}
           </Savebar.ConfirmButton>
         </Savebar>
-        <OrderTransactionReasonModal
+        <ReasonReferenceModal
           open={editedRefundLineIndex !== null}
-          reason={linesToRefund[editedRefundLineIndex!]?.reason}
+          reason={linesToRefund[editedRefundLineIndex!]?.reason ?? ""}
+          reasonReference={linesToRefund[editedRefundLineIndex!]?.reasonReference ?? ""}
+          referenceModelTypeId={modelForRefundReasonRefId ?? ""}
           onClose={() => setEditedRefundLineIndex(null)}
-          onConfirm={(reason: string) => {
-            onReasonChange(reason, editedRefundLineIndex!);
+          onConfirm={({ reason, reasonReference }) => {
+            onReasonChange(reason, reasonReference, editedRefundLineIndex!);
           }}
         />
       </Box>

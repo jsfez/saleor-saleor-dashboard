@@ -1,6 +1,6 @@
 // @ts-strict-ignore
 import {
-  ChannelVoucherData,
+  type ChannelVoucherData,
   createChannelsDataWithDiscountPrice,
   createSortedChannelsDataFromVoucher,
 } from "@dashboard/channels/utils";
@@ -16,13 +16,13 @@ import { DEFAULT_INITIAL_SEARCH_DATA, PAGINATE_BY } from "@dashboard/config";
 import DiscountCountrySelectDialog from "@dashboard/discounts/components/DiscountCountrySelectDialog";
 import VoucherDetailsPage, {
   VoucherDetailsPageTab,
-  VoucherTabItemsCount,
+  type VoucherTabItemsCount,
 } from "@dashboard/discounts/components/VoucherDetailsPage";
 import {
   voucherListUrl,
   voucherUrl,
-  VoucherUrlDialog,
-  VoucherUrlQueryParams,
+  type VoucherUrlDialog,
+  type VoucherUrlQueryParams,
 } from "@dashboard/discounts/urls";
 import {
   getFilteredCategories,
@@ -30,7 +30,11 @@ import {
   getFilteredProducts,
   getFilteredProductVariants,
 } from "@dashboard/discounts/utils";
+import { useRegisterEntityRefresh } from "@dashboard/extensions/entity-refresh";
 import {
+  type CategoryFilterInput,
+  type CollectionFilterInput,
+  type ProductWhereInput,
   useUpdateMetadataMutation,
   useUpdatePrivateMetadataMutation,
   useVoucherCataloguesAddMutation,
@@ -39,7 +43,7 @@ import {
   useVoucherDeleteMutation,
   useVoucherDetailsQuery,
   useVoucherUpdateMutation,
-  VoucherDetailsQueryVariables,
+  type VoucherDetailsQueryVariables,
 } from "@dashboard/graphql";
 import useBulkActions from "@dashboard/hooks/useBulkActions";
 import useChannels from "@dashboard/hooks/useChannels";
@@ -47,10 +51,10 @@ import useLocalPaginator, {
   useSectionLocalPaginationState,
 } from "@dashboard/hooks/useLocalPaginator";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { PaginatorContext } from "@dashboard/hooks/usePaginator";
 import useShop from "@dashboard/hooks/useShop";
-import { commonMessages, sectionNames } from "@dashboard/intl";
+import { sectionNames } from "@dashboard/intl";
 import { useCategoryWithTotalProductsSearch } from "@dashboard/searches/useCategorySearch";
 import { useCollectionWithTotalProductsSearch } from "@dashboard/searches/useCollectionSearch";
 import useProductSearch from "@dashboard/searches/useProductSearch";
@@ -82,22 +86,65 @@ const VoucherDetails = ({ id, params }: VoucherDetailsProps) => {
     search: searchCategories,
     result: searchCategoriesOpts,
   } = useCategoryWithTotalProductsSearch({
-    variables: DEFAULT_INITIAL_SEARCH_DATA,
+    variables: {
+      after: DEFAULT_INITIAL_SEARCH_DATA.after,
+      first: DEFAULT_INITIAL_SEARCH_DATA.first,
+    },
   });
   const {
     loadMore: loadMoreCollections,
     search: searchCollections,
     result: searchCollectionsOpts,
   } = useCollectionWithTotalProductsSearch({
+    variables: {
+      after: DEFAULT_INITIAL_SEARCH_DATA.after,
+      first: DEFAULT_INITIAL_SEARCH_DATA.first,
+    },
+  });
+  const { loadMore: loadMoreProducts, result: searchProductsOpts } = useProductSearch({
     variables: DEFAULT_INITIAL_SEARCH_DATA,
   });
-  const {
-    loadMore: loadMoreProducts,
-    search: searchProducts,
-    result: searchProductsOpts,
-  } = useProductSearch({
-    variables: DEFAULT_INITIAL_SEARCH_DATA,
-  });
+
+  const handleProductFilterChange = (
+    filterVariables: ProductWhereInput,
+    channel: string | undefined,
+    query: string,
+  ) => {
+    searchProductsOpts.refetch({
+      ...DEFAULT_INITIAL_SEARCH_DATA,
+      where: filterVariables,
+      channel,
+      query,
+    });
+  };
+
+  const handleCategoryFilterChange = (filterVariables: CategoryFilterInput, query: string) => {
+    searchCategoriesOpts.refetch({
+      after: DEFAULT_INITIAL_SEARCH_DATA.after,
+      first: DEFAULT_INITIAL_SEARCH_DATA.first,
+      filter: {
+        ...filterVariables,
+        search: query,
+      },
+    });
+  };
+
+  const handleCollectionFilterChange = (
+    filterVariables: CollectionFilterInput,
+    channel: string | undefined,
+    query: string,
+  ) => {
+    searchCollectionsOpts.refetch({
+      after: DEFAULT_INITIAL_SEARCH_DATA.after,
+      first: DEFAULT_INITIAL_SEARCH_DATA.first,
+      filter: {
+        ...filterVariables,
+        search: query,
+      },
+      channel,
+    });
+  };
+
   const [updateMetadata] = useUpdateMetadataMutation({});
   const [updatePrivateMetadata] = useUpdatePrivateMetadataMutation({});
   const [activeTab, setActiveTab] = useState<VoucherDetailsPageTab>(
@@ -129,9 +176,13 @@ const VoucherDetails = ({ id, params }: VoucherDetailsProps) => {
       ...detailsQueryInclude,
     },
   });
+
+  useRegisterEntityRefresh(refetch);
+
   const {
     voucherCodes,
     voucherCodesLoading,
+    voucherCodesDeleteTransitionState,
     voucherCodesPagination,
     voucherCodesSettings,
     selectedVoucherCodesIds,
@@ -181,7 +232,10 @@ const VoucherDetails = ({ id, params }: VoucherDetailsProps) => {
   const notifySaved = () =>
     notify({
       status: "success",
-      text: intl.formatMessage(commonMessages.savedChanges),
+      text: intl.formatMessage({
+        id: "uX+Vg7",
+        defaultMessage: "Voucher updated",
+      }),
     });
   const [voucherUpdate, voucherUpdateOpts] = useVoucherUpdateMutation({
     onCompleted: data => {
@@ -329,6 +383,7 @@ const VoucherDetails = ({ id, params }: VoucherDetailsProps) => {
         voucherCodesPagination={voucherCodesPagination}
         voucherCodesLoading={voucherCodesLoading}
         voucherCodesSettings={voucherCodesSettings}
+        deleteVoucherCodesTransitionState={voucherCodesDeleteTransitionState}
         onDeleteVoucherCodes={handleDeleteVoucherCodes}
         onMultipleVoucherCodesGenerate={handleGenerateMultipleCodes}
         onCustomVoucherCodeGenerate={handleAddVoucherCode}
@@ -448,6 +503,7 @@ const VoucherDetails = ({ id, params }: VoucherDetailsProps) => {
         hasMore={searchCategoriesOpts.data?.search.pageInfo.hasNextPage}
         open={params.action === "assign-category"}
         onFetch={searchCategories}
+        onFilterChange={handleCategoryFilterChange}
         onFetchMore={loadMoreCategories}
         loading={searchCategoriesOpts.loading}
         onClose={closeModal}
@@ -471,6 +527,7 @@ const VoucherDetails = ({ id, params }: VoucherDetailsProps) => {
         open={params.action === "assign-collection"}
         onFetch={searchCollections}
         onFetchMore={loadMoreCollections}
+        onFilterChange={handleCollectionFilterChange}
         loading={searchCollectionsOpts.loading}
         onClose={closeModal}
         onSubmit={collections =>
@@ -507,7 +564,7 @@ const VoucherDetails = ({ id, params }: VoucherDetailsProps) => {
         confirmButtonState={voucherUpdateOpts.status}
         hasMore={searchProductsOpts.data?.search.pageInfo.hasNextPage}
         open={params.action === "assign-variant"}
-        onFetch={searchProducts}
+        onFilterChange={handleProductFilterChange}
         onFetchMore={loadMoreProducts}
         loading={searchProductsOpts.loading}
         onClose={closeModal}
@@ -538,7 +595,6 @@ const VoucherDetails = ({ id, params }: VoucherDetailsProps) => {
         confirmButtonState={voucherCataloguesAddOpts.status}
         hasMore={searchProductsOpts.data?.search.pageInfo.hasNextPage}
         open={params.action === "assign-product"}
-        onFetch={searchProducts}
         onFetchMore={loadMoreProducts}
         loading={searchProductsOpts.loading}
         onClose={closeModal}
@@ -555,6 +611,8 @@ const VoucherDetails = ({ id, params }: VoucherDetailsProps) => {
           })
         }
         products={getFilteredProducts(data, searchProductsOpts)}
+        excludedFilters={["channel"]}
+        onFilterChange={handleProductFilterChange}
       />
       <ActionDialog
         open={params.action === "unassign-category" && canOpenBulkActionDialog}

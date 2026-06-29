@@ -1,19 +1,21 @@
 import {
-  AttributeFilterInput,
-  CollectionFilterInput,
-  CustomerFilterInput,
-  GiftCardFilterInput,
-  OrderDraftFilterInput,
-  OrderWhereInput,
-  PageFilterInput,
-  ProductTypeFilterInput,
-  ProductWhereInput,
-  PromotionWhereInput,
-  StaffUserInput,
-  VoucherFilterInput,
+  type AttributeFilterInput,
+  type CategoryFilterInput,
+  type CollectionFilterInput,
+  type CustomerFilterInput,
+  type GiftCardFilterInput,
+  type OrderDraftFilterInput,
+  type OrderWhereInput,
+  type PageFilterInput,
+  type ProductFilterInput,
+  type ProductTypeFilterInput,
+  type ProductWhereInput,
+  type PromotionWhereInput,
+  type StaffUserInput,
+  type VoucherFilterInput,
 } from "@dashboard/graphql";
 
-import { FilterContainer } from "./FilterElement";
+import { type FilterContainer } from "./FilterElement";
 import { FiltersQueryBuilder, QueryApiType } from "./FiltersQueryBuilder";
 import { FilterQueryVarsBuilderResolver } from "./FiltersQueryBuilder/FilterQueryVarsBuilderResolver";
 import { AddressFieldQueryVarsBuilder } from "./FiltersQueryBuilder/queryVarsBuilders/AddressFieldQueryVarsBuilder";
@@ -29,27 +31,82 @@ import { OrderCustomerIdQueryVarsBuilder } from "./FiltersQueryBuilder/queryVars
 import { OrderIdQueryVarsBuilder } from "./FiltersQueryBuilder/queryVarsBuilders/OrderIdQueryVarsBuilder";
 import { OrderInvoiceDateQueryVarsBuilder } from "./FiltersQueryBuilder/queryVarsBuilders/OrderInvoiceDateQueryVarsBuilder";
 import { PriceFilterQueryVarsBuilder } from "./FiltersQueryBuilder/queryVarsBuilders/PriceFilterQueryVarsBuilder";
+import { PriceRangeQueryVarsBuilder } from "./FiltersQueryBuilder/queryVarsBuilders/PriceRangeQueryVarsBuilder";
+import { ProductExportFieldMapper } from "./FiltersQueryBuilder/queryVarsBuilders/ProductExportFieldMapper";
 import { SlugChannelQueryVarsBuilder } from "./FiltersQueryBuilder/queryVarsBuilders/SlugChannelQueryVarsBuilder";
 
-type ProductQueryVars = ProductWhereInput & { channel?: { eq: string } };
+type ProductQueryVars = ProductWhereInput & { channel?: string };
 type VoucherQueryVars = VoucherFilterInput & { channel?: string };
 type CollectionQueryVars = CollectionFilterInput & { channel?: string };
 
+// Single source of truth for API types used across all filter pages
+export const QUERY_API_TYPES = {
+  PRODUCT: QueryApiType.WHERE,
+  PRODUCT_EXPORT: QueryApiType.FILTER,
+  DISCOUNT: QueryApiType.WHERE,
+  ORDER: QueryApiType.WHERE,
+  VOUCHER: QueryApiType.FILTER,
+  PAGE: QueryApiType.FILTER,
+  DRAFT_ORDER: QueryApiType.FILTER,
+  GIFT_CARD: QueryApiType.FILTER,
+  CUSTOMER: QueryApiType.FILTER,
+  COLLECTION: QueryApiType.FILTER,
+  PRODUCT_TYPE: QueryApiType.FILTER,
+  STAFF_MEMBER: QueryApiType.FILTER,
+  ATTRIBUTE: QueryApiType.FILTER,
+  // TODO: Categories should use WHERE filter
+  // cannot be used because it's missing `search` input
+  CATEGORY: QueryApiType.FILTER,
+} as const;
+
+const productFilterDefinitionResolver = new FilterQueryVarsBuilderResolver([
+  // Product search expects channel to be a slug, not id
+  new SlugChannelQueryVarsBuilder(),
+  ...FilterQueryVarsBuilderResolver.getDefaultQueryVarsBuilders(),
+]);
+
 export const createProductQueryVariables = (filterContainer: FilterContainer): ProductQueryVars => {
-  const { topLevel, filters } = new FiltersQueryBuilder<ProductQueryVars, "channel">({
-    apiType: QueryApiType.WHERE,
+  const builder = new FiltersQueryBuilder<ProductQueryVars, "channel">({
+    apiType: QUERY_API_TYPES.PRODUCT,
     filterContainer,
     topLevelKeys: ["channel"],
-  }).build();
+    filterDefinitionResolver: productFilterDefinitionResolver,
+  });
+  const { topLevel, filters } = builder.build();
 
   return { ...filters, ...topLevel };
 };
 
+const productExportFilterResolver = new FilterQueryVarsBuilderResolver([
+  new ProductExportFieldMapper(),
+  new PriceRangeQueryVarsBuilder(),
+  ...FilterQueryVarsBuilderResolver.getDefaultQueryVarsBuilders(),
+]);
+
+export const createProductExportQueryVariables = (
+  filterContainer: FilterContainer,
+): ProductFilterInput | null => {
+  if (!filterContainer || filterContainer.length === 0) {
+    return null;
+  }
+
+  const builder = new FiltersQueryBuilder<ProductFilterInput>({
+    apiType: QUERY_API_TYPES.PRODUCT_EXPORT,
+    filterContainer,
+    filterDefinitionResolver: productExportFilterResolver,
+  });
+  const { filters } = builder.build();
+
+  // Return null if no filters remain (backend requirement)
+  return Object.keys(filters).length === 0 ? null : filters;
+};
+
 export const createDiscountsQueryVariables = (value: FilterContainer): PromotionWhereInput => {
-  const { filters } = new FiltersQueryBuilder<PromotionWhereInput>({
-    apiType: QueryApiType.WHERE,
+  const builder = new FiltersQueryBuilder<PromotionWhereInput>({
+    apiType: QUERY_API_TYPES.DISCOUNT,
     filterContainer: value,
-  }).build();
+  });
+  const { filters } = builder.build();
 
   return filters;
 };
@@ -57,45 +114,51 @@ export const createDiscountsQueryVariables = (value: FilterContainer): Promotion
 // TODO: We should probably map fields based on query + field name, not using simple `canHandle` strategy
 // E.g. Orders query uses DateTimeRangeInput for createdAt, updatedAt, but Product query uses DateTimeFilterInput for updatedAt
 // Fields have the same name for both queries, but different input types
+const orderFilterDefinitionResolver = new FilterQueryVarsBuilderResolver([
+  new OrderChannelQueryVarsBuilder(), // Map channels -> channelId
+  new OrderCustomerIdQueryVarsBuilder(), // Map customer -> user
+  new OrderIdQueryVarsBuilder(), // Handle ids as plain arrays
+  new OrderInvoiceDateQueryVarsBuilder(), // Handle invoice date filtering
+  new AddressFieldQueryVarsBuilder(), // Handle address fields (billing/shipping phone/country)
+  new ArrayNestedFieldQueryVarsBuilder(), // Handle nested fields in transactions (payment type/card brand)
+  new ArrayMetadataQueryVarsBuilder(), // Handle metadata in arrays (lines, transactions, fulfillments)
+  new FulfillmentStatusQueryVarsBuilder(), // Handle fulfillment status nested in arrays
+  new FulfillmentWarehouseQueryVarsBuilder(), // Handle fulfillment warehouse nested in arrays
+  new IntFilterQueryVarsBuilder(), // Orders query use IntFilterInput, not IntRangeInput
+  new PriceFilterQueryVarsBuilder(), // Handle price/amount fields
+  new DateTimeRangeQueryVarsBuilder(), // Orders query use DateTimeRangeInput, not DateTimeFilterInput
+  new MetadataFilterInputQueryVarsBuilder(), // Orders query uses MetadataFilterInput, not MetadataInput
+  ...FilterQueryVarsBuilderResolver.getDefaultQueryVarsBuilders(),
+]);
+
 export const createOrderQueryVariables = (value: FilterContainer): OrderWhereInput => {
-  const { filters } = new FiltersQueryBuilder<OrderWhereInput>({
-    apiType: QueryApiType.WHERE,
+  const builder = new FiltersQueryBuilder<OrderWhereInput>({
+    apiType: QUERY_API_TYPES.ORDER,
     filterContainer: value,
-    useAndWrapper: true, // Wrap all root-level fields into `AND` to avoid mixing operators
-    filterDefinitionResolver: new FilterQueryVarsBuilderResolver([
-      new OrderChannelQueryVarsBuilder(), // Map channels -> channelId
-      new OrderCustomerIdQueryVarsBuilder(), // Map customer -> user
-      new OrderIdQueryVarsBuilder(), // Handle ids as plain arrays
-      new OrderInvoiceDateQueryVarsBuilder(), // Handle invoice date filtering
-      new AddressFieldQueryVarsBuilder(), // Handle address fields (billing/shipping phone/country)
-      new ArrayNestedFieldQueryVarsBuilder(), // Handle nested fields in transactions (payment type/card brand)
-      new ArrayMetadataQueryVarsBuilder(), // Handle metadata in arrays (lines, transactions, fulfillments)
-      new FulfillmentStatusQueryVarsBuilder(), // Handle fulfillment status nested in arrays
-      new FulfillmentWarehouseQueryVarsBuilder(), // Handle fulfillment warehouse nested in arrays
-      new IntFilterQueryVarsBuilder(), // Orders query use IntFilterInput, not IntRangeInput
-      new PriceFilterQueryVarsBuilder(), // Handle price/amount fields
-      new DateTimeRangeQueryVarsBuilder(), // Orders query use DateTimeRangeInput, not DateTimeFilterInput
-      new MetadataFilterInputQueryVarsBuilder(), // Orders query uses MetadataFilterInput, not MetadataInput
-      ...FilterQueryVarsBuilderResolver.getDefaultQueryVarsBuilders(),
-    ]),
-  }).build();
+    useAndWrapper: true,
+    filterDefinitionResolver: orderFilterDefinitionResolver,
+  });
+  const { filters } = builder.build();
 
   return filters;
 };
 
+const voucherFilterDefinitionResolver = new FilterQueryVarsBuilderResolver([
+  // VoucherPage expects channel to be a slug, not id
+  new SlugChannelQueryVarsBuilder(),
+  ...FilterQueryVarsBuilderResolver.getDefaultQueryVarsBuilders(),
+]);
+
 export const createVoucherQueryVariables = (
   value: FilterContainer,
 ): { filters: VoucherFilterInput; channel: string | undefined } => {
-  const { filters, topLevel } = new FiltersQueryBuilder<VoucherQueryVars, "channel">({
-    apiType: QueryApiType.FILTER,
+  const builder = new FiltersQueryBuilder<VoucherQueryVars, "channel">({
+    apiType: QUERY_API_TYPES.VOUCHER,
     filterContainer: value,
     topLevelKeys: ["channel"],
-    filterDefinitionResolver: new FilterQueryVarsBuilderResolver([
-      // VoucherPage expects channel to be a slug, not id
-      new SlugChannelQueryVarsBuilder(),
-      ...FilterQueryVarsBuilderResolver.getDefaultQueryVarsBuilders(),
-    ]),
-  }).build();
+    filterDefinitionResolver: voucherFilterDefinitionResolver,
+  });
+  const { filters, topLevel } = builder.build();
 
   return {
     filters,
@@ -104,37 +167,41 @@ export const createVoucherQueryVariables = (
 };
 
 export const createPageQueryVariables = (value: FilterContainer): PageFilterInput => {
-  const { filters } = new FiltersQueryBuilder<PageFilterInput>({
-    apiType: QueryApiType.FILTER,
+  const builder = new FiltersQueryBuilder<PageFilterInput>({
+    apiType: QUERY_API_TYPES.PAGE,
     filterContainer: value,
-  }).build();
+  });
+  const { filters } = builder.build();
 
   return filters;
 };
 
 export const createDraftOrderQueryVariables = (value: FilterContainer): OrderDraftFilterInput => {
-  const { filters } = new FiltersQueryBuilder<OrderDraftFilterInput>({
-    apiType: QueryApiType.FILTER,
+  const builder = new FiltersQueryBuilder<OrderDraftFilterInput>({
+    apiType: QUERY_API_TYPES.DRAFT_ORDER,
     filterContainer: value,
-  }).build();
+  });
+  const { filters } = builder.build();
 
   return filters;
 };
 
 export const createGiftCardQueryVariables = (value: FilterContainer): GiftCardFilterInput => {
-  const { filters } = new FiltersQueryBuilder<GiftCardFilterInput>({
-    apiType: QueryApiType.FILTER,
+  const builder = new FiltersQueryBuilder<GiftCardFilterInput>({
+    apiType: QUERY_API_TYPES.GIFT_CARD,
     filterContainer: value,
-  }).build();
+  });
+  const { filters } = builder.build();
 
   return filters;
 };
 
 export const createCustomerQueryVariables = (value: FilterContainer): CustomerFilterInput => {
-  const { filters } = new FiltersQueryBuilder<CustomerFilterInput>({
-    apiType: QueryApiType.FILTER,
+  const builder = new FiltersQueryBuilder<CustomerFilterInput>({
+    apiType: QUERY_API_TYPES.CUSTOMER,
     filterContainer: value,
-  }).build();
+  });
+  const { filters } = builder.build();
 
   return filters;
 };
@@ -142,11 +209,12 @@ export const createCustomerQueryVariables = (value: FilterContainer): CustomerFi
 export const createCollectionsQueryVariables = (
   value: FilterContainer,
 ): { filter: CollectionFilterInput; channel: string | undefined } => {
-  const { topLevel, filters } = new FiltersQueryBuilder<CollectionQueryVars, "channel">({
-    apiType: QueryApiType.FILTER,
+  const builder = new FiltersQueryBuilder<CollectionQueryVars, "channel">({
+    apiType: QUERY_API_TYPES.COLLECTION,
     filterContainer: value,
     topLevelKeys: ["channel"],
-  }).build();
+  });
+  const { topLevel, filters } = builder.build();
 
   return {
     channel: topLevel.channel,
@@ -157,28 +225,49 @@ export const createCollectionsQueryVariables = (
 export const createProductTypesQueryVariables = (
   value: FilterContainer,
 ): ProductTypeFilterInput => {
-  const { filters } = new FiltersQueryBuilder<ProductTypeFilterInput>({
-    apiType: QueryApiType.FILTER,
+  const builder = new FiltersQueryBuilder<ProductTypeFilterInput>({
+    apiType: QUERY_API_TYPES.PRODUCT_TYPE,
     filterContainer: value,
-  }).build();
+  });
+  const { filters } = builder.build();
 
   return filters;
 };
 
 export const createStaffMembersQueryVariables = (value: FilterContainer): StaffUserInput => {
-  const { filters } = new FiltersQueryBuilder<StaffUserInput>({
-    apiType: QueryApiType.FILTER,
+  const builder = new FiltersQueryBuilder<StaffUserInput>({
+    apiType: QUERY_API_TYPES.STAFF_MEMBER,
     filterContainer: value,
-  }).build();
+  });
+  const { filters } = builder.build();
 
   return filters;
 };
 
 export const createAttributesQueryVariables = (value: FilterContainer): AttributeFilterInput => {
-  const { filters } = new FiltersQueryBuilder<AttributeFilterInput>({
-    apiType: QueryApiType.FILTER,
+  const builder = new FiltersQueryBuilder<AttributeFilterInput>({
+    apiType: QUERY_API_TYPES.ATTRIBUTE,
     filterContainer: value,
-  }).build();
+  });
+  const { filters } = builder.build();
+
+  return filters;
+};
+
+const categoryFilterDefinitionResolver = new FilterQueryVarsBuilderResolver([
+  new DateTimeRangeQueryVarsBuilder(),
+  ...FilterQueryVarsBuilderResolver.getDefaultQueryVarsBuilders(),
+]);
+
+export const createCategoryQueryVariables = (
+  filterContainer: FilterContainer,
+): CategoryFilterInput => {
+  const builder = new FiltersQueryBuilder<CategoryFilterInput>({
+    apiType: QUERY_API_TYPES.CATEGORY,
+    filterContainer,
+    filterDefinitionResolver: categoryFilterDefinitionResolver,
+  });
+  const { filters } = builder.build();
 
   return filters;
 };

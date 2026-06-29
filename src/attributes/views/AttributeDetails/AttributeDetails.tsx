@@ -1,3 +1,4 @@
+import { useAttributeValuesSearch } from "@dashboard/attributes/hooks/useAttributeValuesSearch";
 import { attributeValueFragmentToFormData } from "@dashboard/attributes/utils/data";
 import {
   useAttributeDeleteMutation,
@@ -7,32 +8,30 @@ import {
   useAttributeValueDeleteMutation,
   useAttributeValueReorderMutation,
   useAttributeValueUpdateMutation,
-  useUpdateMetadataMutation,
-  useUpdatePrivateMetadataMutation,
 } from "@dashboard/graphql";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useLocalPaginator, { useLocalPaginationState } from "@dashboard/hooks/useLocalPaginator";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
-import { commonMessages } from "@dashboard/intl";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { extractMutationErrors, getStringOrPlaceholder } from "@dashboard/misc";
-import { ListViews, ReorderEvent } from "@dashboard/types";
+import { ListViews, type ReorderEvent } from "@dashboard/types";
 import getAttributeErrorMessage from "@dashboard/utils/errors/attribute";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
-import createMetadataUpdateHandler from "@dashboard/utils/handlers/metadataUpdateHandler";
 import { move } from "@dashboard/utils/lists";
 import omit from "lodash/omit";
+import { useCallback } from "react";
 import { useIntl } from "react-intl";
 
 import AttributeDeleteDialog from "../../components/AttributeDeleteDialog";
-import AttributePage, { AttributePageFormData } from "../../components/AttributePage";
+import { AttributeMetadataDialog } from "../../components/AttributeMetadataDialog/AttributeMetadataDialog";
+import AttributePage, { type AttributePageFormData } from "../../components/AttributePage";
 import AttributeValueDeleteDialog from "../../components/AttributeValueDeleteDialog";
 import AttributeValueEditDialog from "../../components/AttributeValueEditDialog";
 import {
   attributeListUrl,
   attributeUrl,
-  AttributeUrlDialog,
-  AttributeUrlQueryParams,
+  type AttributeUrlDialog,
+  type AttributeUrlQueryParams,
 } from "../../urls";
 
 interface AttributeDetailsProps {
@@ -44,8 +43,6 @@ const AttributeDetails = ({ id, params }: AttributeDetailsProps) => {
   const navigate = useNavigator();
   const notify = useNotifier();
   const intl = useIntl();
-  const [updateMetadata] = useUpdateMetadataMutation({});
-  const [updatePrivateMetadata] = useUpdatePrivateMetadataMutation({});
   const [openModal, closeModal] = createDialogActionHandlers<
     AttributeUrlDialog,
     AttributeUrlQueryParams
@@ -54,16 +51,43 @@ const AttributeDetails = ({ id, params }: AttributeDetailsProps) => {
   const [valuesPaginationState, setValuesPaginationState] = useLocalPaginationState(
     settings?.rowNumber,
   );
-  const { data, loading } = useAttributeDetailsQuery({
+
+  const resetPagination = useCallback(() => {
+    setValuesPaginationState({
+      first: settings?.rowNumber,
+      after: undefined,
+      last: undefined,
+      before: undefined,
+    });
+  }, [settings?.rowNumber, setValuesPaginationState]);
+
+  const { searchQuery, debouncedSearchQuery, handleSearchChange } = useAttributeValuesSearch({
+    onResetPagination: resetPagination,
+  });
+
+  const {
+    data: currentData,
+    previousData,
+    loading,
+    refetch,
+  } = useAttributeDetailsQuery({
     variables: {
       id,
       firstValues: valuesPaginationState.first,
       lastValues: valuesPaginationState.last,
       afterValues: valuesPaginationState.after,
       beforeValues: valuesPaginationState.before,
+      searchValues: debouncedSearchQuery || undefined,
     },
     skip: !settings,
   });
+
+  // Use previous data while loading to prevent UI flicker during search/pagination
+  const data = currentData ?? previousData;
+
+  // Only show as "loading" for initial load, not for search refetches
+  const isInitialLoading = loading && !data;
+
   const paginateValues = useLocalPaginator(setValuesPaginationState);
   const { loadNextPage, loadPreviousPage, pageInfo } = paginateValues(
     data?.attribute?.choices?.pageInfo,
@@ -72,7 +96,7 @@ const AttributeDetails = ({ id, params }: AttributeDetailsProps) => {
   const notifySaved = () =>
     notify({
       status: "success",
-      text: intl.formatMessage(commonMessages.savedChanges),
+      text: intl.formatMessage({ id: "s8e+7y", defaultMessage: "Attribute updated" }),
     });
   const [attributeDelete, attributeDeleteOpts] = useAttributeDeleteMutation({
     onCompleted: data => {
@@ -181,7 +205,7 @@ const AttributeDetails = ({ id, params }: AttributeDetailsProps) => {
         beforeValues: valuesPaginationState.before,
       },
     });
-  const handleUpdate = async (data: AttributePageFormData) =>
+  const handleSubmit = async (data: AttributePageFormData) =>
     extractMutationErrors(
       attributeUpdate({
         variables: {
@@ -194,20 +218,15 @@ const AttributeDetails = ({ id, params }: AttributeDetailsProps) => {
         },
       }),
     );
-  const handleSubmit = createMetadataUpdateHandler(
-    data?.attribute!,
-    handleUpdate,
-    variables => updateMetadata({ variables }),
-    variables => updatePrivateMetadata({ variables }),
-  );
 
   return (
     <AttributePage
       attribute={data?.attribute}
-      disabled={loading}
+      disabled={isInitialLoading}
       errors={attributeUpdateOpts.data?.attributeUpdate?.errors || []}
       params={params}
       onDelete={() => openModal("remove")}
+      onShowMetadata={() => openModal("view-metadata", { id: undefined })}
       onSubmit={handleSubmit}
       onValueAdd={() => openModal("add-value")}
       onValueDelete={id =>
@@ -230,9 +249,17 @@ const AttributeDetails = ({ id, params }: AttributeDetailsProps) => {
       pageInfo={pageInfo ?? { hasNextPage: false, hasPreviousPage: false }}
       onNextPage={loadNextPage}
       onPreviousPage={loadPreviousPage}
+      searchQuery={searchQuery}
+      onSearchChange={handleSearchChange}
     >
       {attributeFormData => (
         <>
+          <AttributeMetadataDialog
+            open={params.action === "view-metadata" && !!data?.attribute}
+            onClose={closeModal}
+            attribute={data?.attribute}
+            refetchAttribute={refetch}
+          />
           <AttributeDeleteDialog
             open={params.action === "remove"}
             name={data?.attribute?.name ?? "..."}
@@ -272,7 +299,7 @@ const AttributeDetails = ({ id, params }: AttributeDetailsProps) => {
             inputType={attributeFormData.inputType}
             attributeValue={null}
             confirmButtonState={attributeValueCreateOpts.status}
-            disabled={loading}
+            disabled={isInitialLoading}
             errors={attributeValueCreateOpts.data?.attributeValueCreate?.errors || []}
             open={params.action === "add-value"}
             onClose={closeModal}
@@ -296,7 +323,7 @@ const AttributeDetails = ({ id, params }: AttributeDetailsProps) => {
                 null,
             )}
             confirmButtonState={attributeValueUpdateOpts.status}
-            disabled={loading}
+            disabled={isInitialLoading}
             errors={attributeValueUpdateOpts.data?.attributeValueUpdate?.errors || []}
             open={params.action === "edit-value"}
             onClose={closeModal}

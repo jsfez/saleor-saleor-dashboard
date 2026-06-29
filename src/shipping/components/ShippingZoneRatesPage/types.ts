@@ -1,13 +1,11 @@
-import { ChannelShippingData } from "@dashboard/channels/utils";
-import { MetadataFormData } from "@dashboard/components/Metadata";
-import { ShippingMethodTypeEnum } from "@dashboard/graphql";
-import { OutputData } from "@editorjs/editorjs";
+import { type ChannelShippingData } from "@dashboard/channels/utils";
+import { type ShippingMethodTypeEnum } from "@dashboard/graphql";
+import { type OutputData } from "@editorjs/editorjs";
 
 export interface ShippingZoneRateCommonFormData {
   channelListings: ChannelShippingData[];
   name: string;
   description: OutputData | null;
-  orderValueRestricted: boolean;
   minValue: string;
   maxValue: string;
   minDays: string;
@@ -16,4 +14,4 @@ export interface ShippingZoneRateCommonFormData {
   taxClassId: string;
 }
 
-export type ShippingZoneRateUpdateFormData = ShippingZoneRateCommonFormData & MetadataFormData;
+export type ShippingZoneRateUpdateFormData = ShippingZoneRateCommonFormData;

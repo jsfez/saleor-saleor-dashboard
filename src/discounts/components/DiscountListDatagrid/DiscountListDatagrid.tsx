@@ -1,18 +1,18 @@
 import { ColumnPicker } from "@dashboard/components/Datagrid/ColumnPicker/ColumnPicker";
 import { useColumns } from "@dashboard/components/Datagrid/ColumnPicker/useColumns";
-import Datagrid from "@dashboard/components/Datagrid/Datagrid";
+import { Datagrid } from "@dashboard/components/Datagrid/Datagrid";
 import {
   DatagridChangeStateContext,
   useDatagridChangeState,
 } from "@dashboard/components/Datagrid/hooks/useDatagridChange";
 import { useEmptyColumn } from "@dashboard/components/Datagrid/hooks/useEmptyColumn";
-import { TablePaginationWithContext } from "@dashboard/components/TablePagination";
-import { DiscountListUrlSortField, discountUrl } from "@dashboard/discounts/discountsUrls";
-import { PromotionFragment } from "@dashboard/graphql";
+import { DatagridPagination } from "@dashboard/components/TablePagination";
+import { type DiscountListUrlSortField, discountUrl } from "@dashboard/discounts/discountsUrls";
+import { type PromotionFragment } from "@dashboard/graphql";
 import { getPrevLocationState } from "@dashboard/hooks/useBackLinkWithState";
-import { ListProps, SortPage } from "@dashboard/types";
-import { Item } from "@glideapps/glide-data-grid";
-import { Box } from "@saleor/macaw-ui-next";
+import { type ListProps, type SortPage } from "@dashboard/types";
+import { type Item } from "@glideapps/glide-data-grid";
+import { useTheme } from "@saleor/macaw-ui-next";
 import { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
@@ -37,6 +37,7 @@ export const DiscountListDatagrid = ({
   settings,
 }: DiscountListDatagridProps) => {
   const intl = useIntl();
+  const { theme: currentTheme } = useTheme();
   const datagrid = useDatagridChangeState();
   const emptyColumn = useEmptyColumn();
   const discountListStaticColumns = useMemo(
@@ -63,8 +64,9 @@ export const DiscountListDatagrid = ({
       promotions,
       columns: visibleColumns,
       intl,
+      currentTheme,
     }),
-    [promotions, visibleColumns],
+    [promotions, visibleColumns, currentTheme],
   );
   const handleRowClick = useCallback(
     ([_, row]: Item) => {
@@ -125,14 +127,12 @@ export const DiscountListDatagrid = ({
         navigatorOpts={{ state: getPrevLocationState(location) }}
       />
 
-      <Box paddingX={6}>
-        <TablePaginationWithContext
-          component="div"
-          settings={settings}
-          disabled={disabled}
-          onUpdateListSettings={onUpdateListSettings}
-        />
-      </Box>
+      <DatagridPagination
+        component="div"
+        settings={settings}
+        disabled={disabled}
+        onUpdateListSettings={onUpdateListSettings}
+      />
     </DatagridChangeStateContext.Provider>
   );
 };

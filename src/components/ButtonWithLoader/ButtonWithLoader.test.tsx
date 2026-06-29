@@ -11,12 +11,22 @@ describe("ButtonWithLoader", () => {
     expect(screen.getByRole("button")).toHaveTextContent("Confirm");
   });
 
-  it("should render a button with loading spinner", () => {
+  it("should render a button with loading throbber", () => {
     // Arrange & Act
     render(<ButtonWithLoader transitionState="loading" />);
     // Assert
     expect(screen.getByRole("button")).toBeInTheDocument();
     expect(screen.getByTestId("button-progress")).toBeInTheDocument();
+    expect(screen.getByRole("button")).toBeEnabled();
+    expect(screen.getByRole("button")).toHaveAttribute("aria-busy", "true");
+  });
+
+  it("should not call onClick while loading", () => {
+    const onClick = jest.fn();
+
+    render(<ButtonWithLoader transitionState="loading" onClick={onClick} />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it("should call onClick when clicked", () => {

@@ -1,29 +1,29 @@
 import "@glideapps/glide-data-grid/dist/index.css";
 
 import { useRowAnchorHandler } from "@dashboard/components/Datagrid/hooks/useRowAnchorHandler";
-import { NavigatorOpts } from "@dashboard/hooks/useNavigator";
+import { type NavigatorOpts } from "@dashboard/hooks/useNavigator";
 import { getCellAction } from "@dashboard/products/components/ProductListDatagrid/datagrid";
 import DataEditor, {
-  CellClickedEventArgs,
-  DataEditorProps,
-  DataEditorRef,
-  EditableGridCell,
-  GridCell,
-  GridColumn,
-  GridSelection,
-  HeaderClickedEventArgs,
-  Item,
-  Theme,
+  type CellClickedEventArgs,
+  type DataEditorProps,
+  type DataEditorRef,
+  type DrawHeaderCallback,
+  type EditableGridCell,
+  type GridCell,
+  type GridColumn,
+  type GridSelection,
+  type HeaderClickedEventArgs,
+  type Item,
+  type Theme,
 } from "@glideapps/glide-data-grid";
-import { GetRowThemeCallback } from "@glideapps/glide-data-grid/dist/ts/data-grid/data-grid-render";
-import { CircularProgress } from "@material-ui/core";
+import { type GetRowThemeCallback } from "@glideapps/glide-data-grid/dist/ts/data-grid/data-grid-render";
 import { Box, Text, useTheme } from "@saleor/macaw-ui-next";
 import clsx from "clsx";
 import range from "lodash/range";
 import {
-  MutableRefObject,
-  ReactElement,
-  ReactNode,
+  type MutableRefObject,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -32,22 +32,32 @@ import {
 } from "react";
 
 import { DashboardCard } from "../Card";
-import { CardMenuItem } from "../CardMenu";
+import { type CardMenuItem } from "../CardMenu";
+import { SaleorThrobber } from "../Throbber";
 import { FullScreenContainer } from "./components/FullScreenContainer";
 import { PreventHistoryBack } from "./components/PreventHistoryBack";
 import { RowActions } from "./components/RowActions";
 import { TooltipContainer } from "./components/TooltipContainer";
+import { DEFAULT_ROW_MARKER_WIDTH } from "./const";
 import { useCustomCellRenderers } from "./customCells/useCustomCellRenderers";
 import { headerIcons } from "./headerIcons";
-import useDatagridChange, { DatagridChange, OnDatagridChange } from "./hooks/useDatagridChange";
+import useDatagridChange, {
+  type DatagridChange,
+  type OnDatagridChange,
+} from "./hooks/useDatagridChange";
 import { useFullScreenMode } from "./hooks/useFullScreenMode";
 import { usePortalClasses } from "./hooks/usePortalClasses";
 import { useRowAnchor } from "./hooks/useRowAnchor";
 import { useRowHover } from "./hooks/useRowHover";
 import { useScrollRight } from "./hooks/useScrollRight";
 import { useTooltipContainer } from "./hooks/useTooltipContainer";
-import useStyles, { cellHeight, useDatagridTheme, useFullScreenStyles } from "./styles";
-import { AvailableColumn } from "./types";
+import useStyles, {
+  cellHeight,
+  rowActionBarWidth as defaultRowActionBarWidth,
+  useDatagridTheme,
+  useFullScreenStyles,
+} from "./styles";
+import { type AvailableColumn } from "./types";
 import { preventRowClickOnSelectionCheckbox } from "./utils";
 
 export interface GetCellContentOpts {
@@ -82,7 +92,13 @@ interface DatagridProps {
   onChange?: OnDatagridChange;
   onHeaderClicked?: (colIndex: number, event: HeaderClickedEventArgs) => void;
   renderColumnPicker?: () => ReactElement;
+  renderRowActions?: (index: number) => ReactElement;
+  rowActionBarWidth?: number;
   onRowClick?: (item: Item) => void;
+  /** Fired when a cell is activated via keyboard (Enter/Space) or double-click.
+   *  Glide's `onCellActivated` covers the keyboard equivalent of `onCellClicked`.
+   *  Use this together with `onRowClick` to give clickable cells keyboard parity. */
+  onCellActivated?: (item: Item) => void;
   onColumnMoved?: (startIndex: number, endIndex: number) => void;
   onColumnResize?: (column: GridColumn, newSize: number) => void;
   onRowSelectionChange?: (rowsId: number[], clearSelection: () => void) => void;
@@ -100,9 +116,13 @@ interface DatagridProps {
   onClearRecentlyAddedColumn?: () => void;
   renderHeader?: (props: DatagridRenderHeaderProps) => ReactNode;
   navigatorOpts?: NavigatorOpts;
+  showTopBorder?: boolean;
+  themeOverride?: Partial<Theme>;
+  rowMarkerWidth?: number;
+  rowMarkerTheme?: Partial<Theme>;
 }
 
-const Datagrid = ({
+export const Datagrid = ({
   availableColumns,
   emptyText,
   getCellContent,
@@ -113,7 +133,10 @@ const Datagrid = ({
   onHeaderClicked,
   onChange,
   renderColumnPicker,
+  renderRowActions,
+  rowActionBarWidth = defaultRowActionBarWidth,
   onRowClick,
+  onCellActivated,
   getColumnTooltipContent,
   readonly = false,
   rowMarkers = "checkbox",
@@ -133,11 +156,30 @@ const Datagrid = ({
   rowHeight = cellHeight,
   renderHeader,
   navigatorOpts,
+  showTopBorder = true,
+  themeOverride,
+  rowMarkerWidth,
+  rowMarkerTheme: rowMarkerThemeOverride,
   ...datagridProps
 }: DatagridProps): ReactElement => {
   const classes = useStyles({ actionButtonPosition });
   const { themeValues, theme } = useTheme();
   const datagridTheme = useDatagridTheme(readonly, readonly);
+  const finalTheme = useMemo(
+    () => ({ ...datagridTheme, ...themeOverride }),
+    [datagridTheme, themeOverride],
+  );
+  // rowMarkerTheme can override specific colors for the row marker column if needed
+  // Currently using the same as the main theme for consistency
+  const rowMarkerTheme = useMemo(
+    () => ({
+      accentColor: themeValues.colors.background.accent1,
+      accentFg: themeValues.colors.background.default1,
+      accentLight: themeValues.colors.background.default2,
+      ...rowMarkerThemeOverride,
+    }),
+    [themeValues, rowMarkerThemeOverride],
+  );
   const editor = useRef<DataEditorRef | null>(null);
   const customRenderers = useCustomCellRenderers();
   const { scrolledToRight } = useScrollRight();
@@ -259,8 +301,17 @@ const Datagrid = ({
         return;
       }
 
-      if (onRowClick) {
+      const intentToOpenInNewTab = args.metaKey || args.ctrlKey;
+
+      /**
+       * Assume rowClick is standard click, if ctrl/cmd is used, let it pass to anchor logic and allow to open in a new tab
+       *
+       * TODO: This can be refactored, but every Datagrid is used a little different way
+       */
+      if (onRowClick && !intentToOpenInNewTab) {
         onRowClick(item);
+
+        return;
       }
 
       if (getCellAction(availableColumns, item[0])) {
@@ -270,7 +321,18 @@ const Datagrid = ({
       handleRowHover(args);
 
       if (rowAnchorRef.current) {
-        rowAnchorRef.current.click();
+        /**
+         * Dispatch click event with modifier keys preserved
+         * This allows CMD/CTRL+click to open in new tab
+         */
+        const clickEvent = new MouseEvent("click", {
+          metaKey: args.metaKey,
+          ctrlKey: args.ctrlKey,
+          shiftKey: args.shiftKey,
+          bubbles: true,
+        });
+
+        rowAnchorRef.current.dispatchEvent(clickEvent);
       }
     },
     [rowMarkers, onRowClick, handleRowHover, rowAnchorRef],
@@ -322,6 +384,28 @@ const Datagrid = ({
       }
     },
     [getColumnTooltipContent, onHeaderClicked, setTooltip],
+  );
+  const drawHeader: DrawHeaderCallback = useCallback(
+    args => {
+      const { ctx, rect, isSelected, spriteManager, theme, column } = args;
+
+      if (isSelected) {
+        ctx.fillStyle = themeValues.colors.background.default1;
+        ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+      }
+
+      if (isSelected && column.id !== "empty") {
+        const iconSize = 16;
+        const padding = 8;
+        const x = rect.x + rect.width - iconSize - padding;
+        const y = rect.y + (rect.height - iconSize) / 2;
+
+        spriteManager.drawSprite("gripVertical", "normal", ctx, x, y, iconSize, theme);
+      }
+
+      return false;
+    },
+    [themeValues],
   );
   const handleRemoveRows = useCallback(
     (rows: number[]) => {
@@ -397,7 +481,7 @@ const Datagrid = ({
   if (loading) {
     return (
       <Box data-test-id="datagrid-loader" display="flex" justifyContent="center" marginY={9}>
-        <CircularProgress />
+        <SaleorThrobber />
       </Box>
     );
   }
@@ -427,16 +511,20 @@ const Datagrid = ({
                 <div className={classes.editorContainer}>
                   <Box
                     backgroundColor="default1"
-                    borderTopWidth={1}
+                    borderTopWidth={showTopBorder ? 1 : 0}
                     borderTopStyle="solid"
                     borderColor="default1"
                   />
                   <DataEditor
+                    width="100%"
                     {...datagridProps}
                     customRenderers={customRenderers}
                     verticalBorder={verticalBorder}
                     headerIcons={headerIcons}
-                    theme={datagridTheme}
+                    drawHeader={drawHeader}
+                    theme={finalTheme}
+                    drawFocusRing={false}
+                    rowMarkerTheme={rowMarkerTheme}
                     className={classes.datagrid}
                     getCellContent={handleGetCellContent}
                     onCellEdited={handleOnCellEdited}
@@ -454,6 +542,7 @@ const Datagrid = ({
                     onColumnResize={handleColumnResize}
                     onHeaderClicked={handleHeaderClicked}
                     onCellClicked={handleCellClick}
+                    onCellActivated={onCellActivated}
                     onGridSelectionChange={handleGridSelectionChange}
                     onItemHovered={handleRowHover}
                     getRowThemeOverride={handleGetThemeOverride}
@@ -471,6 +560,7 @@ const Datagrid = ({
                           [classes.rowActionBarScrolledToRight]: scrolledToRight,
                           [classes.rowActionvBarWithItems]: hasMenuItem,
                         })}
+                        style={{ width: rowActionBarWidth }}
                       >
                         <div
                           className={clsx(classes.rowActionBarShadow, {
@@ -494,16 +584,20 @@ const Datagrid = ({
                         {hasMenuItem &&
                           Array(rowsTotal)
                             .fill(0)
-                            .map((_, index) => (
-                              <RowActions
-                                key={`row-actions-${index}`}
-                                menuItems={menuItems(index)}
-                                disabled={index >= rowsTotal - added.length}
-                              />
-                            ))}
+                            .map((_, index) =>
+                              renderRowActions ? (
+                                renderRowActions(index)
+                              ) : (
+                                <RowActions
+                                  key={`row-actions-${index}`}
+                                  menuItems={menuItems(index)}
+                                  disabled={index >= rowsTotal - added.length}
+                                />
+                              ),
+                            )}
                       </div>
                     }
-                    rowMarkerWidth={48}
+                    rowMarkerWidth={rowMarkerWidth ?? DEFAULT_ROW_MARKER_WIDTH}
                   />
                   {/* FIXME: https://github.com/glideapps/glide-data-grid/issues/505 */}
                   {hasColumnGroups && <div className={classes.columnGroupFixer} />}
@@ -537,5 +631,3 @@ const Datagrid = ({
     </FullScreenContainer>
   );
 };
-
-export default Datagrid;

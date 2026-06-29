@@ -1,44 +1,37 @@
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
-import CardTitle from "@dashboard/components/CardTitle";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { CardTitle } from "@dashboard/components/CardTitle/CardTitle";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import Grid from "@dashboard/components/Grid";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Metadata } from "@dashboard/components/Metadata";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import { Savebar } from "@dashboard/components/Savebar";
+import { TablePagination } from "@dashboard/components/TablePagination";
+import TableRowLink from "@dashboard/components/TableRowLink";
 import VerticalSpacer from "@dashboard/components/VerticalSpacer";
-import { configurationMenuUrl } from "@dashboard/configuration";
-import { TaxClassFragment } from "@dashboard/graphql";
+import { configurationMenuUrl } from "@dashboard/configuration/urls";
+import { type TaxClassFragment } from "@dashboard/graphql";
 import { useClientPagination } from "@dashboard/hooks/useClientPagination/useClientPagination";
-import { SubmitPromise } from "@dashboard/hooks/useForm";
+import { type SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { getById } from "@dashboard/misc";
 import { parseQuery } from "@dashboard/orders/components/OrderCustomerAddressesEditDialog/utils";
 import TaxPageTitle from "@dashboard/taxes/components/TaxPageTitle";
 import { taxesMessages } from "@dashboard/taxes/messages";
-import { TaxClassesPageFormData } from "@dashboard/taxes/types";
+import { type TaxClassesPageFormData } from "@dashboard/taxes/types";
 import { useAutofocus } from "@dashboard/taxes/utils/useAutofocus";
-import { isLastElement } from "@dashboard/taxes/utils/utils";
 import { getFormErrors } from "@dashboard/utils/errors";
 import getTaxesErrorMessage from "@dashboard/utils/errors/taxes";
-import { Card, CardContent, Divider, InputAdornment, TextField } from "@material-ui/core";
-import {
-  List,
-  ListHeader,
-  ListItem,
-  ListItemCell,
-  PageTab,
-  PageTabs,
-  SearchIcon,
-} from "@saleor/macaw-ui";
-import { Box, Skeleton } from "@saleor/macaw-ui-next";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Card, CardContent, TableBody, TableCell, TableHead, TextField } from "@material-ui/core";
+import { PageTab, PageTabs } from "@saleor/macaw-ui";
+import { Box } from "@saleor/macaw-ui-next";
+import { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import TaxInput from "../../components/TaxInput";
-import { TaxPagination } from "../../components/TaxPagination";
 import TaxClassesForm from "./form";
 import { useStyles } from "./styles";
-import TaxClassesMenu from "./TaxClassesMenu";
+import { TaxClassesMenu } from "./TaxClassesMenu";
 
 interface TaxClassesPageProps {
   taxClasses: TaxClassFragment[] | undefined;
@@ -130,7 +123,7 @@ const TaxClassesPage = (props: TaxClassesPageProps) => {
                     onTaxClassDelete={onTaxClassDelete}
                     onCreateNew={onCreateNewButtonClick}
                   />
-                  {taxClasses?.length !== 0 && (
+                  {currentTaxClass && (
                     <div>
                       <Card>
                         <CardTitle title={intl.formatMessage(taxesMessages.generalInformation)} />
@@ -163,78 +156,52 @@ const TaxClassesPage = (props: TaxClassesPageProps) => {
                             />
                           </CardContent>
                         ) : (
-                          <>
-                            <CardContent>
-                              <TextField
-                                data-test-id="search-tax-countries-input"
-                                value={query}
-                                variant="outlined"
-                                onChange={e => setQuery(e.target.value)}
-                                placeholder={intl.formatMessage(taxesMessages.searchTaxCountries)}
-                                fullWidth
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <SearchIcon
-                                        onPointerEnterCapture={undefined}
-                                        onPointerLeaveCapture={undefined}
-                                      />
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                inputProps={{
-                                  className: classes.searchPadding,
-                                }}
-                              />
-                            </CardContent>
-                            <List gridTemplate={["5fr 2fr"]}>
-                              <ListHeader>
-                                <ListItem>
-                                  <ListItemCell>
+                          <CardContent>
+                            <ResponsiveTable
+                              search={{
+                                placeholder: intl.formatMessage(taxesMessages.searchTaxCountries),
+                                initialValue: query,
+                                onSearchChange: setQuery,
+                              }}
+                              filteredItemsCount={filteredRates.length}
+                              footer={
+                                <TablePagination
+                                  rowNumber={rowNumber}
+                                  onRowNumberChange={changeRowNumber}
+                                  hasNextPage={hasNextPage}
+                                  hasPreviousPage={hasPreviousPage}
+                                  onNextPage={() => changeCurrentPage(currentPage + 1)}
+                                  onPreviousPage={() => changeCurrentPage(currentPage - 1)}
+                                />
+                              }
+                            >
+                              <TableHead>
+                                <TableRowLink>
+                                  <TableCell>
                                     <FormattedMessage {...taxesMessages.countryNameHeader} />
-                                  </ListItemCell>
-                                  <ListItemCell className={classes.right}>
+                                  </TableCell>
+                                  <TableCell>
                                     <FormattedMessage {...taxesMessages.taxRateHeader} />
-                                  </ListItemCell>
-                                </ListItem>
-                              </ListHeader>
-                              <Divider />
-                              {paginatedRates?.map((countryRate, countryRateIndex) => (
-                                <Fragment key={countryRate.id}>
-                                  <ListItem
-                                    hover={false}
-                                    className={classes.noDivider}
-                                    data-test-id="country-rows"
-                                  >
-                                    <ListItemCell>{countryRate.label}</ListItemCell>
-                                    <ListItemCell>
+                                  </TableCell>
+                                </TableRowLink>
+                              </TableHead>
+                              <TableBody>
+                                {paginatedRates?.map(countryRate => (
+                                  <TableRowLink key={countryRate.id} data-test-id="country-rows">
+                                    <TableCell>{countryRate.label}</TableCell>
+                                    <TableCell>
                                       <TaxInput
                                         value={countryRate.value}
                                         change={e =>
                                           handlers.handleRateChange(countryRate.id, e.target.value)
                                         }
                                       />
-                                    </ListItemCell>
-                                  </ListItem>
-                                  {!isLastElement(filteredRates, countryRateIndex) && <Divider />}
-                                </Fragment>
-                              )) ?? (
-                                <>
-                                  <Skeleton />
-                                  <VerticalSpacer />
-                                </>
-                              )}
-
-                              <TaxPagination
-                                rowNumber={rowNumber}
-                                setRowNumber={changeRowNumber}
-                                hasNextPage={hasNextPage}
-                                hasPrevPage={hasPreviousPage}
-                                currentPage={currentPage}
-                                setCurrentPage={changeCurrentPage}
-                              />
-                            </List>
-                          </>
+                                    </TableCell>
+                                  </TableRowLink>
+                                ))}
+                              </TableBody>
+                            </ResponsiveTable>
+                          </CardContent>
                         )}
                       </Card>
                       <VerticalSpacer spacing={3} />

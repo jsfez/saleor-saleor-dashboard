@@ -1,17 +1,10 @@
-import { Extension } from "@dashboard/extensions/types";
-import { AppExtensionMountEnum, AppExtensionTargetEnum, PermissionEnum } from "@dashboard/graphql";
+import { type AllAppExtensionMounts } from "@dashboard/extensions/domain/app-extension-manifest-available-mounts";
+import { type Extension } from "@dashboard/extensions/types";
+import { type PermissionEnum } from "@dashboard/graphql";
 import { orderDraftListUrl, orderListUrl } from "@dashboard/orders/urls";
 
-import { SidebarMenuItem } from "./types";
+import { type SidebarMenuItem } from "./types";
 import { getMenuItemExtension, isMenuActive, mapToExtensionsItems } from "./utils";
-
-jest.mock("@dashboard/apps/urls", () => ({
-  AppUrls: {
-    resolveDashboardUrlFromAppCompleteUrl: jest.fn(
-      (url, appUrl, appId) => `mockAppUrl:${url}:${appUrl}:${appId}`,
-    ),
-  },
-}));
 
 jest.mock("@dashboard/extensions/urls", () => ({
   ExtensionsUrls: {
@@ -22,12 +15,10 @@ jest.mock("@dashboard/extensions/urls", () => ({
 }));
 
 // To grab the mocked functions for assertions
-const { AppUrls } = jest.requireMock("@dashboard/apps/urls");
 const { ExtensionsUrls } = jest.requireMock("@dashboard/extensions/urls");
 
 describe("mapToExtensionsItems", () => {
   beforeEach(() => {
-    AppUrls.resolveDashboardUrlFromAppCompleteUrl.mockClear();
     ExtensionsUrls.resolveDashboardUrlFromAppCompleteUrl.mockClear();
   });
 
@@ -47,9 +38,10 @@ describe("mapToExtensionsItems", () => {
     permissions: [] as PermissionEnum[],
     open: jest.fn(),
     accessToken: "mock-token",
-    mount: AppExtensionMountEnum.NAVIGATION_CATALOG,
-    target: AppExtensionTargetEnum.APP_PAGE,
-    options: null,
+    mountName: "NAVIGATION_CATALOG",
+    targetName: "APP_PAGE",
+    settings: {},
+    isSaleorOfficial: false,
   };
 
   const mockHeader: SidebarMenuItem = {
@@ -76,7 +68,32 @@ describe("mapToExtensionsItems", () => {
       mockExtension.app.appUrl,
       mockExtension.app.id,
     );
-    expect(AppUrls.resolveDashboardUrlFromAppCompleteUrl).not.toHaveBeenCalled();
+  });
+
+  // Absolute extension URLs point to a different origin, so they can't be expressed as a
+  // dashboard route like `/extensions/app/{id}/...`. The menu item still renders and is
+  // launched via `onClick: open` (which opens the iframe / new tab) — `url` only feeds
+  // route matching, which doesn't apply here.
+  it("returns undefined url for extensions with absolute URL", () => {
+    const absoluteExtension: Extension = {
+      ...mockExtension,
+      url: "https://other.example.com/page",
+    };
+    const result = mapToExtensionsItems([absoluteExtension], mockHeader);
+
+    expect(result[1].url).toBeUndefined();
+    expect(ExtensionsUrls.resolveDashboardUrlFromAppCompleteUrl).not.toHaveBeenCalled();
+  });
+
+  it("returns undefined url when app.appUrl is missing", () => {
+    const extensionWithoutAppUrl: Extension = {
+      ...mockExtension,
+      app: { ...mockApp, appUrl: null },
+    };
+    const result = mapToExtensionsItems([extensionWithoutAppUrl], mockHeader);
+
+    expect(result[1].url).toBeUndefined();
+    expect(ExtensionsUrls.resolveDashboardUrlFromAppCompleteUrl).not.toHaveBeenCalled();
   });
 
   it("should return no menu items ", () => {
@@ -134,6 +151,46 @@ describe("isMenuActive", () => {
     const result = isMenuActive(orderDraftListUrl(), orderMenuItem);
 
     expect(result).toBe(false);
+  });
+
+  it("should identify Order List item as inactive when viewing a draft order details page", () => {
+    const orderMenuItem: SidebarMenuItem = {
+      ...mockMenuItem,
+      url: orderListUrl(),
+    };
+    const result = isMenuActive("/orders/drafts/abc123", orderMenuItem);
+
+    expect(result).toBe(false);
+  });
+
+  it("should identify Draft Orders item as active when viewing a draft order details page", () => {
+    const draftOrdersMenuItem: SidebarMenuItem = {
+      ...mockMenuItem,
+      url: orderDraftListUrl(),
+    };
+    const result = isMenuActive("/orders/drafts/abc123", draftOrdersMenuItem);
+
+    expect(result).toBe(true);
+  });
+
+  it("should identify Order List item as active when viewing a regular order details page", () => {
+    const orderMenuItem: SidebarMenuItem = {
+      ...mockMenuItem,
+      url: orderListUrl(),
+    };
+    const result = isMenuActive("/orders/abc123", orderMenuItem);
+
+    expect(result).toBe(true);
+  });
+
+  it("should not treat reserved order paths as order detail pages", () => {
+    const orderMenuItem: SidebarMenuItem = {
+      ...mockMenuItem,
+      url: orderListUrl(),
+    };
+
+    expect(isMenuActive("/orders/drafts", orderMenuItem)).toBe(false);
+    expect(isMenuActive("/orders/settings", orderMenuItem)).toBe(true);
   });
 
   it("should correctly match paths regardless of '/dashboard' prefix in current location", () => {
@@ -221,9 +278,10 @@ describe("getMenuItemExtension", () => {
     permissions: [] as PermissionEnum[],
     open: jest.fn(),
     accessToken: "mock-token",
-    mount: AppExtensionMountEnum.NAVIGATION_CATALOG,
-    options: null,
-    target: AppExtensionTargetEnum.POPUP,
+    mountName: "NAVIGATION_CATALOG",
+    settings: {},
+    targetName: "POPUP",
+    isSaleorOfficial: false,
   };
 
   const mockExtension: Extension = {
@@ -234,108 +292,112 @@ describe("getMenuItemExtension", () => {
     url: "/test",
   };
 
-  const mockExtensionsRecord: Record<AppExtensionMountEnum, Extension[]> = {
-    [AppExtensionMountEnum.NAVIGATION_CATALOG]: [mockExtension],
-    [AppExtensionMountEnum.CUSTOMER_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.CUSTOMER_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.CUSTOMER_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.NAVIGATION_CUSTOMERS]: [],
-    [AppExtensionMountEnum.NAVIGATION_DISCOUNTS]: [],
-    [AppExtensionMountEnum.NAVIGATION_ORDERS]: [],
-    [AppExtensionMountEnum.NAVIGATION_PAGES]: [],
-    [AppExtensionMountEnum.NAVIGATION_TRANSLATIONS]: [],
-    [AppExtensionMountEnum.ORDER_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.ORDER_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.ORDER_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PRODUCT_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.PRODUCT_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.DRAFT_ORDER_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.DRAFT_ORDER_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.DRAFT_ORDER_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.DISCOUNT_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.DISCOUNT_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.DISCOUNT_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.VOUCHER_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.VOUCHER_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.VOUCHER_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PAGE_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PAGE_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.PAGE_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PAGE_TYPE_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PAGE_TYPE_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.PAGE_TYPE_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.MENU_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.MENU_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.MENU_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.COLLECTION_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.CATEGORY_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.GIFT_CARD_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.CATEGORY_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.CATEGORY_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.GIFT_CARD_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.GIFT_CARD_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.COLLECTION_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.COLLECTION_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.CUSTOMER_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.ORDER_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.COLLECTION_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.PRODUCT_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.VOUCHER_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.DRAFT_ORDER_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.GIFT_CARD_DETAILS_WIDGETS]: [],
+  const mockExtensionsRecord: Record<AllAppExtensionMounts, Extension[]> = {
+    NAVIGATION_CATALOG: [mockExtension],
+    CUSTOMER_DETAILS_MORE_ACTIONS: [],
+    CUSTOMER_OVERVIEW_CREATE: [],
+    CUSTOMER_OVERVIEW_MORE_ACTIONS: [],
+    NAVIGATION_CUSTOMERS: [],
+    NAVIGATION_DISCOUNTS: [],
+    NAVIGATION_ORDERS: [],
+    NAVIGATION_PAGES: [],
+    NAVIGATION_TRANSLATIONS: [],
+    ORDER_DETAILS_MORE_ACTIONS: [],
+    ORDER_OVERVIEW_CREATE: [],
+    ORDER_OVERVIEW_MORE_ACTIONS: [],
+    PRODUCT_DETAILS_MORE_ACTIONS: [],
+    PRODUCT_OVERVIEW_CREATE: [],
+    PRODUCT_OVERVIEW_MORE_ACTIONS: [],
+    DRAFT_ORDER_DETAILS_MORE_ACTIONS: [],
+    DRAFT_ORDER_OVERVIEW_CREATE: [],
+    DRAFT_ORDER_OVERVIEW_MORE_ACTIONS: [],
+    DISCOUNT_DETAILS_MORE_ACTIONS: [],
+    DISCOUNT_OVERVIEW_CREATE: [],
+    DISCOUNT_OVERVIEW_MORE_ACTIONS: [],
+    VOUCHER_DETAILS_MORE_ACTIONS: [],
+    VOUCHER_OVERVIEW_CREATE: [],
+    VOUCHER_OVERVIEW_MORE_ACTIONS: [],
+    PAGE_DETAILS_MORE_ACTIONS: [],
+    PAGE_OVERVIEW_CREATE: [],
+    PAGE_OVERVIEW_MORE_ACTIONS: [],
+    PAGE_TYPE_DETAILS_MORE_ACTIONS: [],
+    PAGE_TYPE_OVERVIEW_CREATE: [],
+    PAGE_TYPE_OVERVIEW_MORE_ACTIONS: [],
+    MENU_DETAILS_MORE_ACTIONS: [],
+    MENU_OVERVIEW_CREATE: [],
+    MENU_OVERVIEW_MORE_ACTIONS: [],
+    COLLECTION_DETAILS_MORE_ACTIONS: [],
+    CATEGORY_DETAILS_MORE_ACTIONS: [],
+    GIFT_CARD_DETAILS_MORE_ACTIONS: [],
+    CATEGORY_OVERVIEW_CREATE: [],
+    CATEGORY_OVERVIEW_MORE_ACTIONS: [],
+    GIFT_CARD_OVERVIEW_CREATE: [],
+    GIFT_CARD_OVERVIEW_MORE_ACTIONS: [],
+    COLLECTION_OVERVIEW_CREATE: [],
+    COLLECTION_OVERVIEW_MORE_ACTIONS: [],
+    CUSTOMER_DETAILS_WIDGETS: [],
+    ORDER_DETAILS_WIDGETS: [],
+    COLLECTION_DETAILS_WIDGETS: [],
+    PRODUCT_DETAILS_WIDGETS: [],
+    VOUCHER_DETAILS_WIDGETS: [],
+    DRAFT_ORDER_DETAILS_WIDGETS: [],
+    GIFT_CARD_DETAILS_WIDGETS: [],
+    TRANSLATIONS_MORE_ACTIONS: [],
+    HOMEPAGE_WIDGETS: [],
   };
 
-  const emptyExtensionsRecord: Record<AppExtensionMountEnum, Extension[]> = {
-    [AppExtensionMountEnum.NAVIGATION_CATALOG]: [],
-    [AppExtensionMountEnum.CUSTOMER_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.CUSTOMER_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.CUSTOMER_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.NAVIGATION_CUSTOMERS]: [],
-    [AppExtensionMountEnum.NAVIGATION_DISCOUNTS]: [],
-    [AppExtensionMountEnum.NAVIGATION_ORDERS]: [],
-    [AppExtensionMountEnum.NAVIGATION_PAGES]: [],
-    [AppExtensionMountEnum.NAVIGATION_TRANSLATIONS]: [],
-    [AppExtensionMountEnum.ORDER_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.ORDER_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.ORDER_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PRODUCT_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.PRODUCT_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.DRAFT_ORDER_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.DRAFT_ORDER_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.DRAFT_ORDER_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.DISCOUNT_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.DISCOUNT_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.DISCOUNT_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.VOUCHER_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.VOUCHER_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.VOUCHER_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PAGE_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PAGE_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.PAGE_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PAGE_TYPE_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.PAGE_TYPE_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.PAGE_TYPE_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.MENU_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.MENU_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.MENU_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.COLLECTION_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.CATEGORY_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.GIFT_CARD_DETAILS_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.CATEGORY_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.CATEGORY_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.GIFT_CARD_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.GIFT_CARD_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.COLLECTION_OVERVIEW_CREATE]: [],
-    [AppExtensionMountEnum.COLLECTION_OVERVIEW_MORE_ACTIONS]: [],
-    [AppExtensionMountEnum.CUSTOMER_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.ORDER_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.COLLECTION_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.PRODUCT_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.VOUCHER_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.DRAFT_ORDER_DETAILS_WIDGETS]: [],
-    [AppExtensionMountEnum.GIFT_CARD_DETAILS_WIDGETS]: [],
+  const emptyExtensionsRecord: Record<AllAppExtensionMounts, Extension[]> = {
+    NAVIGATION_CATALOG: [],
+    CUSTOMER_DETAILS_MORE_ACTIONS: [],
+    CUSTOMER_OVERVIEW_CREATE: [],
+    CUSTOMER_OVERVIEW_MORE_ACTIONS: [],
+    NAVIGATION_CUSTOMERS: [],
+    NAVIGATION_DISCOUNTS: [],
+    NAVIGATION_ORDERS: [],
+    NAVIGATION_PAGES: [],
+    NAVIGATION_TRANSLATIONS: [],
+    ORDER_DETAILS_MORE_ACTIONS: [],
+    ORDER_OVERVIEW_CREATE: [],
+    ORDER_OVERVIEW_MORE_ACTIONS: [],
+    PRODUCT_DETAILS_MORE_ACTIONS: [],
+    PRODUCT_OVERVIEW_CREATE: [],
+    PRODUCT_OVERVIEW_MORE_ACTIONS: [],
+    DRAFT_ORDER_DETAILS_MORE_ACTIONS: [],
+    DRAFT_ORDER_OVERVIEW_CREATE: [],
+    DRAFT_ORDER_OVERVIEW_MORE_ACTIONS: [],
+    DISCOUNT_DETAILS_MORE_ACTIONS: [],
+    DISCOUNT_OVERVIEW_CREATE: [],
+    DISCOUNT_OVERVIEW_MORE_ACTIONS: [],
+    VOUCHER_DETAILS_MORE_ACTIONS: [],
+    VOUCHER_OVERVIEW_CREATE: [],
+    VOUCHER_OVERVIEW_MORE_ACTIONS: [],
+    PAGE_DETAILS_MORE_ACTIONS: [],
+    PAGE_OVERVIEW_CREATE: [],
+    PAGE_OVERVIEW_MORE_ACTIONS: [],
+    PAGE_TYPE_DETAILS_MORE_ACTIONS: [],
+    PAGE_TYPE_OVERVIEW_CREATE: [],
+    PAGE_TYPE_OVERVIEW_MORE_ACTIONS: [],
+    MENU_DETAILS_MORE_ACTIONS: [],
+    MENU_OVERVIEW_CREATE: [],
+    MENU_OVERVIEW_MORE_ACTIONS: [],
+    COLLECTION_DETAILS_MORE_ACTIONS: [],
+    CATEGORY_DETAILS_MORE_ACTIONS: [],
+    GIFT_CARD_DETAILS_MORE_ACTIONS: [],
+    CATEGORY_OVERVIEW_CREATE: [],
+    CATEGORY_OVERVIEW_MORE_ACTIONS: [],
+    GIFT_CARD_OVERVIEW_CREATE: [],
+    GIFT_CARD_OVERVIEW_MORE_ACTIONS: [],
+    COLLECTION_OVERVIEW_CREATE: [],
+    COLLECTION_OVERVIEW_MORE_ACTIONS: [],
+    CUSTOMER_DETAILS_WIDGETS: [],
+    ORDER_DETAILS_WIDGETS: [],
+    COLLECTION_DETAILS_WIDGETS: [],
+    PRODUCT_DETAILS_WIDGETS: [],
+    VOUCHER_DETAILS_WIDGETS: [],
+    DRAFT_ORDER_DETAILS_WIDGETS: [],
+    GIFT_CARD_DETAILS_WIDGETS: [],
+    TRANSLATIONS_MORE_ACTIONS: [],
+    HOMEPAGE_WIDGETS: [],
   };
 
   it("should return the corresponding Extension object when a menu item ID represents a registered extension", () => {
@@ -363,11 +425,11 @@ describe("getMenuItemExtension", () => {
       label: "Another Extension",
       app: { ...mockAppDefinition, id: "app-2" },
       url: "/another",
-      mount: AppExtensionMountEnum.NAVIGATION_CATALOG,
+      mountName: "NAVIGATION_CATALOG",
     };
     const extensionsWithMultiple = {
       ...emptyExtensionsRecord,
-      [AppExtensionMountEnum.NAVIGATION_CATALOG]: [mockExtension, anotherExtension],
+      NAVIGATION_CATALOG: [mockExtension, anotherExtension],
     };
     const result = getMenuItemExtension(extensionsWithMultiple, "extension-another-extension");
 
@@ -388,12 +450,12 @@ describe("getMenuItemExtension", () => {
       label: "Catalog Extension",
       app: catalogExtensionApp,
       url: "/catalog-test",
-      mount: AppExtensionMountEnum.NAVIGATION_PAGES,
+      mountName: "NAVIGATION_PAGES",
     };
     const extensionsWithMultipleMounts = {
       ...emptyExtensionsRecord,
-      [AppExtensionMountEnum.NAVIGATION_CATALOG]: [mockExtension],
-      [AppExtensionMountEnum.NAVIGATION_PAGES]: [catalogExtension],
+      NAVIGATION_CATALOG: [mockExtension],
+      NAVIGATION_PAGES: [catalogExtension],
     };
     const result = getMenuItemExtension(extensionsWithMultipleMounts, "extension-catalog-ext");
 

@@ -1,11 +1,10 @@
 import {
-  PostalCodeRuleInclusionTypeEnum,
-  ShippingMethodWithPostalCodesFragment,
+  type PostalCodeRuleInclusionTypeEnum,
+  type ShippingMethodWithPostalCodesFragment,
 } from "@dashboard/graphql";
 
 interface PostalCodesState {
   codesToDelete?: string[];
-  havePostalCodesChanged?: boolean;
   inclusionType?: PostalCodeRuleInclusionTypeEnum;
   originalCodes?: ShippingMethodWithPostalCodesFragment["postalCodeRules"];
   postalCodeRules?: ShippingMethodWithPostalCodesFragment["postalCodeRules"];

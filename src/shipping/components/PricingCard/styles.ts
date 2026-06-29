@@ -8,20 +8,16 @@ export const useStyles = makeStyles(
     },
     colName: {
       fontSize: 14,
-      paddingLeft: 0,
       width: "auto",
     },
     colType: {
       fontSize: 14,
-      textAlign: "right",
-      width: 250,
+      width: 220,
     },
     pricingContent: {
       "&:last-child": {
         paddingBottom: 0,
       },
-      paddingLeft: 0,
-      paddingRight: 0,
     },
     table: {
       tableLayout: "fixed",

@@ -1,26 +1,26 @@
-import { FetchResult } from "@apollo/client";
-import { AttributeInput, AttributeInputData } from "@dashboard/components/Attributes";
+import { type FetchResult } from "@apollo/client";
+import { type AttributeInput, type AttributeInputData } from "@dashboard/components/Attributes";
 import {
   AttributeEntityTypeEnum,
   AttributeInputTypeEnum,
-  AttributeValueDeleteMutation,
-  AttributeValueDeleteMutationVariables,
-  AttributeValueInput,
-  FileUploadMutation,
-  FileUploadMutationVariables,
-  PageSelectedAttributeFragment,
-  ProductFragment,
-  ProductVariantDetailsQuery,
+  type AttributeValueDeleteMutation,
+  type AttributeValueDeleteMutationVariables,
+  type AttributeValueInput,
+  type FileUploadMutation,
+  type FileUploadMutationVariables,
+  type PageSelectedAttributeFragment,
+  type ProductFragment,
+  type ProductVariantDetailsQuery,
 } from "@dashboard/graphql";
 import {
-  FormsetAdditionalDataChange,
-  FormsetAtomicData,
-  FormsetChange,
-  FormsetData,
-  UseFormsetOutput,
+  type FormsetAdditionalDataChange,
+  type FormsetAtomicData,
+  type FormsetChange,
+  type FormsetData,
+  type UseFormsetOutput,
 } from "@dashboard/hooks/useFormset";
-import { AttributeValuesMetadata } from "@dashboard/products/utils/data";
-import { FetchMoreProps, ReorderEvent } from "@dashboard/types";
+import { type AttributeValuesMetadata } from "@dashboard/products/utils/data";
+import { type FetchMoreProps, type ReorderEvent } from "@dashboard/types";
 import { move, toggle } from "@dashboard/utils/lists";
 import isEqual from "lodash/isEqual";
 import uniqBy from "lodash/uniqBy";
@@ -76,19 +76,16 @@ export function createAttributeReferenceChangeHandler(
   return (attributeId: string, values: string[]) => {
     attributes.change(attributeId, values);
 
-    /* Note: "additionalData" is a part of useFormset API.
-     * In here it is used to hold display values for references selected by user
-     * before they are returned from our API as attribute references
-     *  */
-    const currentAdditionalData =
-      attributes.data.find(a => a.id === attributeId)?.additionalData || [];
-
     // When user removes attribute values from selection, delete them in useFormset additionalData
-    const syncedAdditionalData = currentAdditionalData.filter((meta: AttributeValuesMetadata) =>
-      values.includes(meta.value),
-    );
+    // Use setAdditionalData with merge function to avoid race conditions with async state updates
+    attributes.setAdditionalData(attributeId, [], (prev: AttributeValuesMetadata[]) => {
+      // Filter using the latest state (prev), not currentAdditionalData which might be stale
+      const filtered = (prev ?? []).filter((meta: AttributeValuesMetadata) =>
+        values.includes(meta.value),
+      );
 
-    attributes.setAdditionalData(attributeId, syncedAdditionalData);
+      return filtered;
+    });
 
     triggerChange();
   };
@@ -111,10 +108,10 @@ export function createAttributeReferenceAdditionalDataHandler(
   return (attributeId: string, values: AttributeValuesMetadata[]) => {
     const mergeFunction = (prev: AttributeValuesMetadata[], next: AttributeValuesMetadata[]) => {
       const merged = mergeReferencesAdditionalData(prev, next);
-      const currentValues = attributes.data.find(a => a.id === attributeId)?.value || [];
 
-      // Filter out additionalData for references that were removed from attribute
-      return merged.filter(meta => currentValues.includes(meta.value));
+      // Don't filter here - let the caller (handleMetadataReferenceAssignment) handle filtering
+      // Filtering here causes issues because attributes.data might have stale values
+      return merged;
     };
 
     attributes.setAdditionalData(attributeId, values, mergeFunction);
@@ -397,9 +394,11 @@ export const prepareAttributesInput = ({
     }
 
     if (inputType === AttributeInputTypeEnum.DROPDOWN) {
+      const dropdownValue = attr.value[0];
+
       attrInput.push({
         id: attr.id,
-        values: attr.value.filter(value => value !== null),
+        dropdown: dropdownValue ? { value: dropdownValue } : null,
       });
 
       return attrInput;

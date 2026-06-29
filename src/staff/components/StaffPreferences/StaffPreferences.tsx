@@ -1,9 +1,8 @@
 import { DashboardCard } from "@dashboard/components/Card";
-import { Combobox } from "@dashboard/components/Combobox";
 import FormSpacer from "@dashboard/components/FormSpacer";
 import { Locale, localeNames } from "@dashboard/components/Locale";
 import { capitalize } from "@dashboard/misc";
-import { Text } from "@saleor/macaw-ui-next";
+import { Combobox, Text } from "@saleor/macaw-ui-next";
 import { FormattedMessage, useIntl } from "react-intl";
 
 interface StaffPreferencesProps {
@@ -11,7 +10,7 @@ interface StaffPreferencesProps {
   onLocaleChange: (locale: Locale) => void;
 }
 
-const StaffPreferences = ({ locale, onLocaleChange }: StaffPreferencesProps) => {
+export const StaffPreferences = ({ locale, onLocaleChange }: StaffPreferencesProps) => {
   const intl = useIntl();
   const handleLocaleChange = async (locale: Locale) => {
     if (!locale) {
@@ -53,20 +52,19 @@ const StaffPreferences = ({ locale, onLocaleChange }: StaffPreferencesProps) => 
             label: capitalize(localeNames[locale]),
             value: locale,
           }))}
-          fetchOptions={() => undefined}
           name="locale"
           value={{
             label: localeNames[locale],
             value: locale,
           }}
-          onChange={event => handleLocaleChange(event.target.value)}
+          onChange={v => handleLocaleChange((v?.value ?? "") as Locale)}
         />
 
         <FormSpacer />
         <Text>
           <FormattedMessage
-            id="e822us"
-            defaultMessage="Please note, while all currency and date adjustments are complete, language translations are at varying degrees of completion."
+            id="I06jIl"
+            defaultMessage="Note: some languages might have incomplete translations that will be displayed in English."
           />
         </Text>
       </DashboardCard.Content>
@@ -75,4 +73,3 @@ const StaffPreferences = ({ locale, onLocaleChange }: StaffPreferencesProps) => 
 };
 
 StaffPreferences.displayName = "StaffPreferences";
-export default StaffPreferences;

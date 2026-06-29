@@ -1,9 +1,9 @@
 // @ts-strict-ignore
 import { DashboardCard } from "@dashboard/components/Card";
-import Date from "@dashboard/components/Date";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { Date } from "@dashboard/components/Date/Date";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import { InvoiceFragment } from "@dashboard/graphql";
+import { type InvoiceFragment } from "@dashboard/graphql";
 import { buttonMessages } from "@dashboard/intl";
 import { TableBody, TableCell } from "@material-ui/core";
 import { makeStyles } from "@saleor/macaw-ui";

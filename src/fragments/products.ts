@@ -18,6 +18,14 @@ export const fragmentMoney = gql`
   }
 `;
 
+export const fragmentMoneyWithFractionDigits = gql`
+  fragment MoneyWithFractionDigits on Money {
+    amount
+    currency
+    fractionDigits
+  }
+`;
+
 export const fragmentPreorder = gql`
   fragment Preorder on PreorderData {
     globalThreshold
@@ -63,17 +71,8 @@ export const channelListingProductWithoutPricingFragment = gql`
     channel {
       id
       name
+      slug
       currencyCode
-    }
-  }
-`;
-export const channelListingProductFragment = gql`
-  fragment ChannelListingProduct on ProductChannelListing {
-    ...ChannelListingProductWithoutPricing
-    pricing {
-      priceRange {
-        ...PriceRange
-      }
     }
   }
 `;
@@ -144,6 +143,12 @@ export const productVariantAttributesFragment = gql`
     productType {
       id
       variantAttributes {
+        ...VariantAttribute
+      }
+      selectionVariantAttributes: variantAttributes(variantSelection: VARIANT_SELECTION) {
+        ...VariantAttribute
+      }
+      nonSelectionVariantAttributes: variantAttributes(variantSelection: NOT_VARIANT_SELECTION) {
         ...VariantAttribute
       }
     }
@@ -222,7 +227,9 @@ export const productFragmentDetails = gql`
     productType {
       id
       name
+      slug
       hasVariants
+      isShippingRequired
     }
     weight {
       ...Weight
@@ -298,6 +305,11 @@ export const fragmentVariant = gql`
       name
       thumbnail {
         url
+      }
+      productType {
+        id
+        name
+        hasVariants
       }
       channelListings {
         id

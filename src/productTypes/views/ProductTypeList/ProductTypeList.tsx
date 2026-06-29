@@ -1,19 +1,19 @@
 import { useConditionalFilterContext } from "@dashboard/components/ConditionalFilter";
 import { createProductTypesQueryVariables } from "@dashboard/components/ConditionalFilter/queryVariables";
 import DeleteFilterTabDialog from "@dashboard/components/DeleteFilterTabDialog";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
 import SaveFilterTabDialog from "@dashboard/components/SaveFilterTabDialog";
 import { useProductTypeBulkDeleteMutation, useProductTypeListQuery } from "@dashboard/graphql";
 import useBulkActions from "@dashboard/hooks/useBulkActions";
 import { useFilterPresets } from "@dashboard/hooks/useFilterPresets";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { usePaginationReset } from "@dashboard/hooks/usePaginationReset";
 import usePaginator, {
   createPaginationState,
   PaginatorContext,
 } from "@dashboard/hooks/usePaginator";
-import { commonMessages } from "@dashboard/intl";
 import useProductTypeDelete from "@dashboard/productTypes/hooks/useProductTypeDelete";
 import { ListViews } from "@dashboard/types";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
@@ -21,7 +21,8 @@ import createFilterHandlers from "@dashboard/utils/handlers/filterHandlers";
 import createSortHandler from "@dashboard/utils/handlers/sortHandler";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { getSortParams } from "@dashboard/utils/sort";
-import { Button, TrashBinIcon } from "@saleor/macaw-ui-next";
+import { Button } from "@saleor/macaw-ui-next";
+import { Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 
@@ -30,8 +31,8 @@ import { maybe } from "../../../misc";
 import ProductTypeListPage from "../../components/ProductTypeListPage";
 import {
   productTypeListUrl,
-  ProductTypeListUrlDialog,
-  ProductTypeListUrlQueryParams,
+  type ProductTypeListUrlDialog,
+  type ProductTypeListUrlQueryParams,
 } from "../../urls";
 import { getFilterOpts, getFilterQueryParam, storageUtils } from "./filters";
 import { getSortQueryVariables } from "./sort";
@@ -121,7 +122,7 @@ const ProductTypeList = ({ params }: ProductTypeListProps) => {
       if (data?.productTypeBulkDelete?.errors?.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "mkBgDe", defaultMessage: "Product types deleted" }),
         });
         reset();
         refetch();
@@ -169,7 +170,7 @@ const ProductTypeList = ({ params }: ProductTypeListProps) => {
         toggleAll={toggleAll}
         toolbar={
           <Button
-            icon={<TrashBinIcon />}
+            icon={<Trash2 size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />}
             variant="secondary"
             data-test-id="bulk-delete-product-types"
             onClick={() =>

@@ -1,5 +1,5 @@
 import Link from "@dashboard/components/Link";
-import { FormChange } from "@dashboard/hooks/useForm";
+import { type FormChange } from "@dashboard/hooks/useForm";
 import { TRANSACTION_FLOW_STRATEGY_DOCS_URL } from "@dashboard/links";
 import { Box, Checkbox, Text } from "@saleor/macaw-ui-next";
 import { FormattedMessage } from "react-intl";
@@ -44,7 +44,7 @@ export const DefaultTransactionFlowStrategy = ({
               <Link
                 href={TRANSACTION_FLOW_STRATEGY_DOCS_URL}
                 target="_blank"
-                rel="noopener noreferer"
+                rel="noopener noreferrer"
               >
                 <FormattedMessage defaultMessage="Learn more" id="TdTXXf" />
               </Link>

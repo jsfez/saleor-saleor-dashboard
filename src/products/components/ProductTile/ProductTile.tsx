@@ -1,8 +1,9 @@
 // @ts-strict-ignore
 import { StatusDot } from "@dashboard/components/StatusDot/StatusDot";
-import { ProductListQuery } from "@dashboard/graphql";
-import { RelayToFlat } from "@dashboard/types";
-import { Box, ProductsIcons, sprinkles, Text, vars } from "@saleor/macaw-ui-next";
+import { type ProductListQuery } from "@dashboard/graphql";
+import { type RelayToFlat } from "@dashboard/types";
+import { Box, sprinkles, Text, vars } from "@saleor/macaw-ui-next";
+import { Package } from "lucide-react";
 
 import { getTileStatus } from "./utils";
 
@@ -44,7 +45,7 @@ export const ProductTile = ({ product, onClick }: ProductTileProps) => (
         backgroundColor="default2"
       >
         <Box __width="40%" __height="40%">
-          <ProductsIcons
+          <Package
             size="fill"
             color="defaultDisabled"
             data-test-id={`placeholder-svg-${product.id}`}

@@ -1,6 +1,6 @@
-import { AppDetailsUrlMountQueryParams, ExtensionsUrls } from "@dashboard/extensions/urls";
-import { FlagList } from "@dashboard/featureFlags";
-import { ThemeType } from "@saleor/app-sdk/app-bridge";
+import { type AppDetailsUrlMountQueryParams, ExtensionsUrls } from "@dashboard/extensions/urls";
+import { type FlagList } from "@dashboard/featureFlags";
+import { type ThemeType } from "@saleor/app-sdk/app-bridge";
 import { useTheme } from "@saleor/macaw-ui";
 import isEqualWith from "lodash/isEqualWith";
 import { forwardRef, memo, useEffect, useRef } from "react";
@@ -41,7 +41,7 @@ const _AppIFrame = forwardRef<HTMLIFrameElement, AppIFrameProps>(
         onLoad={onLoad}
         onError={onError}
         className={className}
-        sandbox="allow-same-origin allow-forms allow-scripts allow-downloads"
+        sandbox="allow-same-origin allow-forms allow-scripts allow-downloads allow-popups"
       />
     );
   },

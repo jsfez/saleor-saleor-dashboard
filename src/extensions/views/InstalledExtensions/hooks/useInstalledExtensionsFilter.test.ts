@@ -1,6 +1,5 @@
-import { InstalledExtension } from "@dashboard/extensions/types";
-import { act } from "@testing-library/react";
-import { renderHook } from "@testing-library/react-hooks";
+import { type InstalledExtension } from "@dashboard/extensions/types";
+import { act, renderHook } from "@testing-library/react";
 
 import { useInstalledExtensionsFilter } from "./useInstalledExtensionsFilter";
 

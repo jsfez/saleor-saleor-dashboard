@@ -8,6 +8,7 @@ export const attributeValueTranslatableFragment = gql`
     richText
     attributeValue {
       id
+      inputType
     }
     attribute {
       id
@@ -153,6 +154,7 @@ export const shippingMethodTranslationFragment = gql`
     id
     name
     description
+    shippingMethodId
     shippingMethod {
       id
     }
@@ -190,26 +192,6 @@ export const pageTranslationFragment = gql`
     }
     attributeValues {
       ...AttributeValueTranslatable
-    }
-  }
-`;
-export const pageTranslatableFragment = gql`
-  fragment PageTranslatable on PageTranslatableContent {
-    id
-    content
-    seoDescription
-    seoTitle
-    title
-    translation(languageCode: $language) {
-      id
-      content
-      seoDescription
-      seoTitle
-      title
-      language {
-        code
-        language
-      }
     }
   }
 `;

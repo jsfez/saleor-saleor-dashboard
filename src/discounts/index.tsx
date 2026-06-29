@@ -4,24 +4,24 @@ import {
 } from "@dashboard/components/ConditionalFilter";
 import { Route } from "@dashboard/components/Router";
 import { sectionNames } from "@dashboard/intl";
+import { parseQs } from "@dashboard/url-utils";
 import { asSortParams } from "@dashboard/utils/sort";
-import { parse as parseQs } from "qs";
 import { useIntl } from "react-intl";
-import { RouteComponentProps, Switch } from "react-router-dom";
+import { type RouteComponentProps, Switch } from "react-router-dom";
 
 import { WindowTitle } from "../components/WindowTitle";
-import { DiscountListUrlQueryParams, DiscountListUrlSortField } from "./discountsUrls";
+import { type DiscountListUrlQueryParams, DiscountListUrlSortField } from "./discountsUrls";
 import {
   saleAddPath,
   saleListPath,
   salePath,
   voucherAddPath,
-  VoucherCreateUrlQueryParams,
+  type VoucherCreateUrlQueryParams,
   voucherListPath,
-  VoucherListUrlQueryParams,
+  type VoucherListUrlQueryParams,
   VoucherListUrlSortField,
   voucherPath,
-  VoucherUrlQueryParams,
+  type VoucherUrlQueryParams,
 } from "./urls";
 import { DiscountCreate } from "./views/DiscountCreate";
 import { DiscountDetails } from "./views/DiscountDetails";

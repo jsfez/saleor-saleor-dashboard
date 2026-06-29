@@ -1,14 +1,16 @@
-import { ApolloClient } from "@apollo/client";
+import { type ApolloClient } from "@apollo/client";
 import { AttributeEntityTypeEnum, AttributeInputTypeEnum } from "@dashboard/graphql";
 
 import {
   AttributeChoicesHandler,
+  CategoryHandler,
+  CollectionHandler,
   PageHandler,
   ProductsHandler,
   ProductVariantHandler,
 } from "../../API/Handler";
 import { Condition } from "../../FilterElement/Condition";
-import { ConditionItem, ConditionOptions } from "../../FilterElement/ConditionOptions";
+import { type ConditionItem, ConditionOptions } from "../../FilterElement/ConditionOptions";
 import { ConditionSelected } from "../../FilterElement/ConditionSelected";
 import { ExpressionValue, FilterElement } from "../../FilterElement/FilterElement";
 import { AttributeQueryVarsBuilder } from "./AttributeQueryVarsBuilder";
@@ -118,6 +120,50 @@ describe("AttributeQueryVarsBuilder", () => {
       expect(handler).toBeInstanceOf(ProductVariantHandler);
     });
 
+    it("should create CategoryHandler for REFERENCE attributes with CATEGORY entity type", () => {
+      // Arrange
+      const element = new FilterElement(
+        baseElement.value,
+        baseElement.condition,
+        false,
+        undefined,
+        new ExpressionValue(
+          "attr-slug",
+          "Attr",
+          AttributeInputTypeEnum.REFERENCE,
+          AttributeEntityTypeEnum.CATEGORY,
+        ),
+      );
+      const def = new AttributeQueryVarsBuilder();
+      // Act
+      const handler = def.createOptionFetcher(client, inputValue, element);
+
+      // Assert
+      expect(handler).toBeInstanceOf(CategoryHandler);
+    });
+
+    it("should create CollectionHandler for REFERENCE attributes with COLLECTION entity type", () => {
+      // Arrange
+      const element = new FilterElement(
+        baseElement.value,
+        baseElement.condition,
+        false,
+        undefined,
+        new ExpressionValue(
+          "attr-slug",
+          "Attr",
+          AttributeInputTypeEnum.REFERENCE,
+          AttributeEntityTypeEnum.COLLECTION,
+        ),
+      );
+      const def = new AttributeQueryVarsBuilder();
+      // Act
+      const handler = def.createOptionFetcher(client, inputValue, element);
+
+      // Assert
+      expect(handler).toBeInstanceOf(CollectionHandler);
+    });
+
     it("should create AttributeChoicesHandler for other attribute types", () => {
       // Arrange
       const element = new FilterElement(
@@ -133,6 +179,32 @@ describe("AttributeQueryVarsBuilder", () => {
 
       // Assert
       expect(handler).toBeInstanceOf(AttributeChoicesHandler);
+    });
+
+    it("should return static boolean options without API call for BOOLEAN attributes", async () => {
+      // Arrange
+      const mockQuery = jest.fn();
+      const mockClient = { query: mockQuery } as unknown as ApolloClient<unknown>;
+      const element = new FilterElement(
+        baseElement.value,
+        baseElement.condition,
+        false,
+        undefined,
+        new ExpressionValue("bool-attr", "BoolAttr", AttributeInputTypeEnum.BOOLEAN),
+      );
+      const def = new AttributeQueryVarsBuilder();
+
+      // Act
+      const handler = def.createOptionFetcher(mockClient, inputValue, element);
+      const options = await handler.fetch();
+
+      // Assert
+      expect(handler).toBeInstanceOf(AttributeChoicesHandler);
+      expect(mockQuery).not.toHaveBeenCalled();
+      expect(options).toEqual([
+        { label: "Yes", value: "true", slug: "true", type: undefined },
+        { label: "No", value: "false", slug: "false", type: undefined },
+      ]);
     });
 
     it("should handle gracefully if attribute is not selected", () => {

@@ -1,3 +1,4 @@
+import { getBuiltInAttributeFilterPresets } from "@dashboard/attributes/views/AttributeList/builtInFilterPresets";
 import {
   getFilterOpts,
   getFilterQueryParam,
@@ -7,11 +8,15 @@ import { useConditionalFilterContext } from "@dashboard/components/ConditionalFi
 import { createAttributesQueryVariables } from "@dashboard/components/ConditionalFilter/queryVariables";
 import DeleteFilterTabDialog from "@dashboard/components/DeleteFilterTabDialog";
 import SaveFilterTabDialog from "@dashboard/components/SaveFilterTabDialog";
-import { useAttributeBulkDeleteMutation, useAttributeListQuery } from "@dashboard/graphql";
+import {
+  AttributeTypeEnum,
+  useAttributeBulkDeleteMutation,
+  useAttributeListQuery,
+} from "@dashboard/graphql";
 import { useFilterPresets } from "@dashboard/hooks/useFilterPresets";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { usePaginationReset } from "@dashboard/hooks/usePaginationReset";
 import usePaginator, {
   createPaginationState,
@@ -30,7 +35,12 @@ import { useIntl } from "react-intl";
 
 import AttributeBulkDeleteDialog from "../../components/AttributeBulkDeleteDialog";
 import AttributeListPage from "../../components/AttributeListPage";
-import { attributeListUrl, AttributeListUrlDialog, AttributeListUrlQueryParams } from "../../urls";
+import {
+  attributeListUrl,
+  type AttributeListUrlDialog,
+  type AttributeListUrlQueryParams,
+  getAttributeTypeFromBuiltInPresetTab,
+} from "../../urls";
 import { getSortQueryVariables } from "./sort";
 
 interface AttributeListProps {
@@ -58,7 +68,7 @@ const AttributeList = ({ params }: AttributeListProps) => {
       },
       sort: getSortQueryVariables(params),
     }),
-    [params, settings.rowNumber, valueProvider.value],
+    [filters, paginationState, params],
   );
   const { data, loading, refetch } = useAttributeListQuery({
     variables: newQueryVariables,
@@ -69,6 +79,7 @@ const AttributeList = ({ params }: AttributeListProps) => {
     setSelectedRowIds,
     setClearDatagridRowSelectionCallback,
   } = useRowSelection(params);
+  const builtInFilterPresets = useMemo(() => getBuiltInAttributeFilterPresets(intl), [intl]);
   const {
     hasPresetsChanged,
     onPresetChange,
@@ -84,7 +95,17 @@ const AttributeList = ({ params }: AttributeListProps) => {
     params,
     storageUtils,
     reset: clearRowSelection,
+    builtInPresets: builtInFilterPresets,
   });
+  const defaultAttributeType = useMemo(() => {
+    const { type } = filters;
+
+    if (type === AttributeTypeEnum.PRODUCT_TYPE || type === AttributeTypeEnum.PAGE_TYPE) {
+      return type;
+    }
+
+    return getAttributeTypeFromBuiltInPresetTab(selectedPreset);
+  }, [filters, selectedPreset]);
   const [attributeBulkDelete, attributeBulkDeleteOpts] = useAttributeBulkDeleteMutation({
     onCompleted: data => {
       if (data.attributeBulkDelete?.errors.length === 0) {
@@ -92,8 +113,8 @@ const AttributeList = ({ params }: AttributeListProps) => {
         notify({
           status: "success",
           text: intl.formatMessage({
-            id: "z3GGbZ",
-            defaultMessage: "Attributes successfully deleted",
+            id: "fpafCx",
+            defaultMessage: "Attributes deleted",
             description: "deleted multiple attributes",
           }),
         });
@@ -156,6 +177,8 @@ const AttributeList = ({ params }: AttributeListProps) => {
         onAttributesDelete={() => openModal("remove")}
         selectedFilterPreset={selectedPreset}
         selectedAttributesIds={selectedRowIds}
+        builtInFilterPresets={builtInFilterPresets.map(tab => tab.name)}
+        defaultAttributeType={defaultAttributeType}
         filterPresets={presets.map(tab => tab.name)}
         attributes={attributes ?? []}
         disabled={loading || attributeBulkDeleteOpts.loading}

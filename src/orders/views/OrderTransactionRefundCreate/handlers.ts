@@ -1,18 +1,18 @@
-import { IMessage } from "@dashboard/components/messages";
+import { type INotification } from "@dashboard/components/notifications";
 import {
-  OrderDetailsGrantRefundQuery,
-  OrderGrantRefundAddMutation,
+  type OrderDetailsGrantRefundQuery,
+  type OrderGrantRefundAddMutation,
   OrderGrantRefundCreateErrorCode,
-  OrderGrantRefundCreateErrorFragment,
-  OrderGrantRefundCreateLineInput,
+  type OrderGrantRefundCreateErrorFragment,
+  type OrderGrantRefundCreateLineInput,
 } from "@dashboard/graphql";
-import { UseNavigatorResult } from "@dashboard/hooks/useNavigator";
+import { type UseNavigatorResult } from "@dashboard/hooks/useNavigator";
 import {
-  LineToRefund,
-  OrderTransactionRefundError,
+  type LineToRefund,
+  type OrderTransactionRefundError,
 } from "@dashboard/orders/components/OrderTransactionRefundPage/OrderTransactionRefundPage";
 import { orderTransactionRefundEditUrl } from "@dashboard/orders/urls";
-import { IntlShape } from "react-intl";
+import { type IntlShape } from "react-intl";
 
 import { transactionRefundEditMessages } from "../OrderTransactionRefundEdit/messages";
 
@@ -25,7 +25,7 @@ export const handleRefundCreateComplete = ({
   orderId,
 }: {
   submitData: OrderGrantRefundAddMutation;
-  notify: (message: IMessage) => void;
+  notify: (notification: INotification) => void;
   setLinesErrors: (value: React.SetStateAction<OrderTransactionRefundError[]>) => void;
   navigate: UseNavigatorResult;
   intl: IntlShape;
@@ -87,6 +87,7 @@ export const prepareRefundAddLines = ({
       acc.push({
         quantity: line.quantity,
         reason: line.reason,
+        reasonReference: line.reasonReference.length ? line.reasonReference : undefined,
         id: data.order!.lines[ix].id,
       });
     }

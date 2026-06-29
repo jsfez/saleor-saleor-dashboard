@@ -1,5 +1,7 @@
 import { Box, List } from "@saleor/macaw-ui-next";
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
+
+import { SidebarIconSlot } from "../SidebarIconSlot";
 
 interface ChildrenProps {
   children: ReactNode;
@@ -30,11 +32,7 @@ const ShortcutItemWrapper = ({ children, onClick }: ShortcutItemProps) => {
   );
 };
 const Icon = ({ children }: ChildrenProps) => {
-  return (
-    <Box __width={20} __height={20} color="default2">
-      {children}
-    </Box>
-  );
+  return <SidebarIconSlot>{children}</SidebarIconSlot>;
 };
 const KeyboardShortcut = ({ children }: ChildrenProps) => {
   return (

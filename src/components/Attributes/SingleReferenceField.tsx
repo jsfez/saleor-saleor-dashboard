@@ -1,13 +1,16 @@
 import { BasicAttributeRow } from "@dashboard/components/Attributes/BasicAttributeRow";
 import {
+  getAttributeRowLabelProps,
   getErrorMessage,
   getSingleReferenceDisplayValue,
 } from "@dashboard/components/Attributes/utils";
 import { ChipField } from "@dashboard/components/ChipField/ChipField";
-import { Box, Button, EditIcon, PlusIcon, Text } from "@saleor/macaw-ui-next";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
+import { Box, Button, Text } from "@saleor/macaw-ui-next";
+import { Pencil, Plus } from "lucide-react";
 import { useIntl } from "react-intl";
 
-import { AttributeRowProps } from "./types";
+import { type AttributeRowProps } from "./types";
 
 interface SingleReferenceFieldProps {
   attribute: AttributeRowProps["attribute"];
@@ -30,7 +33,7 @@ export const SingleReferenceField = ({
   const selected = getSingleReferenceDisplayValue(attribute);
 
   return (
-    <BasicAttributeRow label={attribute.label}>
+    <BasicAttributeRow label={attribute.label} {...getAttributeRowLabelProps(attribute)}>
       <Box display="flex" flexWrap="wrap" gap={2} alignItems="center">
         {selected ? (
           <>
@@ -44,7 +47,7 @@ export const SingleReferenceField = ({
               variant="secondary"
               onClick={() => onReferencesAddClick(attribute)}
               disabled={disabled || loading}
-              icon={<EditIcon />}
+              icon={<Pencil size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />}
               marginLeft="auto"
               data-test-id="single-ref-edit"
             />
@@ -54,7 +57,7 @@ export const SingleReferenceField = ({
             variant="secondary"
             onClick={() => onReferencesAddClick(attribute)}
             disabled={disabled || loading}
-            icon={<PlusIcon />}
+            icon={<Plus size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />}
             marginLeft="auto"
             data-test-id="single-ref-add"
           />

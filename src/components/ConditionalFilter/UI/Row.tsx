@@ -1,11 +1,18 @@
-import { Box, Button, DynamicCombobox, RemoveIcon, Select } from "@saleor/macaw-ui-next";
+import {
+  enrichAttributeComboboxOption,
+  enrichAttributeComboboxOptions,
+} from "@dashboard/components/AttributeInputTypeIcon/enrichAttributeComboboxOptions";
+import { iconSize, iconStrokeWidth } from "@dashboard/components/icons";
+import { Box, Button, DynamicCombobox, Select } from "@saleor/macaw-ui-next";
+import { X } from "lucide-react";
+import { useMemo } from "react";
 
 import { getItemConstraint } from "./constrains";
-import { ErrorLookup } from "./errors";
-import { FilterEventEmitter } from "./EventEmitter";
+import { type ErrorLookup } from "./errors";
+import { type FilterEventEmitter } from "./EventEmitter";
 import { RightOperator } from "./RightOperator";
-import { ExperimentalFiltersProps } from "./Root";
-import { LeftOperatorOption, Row } from "./types";
+import { type ExperimentalFiltersProps } from "./Root";
+import { type LeftOperatorOption, type Row } from "./types";
 
 interface RowProps {
   item: Row;
@@ -18,6 +25,14 @@ interface RowProps {
 export const RowComponent = ({ item, index, leftOptions, emitter, error }: RowProps) => {
   const constrain = getItemConstraint(item.constraint);
   const isAttribute = item.isAttribute;
+  const attributeOptions = useMemo(
+    () => enrichAttributeComboboxOptions(item.availableAttributesList ?? []),
+    [item.availableAttributesList],
+  );
+  const selectedAttributeValue = useMemo(
+    () => (item.selectedAttribute ? enrichAttributeComboboxOption(item.selectedAttribute) : null),
+    [item.selectedAttribute],
+  );
 
   return (
     <Box
@@ -58,8 +73,8 @@ export const RowComponent = ({ item, index, leftOptions, emitter, error }: RowPr
       {isAttribute && (
         <DynamicCombobox
           data-test-id={`attribute-value-${index}`}
-          value={item.selectedAttribute ?? null}
-          options={item.availableAttributesList ?? []}
+          value={selectedAttributeValue}
+          options={attributeOptions}
           loading={item.attributeLoading}
           onChange={value => {
             if (!value) return;
@@ -108,7 +123,7 @@ export const RowComponent = ({ item, index, leftOptions, emitter, error }: RowPr
       <Button
         marginLeft="auto"
         variant="tertiary"
-        icon={<RemoveIcon />}
+        icon={<X size={iconSize.medium} strokeWidth={iconStrokeWidth} />}
         onClick={() => emitter.removeRow(index)}
         disabled={constrain.disableRemoveButton}
       />

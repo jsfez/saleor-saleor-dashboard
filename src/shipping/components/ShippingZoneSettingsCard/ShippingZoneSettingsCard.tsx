@@ -1,11 +1,11 @@
 import { DashboardCard } from "@dashboard/components/Card";
-import { ChannelFragment } from "@dashboard/graphql";
-import { FormChange } from "@dashboard/hooks/useForm";
+import { type ChannelFragment } from "@dashboard/graphql";
+import { type FormChange } from "@dashboard/hooks/useForm";
 import { Divider } from "@material-ui/core";
-import { Option } from "@saleor/macaw-ui-next";
+import { type Option } from "@saleor/macaw-ui-next";
 import { defineMessages, useIntl } from "react-intl";
 
-import { ShippingZoneUpdateFormData } from "../../components/ShippingZoneDetailsPage/types";
+import { type ShippingZoneUpdateFormData } from "../../components/ShippingZoneDetailsPage/types";
 import ChannelsSection from "./ChannelsSection";
 import WarehousesSection from "./WarehousesSection";
 
@@ -20,7 +20,6 @@ const messages = defineMessages({
 interface ShippingZoneSettingsCardProps {
   formData: ShippingZoneUpdateFormData;
   warehousesChoices: Option[];
-  onWarehouseAdd: () => void;
   onWarehouseChange: FormChange;
   hasMoreWarehouses: boolean;
   onFetchMoreWarehouses: () => void;
@@ -37,7 +36,6 @@ const ShippingZoneSettingsCard = ({
   warehousesChoices,
   onFetchMoreWarehouses,
   onWarehousesSearchChange,
-  onWarehouseAdd,
   onWarehouseChange,
   allChannels,
   onChannelChange,
@@ -59,7 +57,6 @@ const ShippingZoneSettingsCard = ({
       <Divider />
       <DashboardCard.Content data-test-id="warehouse-section">
         <WarehousesSection
-          onAdd={onWarehouseAdd}
           onSearchChange={onWarehousesSearchChange}
           onChange={onWarehouseChange}
           onFetchMore={onFetchMoreWarehouses}

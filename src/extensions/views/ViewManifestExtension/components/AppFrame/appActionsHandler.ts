@@ -1,16 +1,25 @@
-import { AppPaths } from "@dashboard/apps/urls";
 import { getAppMountUri } from "@dashboard/config";
-import { ExtensionsUrls } from "@dashboard/extensions/urls";
+import { useActiveAppExtension } from "@dashboard/extensions/components/AppExtensionContext/AppExtensionContextProvider";
+import { useTriggerEntityRefresh } from "@dashboard/extensions/entity-refresh";
+import {
+  applyWidgetHeightToFrame,
+  createWidgetResizeOkResponse,
+} from "@dashboard/extensions/hooks/widgetIframeResize";
+import { ExtensionsUrls, LegacyAppPaths } from "@dashboard/extensions/urls";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import {
   DashboardEventFactory,
-  DispatchResponseEvent,
-  NotificationAction,
-  NotifyReady,
-  RedirectAction,
-  RequestPermissions,
-  UpdateRouting,
+  type DispatchResponseEvent,
+  type FormPayloadUpdate,
+  type NotificationAction,
+  type NotifyReady,
+  type PopupClose,
+  type RedirectAction,
+  type RefreshEntity,
+  type RequestPermissions,
+  type UpdateRouting,
+  type WidgetResize,
 } from "@saleor/app-sdk/app-bridge";
 import { useIntl } from "react-intl";
 import urlJoin from "url-join";
@@ -27,7 +36,7 @@ const createResponseStatus = (actionId: string, ok: boolean): DispatchResponseEv
     ok,
   },
 });
-const isExternalHost = (host: string) => new URL(host).hostname !== window.location.hostname;
+const isExternalHost = (host: string) => new URL(host).host !== window.location.host;
 const isLocalPath = (path: string) => path.startsWith("/");
 const useHandleNotificationAction = () => {
   const notify = useNotifier();
@@ -53,7 +62,7 @@ const useHandleRedirectAction = (appId: string) => {
     debug("Handling deep app URL change");
 
     const getNewExactLocation = () => {
-      const legacyAppPath = AppPaths.resolveAppPath(appId);
+      const legacyAppPath = LegacyAppPaths.resolveAppPath(appId);
 
       if (action.payload.to.startsWith(legacyAppPath)) {
         /* Some apps might have used path in dashboard to /apps/XYZ/app/... as a way
@@ -213,6 +222,7 @@ const useNotifyReadyAction = (
     },
   };
 };
+
 const useHandlePermissionRequest = (appId: string) => {
   const navigate = useNavigator();
 
@@ -246,11 +256,87 @@ const useHandlePermissionRequest = (appId: string) => {
   };
 };
 
+const useHandleAppFormUpdate = () => {
+  const { attachFormResponseFrame, deactivate } = useActiveAppExtension();
+
+  return {
+    handle: (action: FormPayloadUpdate) => {
+      const { actionId, ...payload } = action.payload;
+      const shouldClosePopup = payload.closePopup ?? true;
+
+      attachFormResponseFrame(payload);
+
+      if (shouldClosePopup) {
+        deactivate();
+      }
+
+      return createResponseStatus(actionId, true);
+    },
+  };
+};
+
+const useHandlePopupCloseAction = () => {
+  const { deactivate } = useActiveAppExtension();
+
+  return {
+    handle: (action: PopupClose) => {
+      const { actionId } = action.payload;
+
+      debug(`Handling PopupClose action with ID: %s`, actionId);
+      deactivate();
+
+      return createResponseStatus(actionId, true);
+    },
+  };
+};
+
+const useHandleWidgetResizeAction = (frameEl: HTMLIFrameElement | null) => ({
+  handle: (action: WidgetResize) => {
+    const { actionId, height } = action.payload;
+
+    debug(`Handling WidgetResize action with ID: %s, height: %s`, actionId, height);
+
+    if (!frameEl) {
+      return createWidgetResizeOkResponse(actionId);
+    }
+
+    applyWidgetHeightToFrame(frameEl, height);
+
+    return createWidgetResizeOkResponse(actionId);
+  },
+});
+
+/**
+ * TODO: POST-method widgets (IframePost) are not wired to this action yet - they
+ * use a separate listener that only handles `widgetResize`.
+ */
+const useHandleRefreshEntityAction = () => {
+  const triggerEntityRefresh = useTriggerEntityRefresh();
+
+  return {
+    handle: (action: RefreshEntity) => {
+      const { actionId } = action.payload;
+
+      debug(`Handling RefreshEntity action with ID: %s`, actionId);
+
+      // Fire-and-forget: ack immediately, refresh the current page in the
+      // background. No-op when no entity page is registered.
+      triggerEntityRefresh();
+
+      return createResponseStatus(actionId, true);
+    },
+  };
+};
+
 export const AppActionsHandler = {
   useHandleNotificationAction,
+  useHandleRefreshEntityAction,
   useHandleUpdateRoutingAction,
   useHandleRedirectAction,
   useNotifyReadyAction,
   createResponseStatus,
   useHandlePermissionRequest,
+  useHandleAppFormUpdate,
+  useHandlePopupCloseAction,
+  useHandleWidgetResizeAction,
 };

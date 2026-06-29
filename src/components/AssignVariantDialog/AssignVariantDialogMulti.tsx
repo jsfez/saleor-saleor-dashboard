@@ -1,24 +1,30 @@
 // @ts-strict-ignore
-import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import {
+  ConfirmButton,
+  type ConfirmButtonTransitionState,
+} from "@dashboard/components/ConfirmButton";
 import { InfiniteScroll } from "@dashboard/components/InfiniteScroll";
 import { DashboardModal } from "@dashboard/components/Modal";
 import Money from "@dashboard/components/Money";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import TableCellAvatar from "@dashboard/components/TableCellAvatar";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import { SearchProductsQuery } from "@dashboard/graphql";
+import { SaleorThrobber } from "@dashboard/components/Throbber";
+import { type ProductWhereInput, type SearchProductsQuery } from "@dashboard/graphql";
 import useModalDialogOpen from "@dashboard/hooks/useModalDialogOpen";
-import useSearchQuery from "@dashboard/hooks/useSearchQuery";
+import { useModalSearchWithFilters } from "@dashboard/hooks/useModalSearchWithFilters";
 import { maybe, renderCollection } from "@dashboard/misc";
-import { Container, FetchMoreProps, RelayToFlat } from "@dashboard/types";
-import { CircularProgress, TableBody, TableCell, TextField } from "@material-ui/core";
+import { type Container, type FetchMoreProps, type RelayToFlat } from "@dashboard/types";
+import { TableBody, TableCell, TextField } from "@material-ui/core";
 import { Text } from "@saleor/macaw-ui-next";
 import { Fragment, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { AssignContainerDialogProps } from "../AssignContainerDialog";
+import { type AssignContainerDialogProps } from "../AssignContainerDialog";
 import BackButton from "../BackButton";
 import Checkbox from "../Checkbox";
+import { useModalProductFilterContext } from "../ModalFilters/entityConfigs/ModalProductFilterProvider";
+import { ModalFilters } from "../ModalFilters/ModalFilters";
 import { messages } from "./messages";
 import { useStyles } from "./styles";
 import {
@@ -27,14 +33,18 @@ import {
   handleVariantAssign,
   hasAllVariantsSelected,
   isVariantSelected,
-  VariantWithProductLabel,
+  type VariantWithProductLabel,
 } from "./utils";
 
 interface AssignVariantDialogMultiProps extends FetchMoreProps {
   confirmButtonState: ConfirmButtonTransitionState;
   products: RelayToFlat<SearchProductsQuery["search"]>;
   loading: boolean;
-  onFetch: (value: string) => void;
+  onFilterChange?: (
+    filterVariables: ProductWhereInput,
+    channel: string | undefined,
+    query: string,
+  ) => void;
   onSubmit: (data: Container[]) => void;
   onClose: () => void;
   labels?: Partial<AssignContainerDialogProps["labels"]>;
@@ -51,14 +61,22 @@ export const AssignVariantDialogMulti = (props: AssignVariantDialogMultiProps) =
     loading,
     products,
     onClose,
-    onFetch,
+    onFilterChange,
     onFetchMore,
     onSubmit,
     open,
   } = props;
   const classes = useStyles(props);
   const intl = useIntl();
-  const [query, onQueryChange, queryReset] = useSearchQuery(onFetch);
+
+  const { combinedFilters, clearFilters } = useModalProductFilterContext();
+
+  const { query, onQueryChange, resetQuery } = useModalSearchWithFilters({
+    filterVariables: combinedFilters,
+    open,
+    onFetch: (filters, query) => onFilterChange?.(filters.where, filters.channel, query),
+  });
+
   const [variants, setVariants] = useState<VariantWithProductLabel[]>([]);
   const productChoices = products?.filter(product => product?.variants?.length > 0) || [];
   const selectedVariantsToProductsMap = productChoices
@@ -79,13 +97,15 @@ export const AssignVariantDialogMulti = (props: AssignVariantDialogMultiProps) =
     );
 
   const handleClose = () => {
-    queryReset();
+    resetQuery();
+    clearFilters();
     onClose();
   };
 
   useModalDialogOpen(open, {
     onOpen: () => {
-      queryReset();
+      resetQuery();
+      clearFilters();
     },
     onClose: handleClose,
   });
@@ -101,9 +121,11 @@ export const AssignVariantDialogMulti = (props: AssignVariantDialogMultiProps) =
         fullWidth
         InputProps={{
           autoComplete: "off",
-          endAdornment: loading && <CircularProgress size={16} />,
+          endAdornment: loading && <SaleorThrobber size={16} />,
         }}
       />
+
+      <ModalFilters />
 
       <InfiniteScroll
         id={scrollableTargetId}
@@ -120,7 +142,7 @@ export const AssignVariantDialogMulti = (props: AssignVariantDialogMultiProps) =
               (product, productIndex) => (
                 <Fragment key={product ? product.id : "skeleton"}>
                   <TableRowLink>
-                    <TableCell padding="checkbox" className={classes.productCheckboxCell}>
+                    <TableCell padding="checkbox">
                       <Checkbox
                         checked={productsWithAllVariantsSelected[productIndex]}
                         disabled={loading}
@@ -139,9 +161,7 @@ export const AssignVariantDialogMulti = (props: AssignVariantDialogMultiProps) =
                       className={classes.avatar}
                       thumbnail={maybe(() => product.thumbnail.url)}
                     />
-                    <TableCell className={classes.colName} colSpan={2}>
-                      {maybe(() => product.name)}
-                    </TableCell>
+                    <TableCell colSpan={2}>{maybe(() => product.name)}</TableCell>
                   </TableRowLink>
                   {maybe(() => product.variants, []).map((variant, variantIndex) => (
                     <TableRowLink key={variant.id} data-test-id="assign-variant-table-row">
@@ -164,7 +184,7 @@ export const AssignVariantDialogMulti = (props: AssignVariantDialogMultiProps) =
                           }
                         />
                       </TableCell>
-                      <TableCell className={classes.colName}>
+                      <TableCell>
                         <div>{variant.name}</div>
                         <div className={classes.grayText}>
                           <FormattedMessage

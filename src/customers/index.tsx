@@ -1,21 +1,23 @@
+import SectionRoute from "@dashboard/auth/components/SectionRoute";
 import { ConditionalCustomerFilterProvider } from "@dashboard/components/ConditionalFilter";
 import { Route } from "@dashboard/components/Router";
+import { PermissionEnum } from "@dashboard/graphql";
 import { sectionNames } from "@dashboard/intl";
+import { parseQs } from "@dashboard/url-utils";
 import { asSortParams } from "@dashboard/utils/sort";
-import { parse as parseQs } from "qs";
 import { useIntl } from "react-intl";
-import { RouteComponentProps, Switch } from "react-router-dom";
+import { type RouteComponentProps, Switch } from "react-router-dom";
 
 import { WindowTitle } from "../components/WindowTitle";
 import {
   customerAddPath,
   customerAddressesPath,
-  CustomerAddressesUrlQueryParams,
+  type CustomerAddressesUrlQueryParams,
   customerListPath,
-  CustomerListUrlQueryParams,
+  type CustomerListUrlQueryParams,
   CustomerListUrlSortField,
   customerPath,
-  CustomerUrlQueryParams,
+  type CustomerUrlQueryParams,
 } from "./urls";
 import CustomerAddressesViewComponent from "./views/CustomerAddresses";
 import CustomerCreateView from "./views/CustomerCreate";
@@ -68,7 +70,15 @@ export const CustomerSection = () => {
       <WindowTitle title={intl.formatMessage(sectionNames.customers)} />
       <Switch>
         <Route exact path={customerListPath} component={CustomerListView} />
-        <Route exact path={customerAddPath} component={CustomerCreateView} />
+        {/* Customer creation requires MANAGE_USERS even though the section
+            itself is reachable with MANAGE_ORDERS or MANAGE_STAFF for
+            read-only access. Falls through to NotFound for read-only roles. */}
+        <SectionRoute
+          exact
+          permissions={[PermissionEnum.MANAGE_USERS]}
+          path={customerAddPath}
+          component={CustomerCreateView}
+        />
         <Route path={customerAddressesPath(":id")} component={CustomerAddressesView} />
         <Route path={customerPath(":id")} component={CustomerDetailsView} />
       </Switch>

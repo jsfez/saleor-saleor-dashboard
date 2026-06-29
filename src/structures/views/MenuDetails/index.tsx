@@ -1,7 +1,8 @@
 // @ts-strict-ignore
-import { useUser } from "@dashboard/auth";
 import { hasPermission } from "@dashboard/auth/misc";
+import { useUser } from "@dashboard/auth/useUser";
 import ActionDialog from "@dashboard/components/ActionDialog";
+import { useRegisterEntityRefresh } from "@dashboard/extensions/entity-refresh";
 import {
   PermissionEnum,
   useMenuDeleteMutation,
@@ -11,7 +12,7 @@ import {
   useMenuUpdateMutation,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { pageUrl } from "@dashboard/modeling/urls";
 import { languageEntityUrl, TranslatableEntities } from "@dashboard/translations/urls";
 import { useCachedLocales } from "@dashboard/translations/useCachedLocales";
@@ -20,18 +21,18 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { categoryUrl } from "../../../categories/urls";
 import { collectionUrl } from "../../../collections/urls";
 import { extractMutationErrors, maybe } from "../../../misc";
-import MenuDetailsPage, { MenuDetailsSubmitData } from "../../components/MenuDetailsPage";
+import MenuDetailsPage, { type MenuDetailsSubmitData } from "../../components/MenuDetailsPage";
 import { findNode, getNode } from "../../components/MenuDetailsPage/tree";
 import MenuItemDialog, {
-  MenuItemDialogFormData,
-  MenuItemType,
+  type MenuItemDialogFormData,
+  type MenuItemType,
 } from "../../components/MenuItemDialog";
 import {
   getItemId,
   getItemType,
   unknownTypeError,
 } from "../../components/MenuItemsSortableTree/utils";
-import { menuUrl, MenuUrlQueryParams } from "../../urls";
+import { menuUrl, type MenuUrlQueryParams } from "../../urls";
 import { handleDelete, handleItemCreate, handleItemUpdate, handleUpdate } from "./successHandlers";
 import {
   getInitialMenuItemLabel,
@@ -57,6 +58,9 @@ const MenuDetails = ({ id, params }: MenuDetailsProps) => {
   const { data, loading, refetch } = useMenuDetailsQuery({
     variables: { id },
   });
+
+  useRegisterEntityRefresh(refetch);
+
   const [menuDelete, menuDeleteOpts] = useMenuDeleteMutation({
     onCompleted: data => handleDelete(data, navigate, notify, intl),
   });

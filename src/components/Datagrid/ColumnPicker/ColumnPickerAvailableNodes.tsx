@@ -1,11 +1,11 @@
-import { CircularProgress } from "@material-ui/core";
+import { SaleorThrobber } from "@dashboard/components/Throbber";
 import { Box, Checkbox, Text } from "@saleor/macaw-ui-next";
-import * as React from "react";
+import type * as React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ColumnPickerSearch } from "./ColumnPickerSearch";
 import messages from "./messages";
-import { ColumnCategory } from "./useColumns";
+import { type ColumnCategory } from "./useColumns";
 
 interface ColumnPickerAvailableNodesProps {
   currentCategory: ColumnCategory;
@@ -28,7 +28,7 @@ export const ColumnPickerAvailableNodes = ({
     if (areNodesLoading) {
       return (
         <Box width="100%" height="100%" display="flex" alignItems="center" justifyContent="center">
-          <CircularProgress />
+          <SaleorThrobber />
         </Box>
       );
     }

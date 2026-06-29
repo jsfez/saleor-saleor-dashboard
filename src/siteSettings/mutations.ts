@@ -30,12 +30,6 @@ export const refundSettingsUpdate = gql`
         code
         message
       }
-      refundSettings {
-        reasonReferenceType {
-          name
-          id
-        }
-      }
     }
   }
 `;
@@ -43,12 +37,28 @@ export const refundSettingsUpdate = gql`
 export const refundReasonReferenceClear = gql`
   mutation RefundReasonReferenceClear {
     refundReasonReferenceClear {
-      refundSettings {
-        reasonReferenceType {
-          id
-          name
-        }
+      errors {
+        code
+        message
       }
+    }
+  }
+`;
+
+export const returnSettingsUpdate = gql`
+  mutation ReturnSettingsUpdate($returnSettingsInput: ReturnSettingsUpdateInput!) {
+    returnSettingsUpdate(input: $returnSettingsInput) {
+      errors {
+        code
+        message
+      }
+    }
+  }
+`;
+
+export const returnReasonReferenceClear = gql`
+  mutation ReturnReasonReferenceClear {
+    returnReasonReferenceClear {
       errors {
         code
         message

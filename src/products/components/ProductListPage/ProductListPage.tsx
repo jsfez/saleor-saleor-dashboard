@@ -1,16 +1,16 @@
 // @ts-strict-ignore
-import { LazyQueryResult } from "@apollo/client/react";
+import { type LazyQueryResult } from "@apollo/client/react";
 import { useContextualLink } from "@dashboard/components/AppLayout/ContextualLinks/useContextualLink";
 import { ListFilters } from "@dashboard/components/AppLayout/ListFilters";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import { BulkDeleteButton } from "@dashboard/components/BulkDeleteButton";
 import { ButtonGroupWithDropdown } from "@dashboard/components/ButtonGroupWithDropdown";
 import { DashboardCard } from "@dashboard/components/Card";
-import { FilterElement } from "@dashboard/components/Filter/types";
+import { type FilterElement } from "@dashboard/components/Filter/types";
 import { FilterPresetsSelect } from "@dashboard/components/FilterPresetsSelect";
 import { ListPageLayout } from "@dashboard/components/Layouts";
 import LimitReachedAlert from "@dashboard/components/LimitReachedAlert";
-import { ProductListColumns } from "@dashboard/config";
+import { type ProductListColumns } from "@dashboard/config";
 import { extensionMountPoints } from "@dashboard/extensions/extensionMountPoints";
 import {
   getExtensionItemsForOverviewCreate,
@@ -18,31 +18,31 @@ import {
 } from "@dashboard/extensions/getExtensionsItems";
 import { useExtensions } from "@dashboard/extensions/hooks/useExtensions";
 import {
-  Exact,
-  GridAttributesQuery,
-  ProductListQuery,
-  RefreshLimitsQuery,
-  useAvailableColumnAttributesLazyQuery,
+  type Exact,
+  type GridAttributesQuery,
+  type ProductListQuery,
+  type RefreshLimitsQuery,
+  type useAvailableColumnAttributesLazyQuery,
 } from "@dashboard/graphql";
 import { getPrevLocationState } from "@dashboard/hooks/useBackLinkWithState";
 import useLocalStorage from "@dashboard/hooks/useLocalStorage";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { sectionNames } from "@dashboard/intl";
 import {
-  ChannelProps,
-  PageListProps,
-  RelayToFlat,
-  SearchPageProps,
-  SortPage,
-  TabPageProps,
+  type ChannelProps,
+  type PageListProps,
+  type RelayToFlat,
+  type SearchPageProps,
+  type SortPage,
+  type TabPageProps,
 } from "@dashboard/types";
 import { hasLimits, isLimitReached } from "@dashboard/utils/limits";
-import { Box, Button, ChevronRightIcon, Text } from "@saleor/macaw-ui-next";
+import { Box, Button, Text } from "@saleor/macaw-ui-next";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLocation } from "react-router";
 
-import { ProductListUrlSortField, productUrl } from "../../urls";
+import { type ProductListUrlSortField, productUrl } from "../../urls";
 import { ProductListDatagrid } from "../ProductListDatagrid";
 import { ProductListTiles } from "../ProductListTiles/ProductListTiles";
 import { ProductListViewSwitch } from "../ProductListViewSwitch";
@@ -138,10 +138,6 @@ const ProductListPage = (props: ProductListPageProps) => {
       >
         <Box __flex={1} display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex">
-            <Box marginX={3} display="flex" alignItems="center">
-              <ChevronRightIcon />
-            </Box>
-
             <FilterPresetsSelect
               presetsChanged={hasPresetsChanged}
               onSelect={onTabChange}
@@ -241,6 +237,7 @@ const ProductListPage = (props: ProductListPageProps) => {
             type="expression-filter"
             initialSearch={initialSearch}
             onSearchChange={onSearchChange}
+            showSearchTooltip
             searchPlaceholder={intl.formatMessage({
               id: "kIvvax",
               defaultMessage: "Search Products...",

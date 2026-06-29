@@ -1,5 +1,6 @@
 // @ts-strict-ignore
 import DeleteFilterTabDialog from "@dashboard/components/DeleteFilterTabDialog";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
 import SaveFilterTabDialog from "@dashboard/components/SaveFilterTabDialog";
 import TypeDeleteWarningDialog from "@dashboard/components/TypeDeleteWarningDialog";
 import { usePageTypeBulkDeleteMutation, usePageTypeListQuery } from "@dashboard/graphql";
@@ -7,13 +8,12 @@ import useBulkActions from "@dashboard/hooks/useBulkActions";
 import { useFilterPresets } from "@dashboard/hooks/useFilterPresets";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { usePaginationReset } from "@dashboard/hooks/usePaginationReset";
 import usePaginator, {
   createPaginationState,
   PaginatorContext,
 } from "@dashboard/hooks/usePaginator";
-import { commonMessages } from "@dashboard/intl";
 import usePageTypeDelete from "@dashboard/modelTypes/hooks/usePageTypeDelete";
 import { ListViews } from "@dashboard/types";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
@@ -21,12 +21,17 @@ import createFilterHandlers from "@dashboard/utils/handlers/filterHandlers";
 import createSortHandler from "@dashboard/utils/handlers/sortHandler";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { getSortParams } from "@dashboard/utils/sort";
-import { DeleteIcon, IconButton } from "@saleor/macaw-ui";
+import { IconButton } from "@saleor/macaw-ui";
+import { Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import PageTypeListPage from "../../components/PageTypeListPage";
-import { pageTypeListUrl, PageTypeListUrlDialog, PageTypeListUrlQueryParams } from "../../urls";
+import {
+  pageTypeListUrl,
+  type PageTypeListUrlDialog,
+  type PageTypeListUrlQueryParams,
+} from "../../urls";
 import { getFilterVariables, storageUtils } from "./filters";
 import { getSortQueryVariables } from "./sort";
 
@@ -105,7 +110,7 @@ const PageTypeList = ({ params }: PageTypeListProps) => {
       if (data.pageTypeBulkDelete.errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "53W0OD", defaultMessage: "Model types deleted" }),
         });
         reset();
         refetch();
@@ -170,7 +175,7 @@ const PageTypeList = ({ params }: PageTypeListProps) => {
               })
             }
           >
-            <DeleteIcon onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+            <Trash2 size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />
           </IconButton>
         }
       />

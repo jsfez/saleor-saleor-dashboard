@@ -2,7 +2,7 @@
 import { useDashboardTheme } from "@dashboard/components/GraphiQL/styles";
 import { DashboardModal } from "@dashboard/components/Modal";
 import { useOnboarding } from "@dashboard/welcomePage/WelcomePageOnboarding/onboardingContext";
-import { FetcherOpts, FetcherParams } from "@graphiql/toolkit";
+import { type FetcherOpts, type FetcherParams } from "@graphiql/toolkit";
 import { useIntl } from "react-intl";
 
 import { ContextualLine } from "../AppLayout/ContextualLinks/ContextualLine";
@@ -25,7 +25,7 @@ export const DevModePanel = () => {
 
     const baseFetcher = getFetcher(opts);
 
-    const result = await baseFetcher(graphQLParams, opts); // Call the base fetcher
+    const result = await baseFetcher(graphQLParams, opts);
 
     return result;
   };
@@ -43,7 +43,12 @@ export const DevModePanel = () => {
 
   return (
     <DashboardModal open={isDevModeVisible} onChange={() => setDevModeVisibility(false)}>
-      <DashboardModal.Content size="xl" __gridTemplateRows="auto 1fr" height="100%">
+      <DashboardModal.Content
+        size="xl"
+        __gridTemplateRows="auto 1fr"
+        height="100%"
+        disableEscapeKeyDown
+      >
         <style dangerouslySetInnerHTML={overwriteCodeMirrorCSSVariables}></style>
         <DashboardModal.Header>
           {intl.formatMessage(messages.title)}

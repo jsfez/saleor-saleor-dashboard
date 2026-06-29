@@ -1,11 +1,10 @@
 import { DashboardCard } from "@dashboard/components/Card";
 import { commonMessages } from "@dashboard/intl";
 import { getFormErrors } from "@dashboard/utils/errors";
-import { CommonError, getCommonFormFieldErrorMessage } from "@dashboard/utils/errors/common";
+import { type CommonError, getCommonFormFieldErrorMessage } from "@dashboard/utils/errors/common";
 import { Box, Checkbox, Input, Text } from "@saleor/macaw-ui-next";
-import { ChangeEvent } from "react";
-import * as React from "react";
-import { FieldError } from "react-hook-form";
+import { type ChangeEvent } from "react";
+import { type FieldError } from "react-hook-form";
 import { FormattedMessage, useIntl } from "react-intl";
 
 interface DiscountDatesProps<ErrorCode> {
@@ -17,6 +16,7 @@ interface DiscountDatesProps<ErrorCode> {
     startTime: string;
   };
   disabled: boolean;
+  stacked?: boolean;
   formErrors?: {
     startDate?: FieldError;
   };
@@ -28,6 +28,7 @@ interface DiscountDatesProps<ErrorCode> {
 const DiscountDates = <ErrorCode,>({
   data,
   disabled,
+  stacked = false,
   errors,
   formErrors,
   onChange,
@@ -39,7 +40,7 @@ const DiscountDates = <ErrorCode,>({
   return (
     <DashboardCard data-test-id="active-dates-section">
       <DashboardCard.Header>
-        <DashboardCard.Title>
+        <DashboardCard.Title size={stacked ? 6 : 5} fontWeight={stacked ? "medium" : "bold"}>
           <FormattedMessage
             id="zKOGkU"
             defaultMessage="Active Dates"
@@ -49,7 +50,7 @@ const DiscountDates = <ErrorCode,>({
       </DashboardCard.Header>
 
       <DashboardCard.Content>
-        <Box display="flex" gap={4}>
+        <Box display="flex" flexDirection={stacked ? "column" : "row"} gap={4}>
           <Input
             data-test-id="start-date-input"
             disabled={disabled}
@@ -105,7 +106,7 @@ const DiscountDates = <ErrorCode,>({
           </Text>
         </Checkbox>
         {data.hasEndDate && (
-          <Box display="flex" gap={4}>
+          <Box display="flex" flexDirection={stacked ? "column" : "row"} gap={4}>
             <Input
               data-test-id="end-date-input"
               disabled={disabled}

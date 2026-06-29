@@ -1,10 +1,14 @@
-import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import {
+  ConfirmButton,
+  type ConfirmButtonTransitionState,
+} from "@dashboard/components/ConfirmButton";
 import { buttonMessages } from "@dashboard/intl";
 import { Button, makeStyles } from "@saleor/macaw-ui";
 import { FormattedMessage } from "react-intl";
 
 interface TranslationFieldsSaveProps {
   saveButtonState: ConfirmButtonTransitionState;
+  saveDisabled?: boolean;
   onDiscard: () => void;
   onSave: () => void;
 }
@@ -25,7 +29,7 @@ const useStyles = makeStyles(
   },
 );
 const TranslationFieldsSave = (props: TranslationFieldsSaveProps) => {
-  const { saveButtonState, onDiscard, onSave } = props;
+  const { saveButtonState, saveDisabled = false, onDiscard, onSave } = props;
   const classes = useStyles(props);
 
   return (
@@ -34,6 +38,7 @@ const TranslationFieldsSave = (props: TranslationFieldsSaveProps) => {
         data-test-id="button-bar-confirm"
         className={classes.confirmButton}
         transitionState={saveButtonState}
+        disabled={saveDisabled}
         onClick={onSave}
       >
         <FormattedMessage {...buttonMessages.save} />

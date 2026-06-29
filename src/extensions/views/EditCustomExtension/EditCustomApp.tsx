@@ -9,9 +9,9 @@ import { appMessages, notifyMessages } from "@dashboard/extensions/messages";
 import { EXTENSION_LIST_QUERY } from "@dashboard/extensions/queries";
 import { getAppInstallErrorMessage, getCustomAppErrorMessage } from "@dashboard/extensions/utils";
 import {
-  AppTokenCreateMutation,
-  AppTokenDeleteMutation,
-  AppUpdateMutation,
+  type AppTokenCreateMutation,
+  type AppTokenDeleteMutation,
+  type AppUpdateMutation,
   useAppActivateMutation,
   useAppDeactivateMutation,
   useAppDeleteMutation,
@@ -20,26 +20,26 @@ import {
   useAppTokenDeleteMutation,
   useAppUpdateMutation,
   useWebhookDeleteMutation,
-  WebhookDeleteMutation,
+  type WebhookDeleteMutation,
 } from "@dashboard/graphql";
 import { useHasManagedAppsPermission } from "@dashboard/hooks/useHasManagedAppsPermission";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import useShop from "@dashboard/hooks/useShop";
-import { commonMessages } from "@dashboard/intl";
 import { extractMutationErrors, getStringOrPlaceholder, parseLogMessage } from "@dashboard/misc";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import { useEffect } from "react";
 import { useIntl } from "react-intl";
 
 import {
-  CustomExtensionDetailsUrlDialog,
-  CustomExtensionDetailsUrlQueryParams,
+  type CustomExtensionDetailsUrlDialog,
+  type CustomExtensionDetailsUrlQueryParams,
   ExtensionsUrls,
 } from "../../urls";
+import { filterCustomExtensionPermissions } from "../customExtensionHiddenPermissions";
 import {
   CustomExtensionDetailsPage,
-  CustomExtensionDetailsPageFormData,
+  type CustomExtensionDetailsPageFormData,
 } from "./components/CustomExtensionDetailsPage/CustomExtensionDetailsPage";
 import { TokenCreateDialog } from "./components/TokenCreateDialog/TokenCreateDialog";
 import { TokenDeleteDialog } from "./components/TokenDeleteDialog/TokenDeleteDialog";
@@ -143,7 +143,7 @@ export const EditCustomExtension = ({ id, params, token, onTokenClose }: OrderLi
     if (data?.webhookDelete?.errors?.length === 0) {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "gOiREw", defaultMessage: "App settings updated" }),
       });
       navigate(ExtensionsUrls.editCustomExtensionUrl(id));
       closeModal();
@@ -164,7 +164,7 @@ export const EditCustomExtension = ({ id, params, token, onTokenClose }: OrderLi
     if (data?.appUpdate?.errors?.length === 0) {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "gOiREw", defaultMessage: "App settings updated" }),
       });
     } else {
       const error = data?.appUpdate?.errors[0];
@@ -190,7 +190,7 @@ export const EditCustomExtension = ({ id, params, token, onTokenClose }: OrderLi
     if (data?.appTokenDelete?.errors?.length === 0) {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "gOiREw", defaultMessage: "App settings updated" }),
       });
       refetch();
       closeModal();
@@ -215,7 +215,9 @@ export const EditCustomExtension = ({ id, params, token, onTokenClose }: OrderLi
             name: data.name,
             permissions:
               data.hasFullAccess && shop?.permissions
-                ? shop.permissions.map(permission => permission.code)
+                ? filterCustomExtensionPermissions(shop.permissions).map(
+                    permission => permission.code,
+                  )
                 : data.permissions,
           },
         },
@@ -272,7 +274,7 @@ export const EditCustomExtension = ({ id, params, token, onTokenClose }: OrderLi
         onAppActivateOpen={() => openModal("app-activate")}
         onAppDeactivateOpen={() => openModal("app-deactivate")}
         onAppDeleteOpen={() => openModal("app-delete")}
-        permissions={shop?.permissions || []}
+        permissions={filterCustomExtensionPermissions(shop?.permissions ?? [])}
         app={data?.app}
         saveButtonBarState={updateAppOpts.status}
         hasManagedAppsPermission={hasManagedAppsPermission}

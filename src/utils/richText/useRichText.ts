@@ -1,6 +1,8 @@
-import { OutputData } from "@editorjs/editorjs";
-import { EditorCore } from "@react-editor-js/core";
-import { MutableRefObject, useMemo, useRef, useState } from "react";
+import { type OutputData } from "@editorjs/editorjs";
+import { type EditorCore } from "@react-editor-js/core";
+import { type MutableRefObject, useEffect, useRef, useState } from "react";
+
+const EMPTY_EDITOR_DATA: OutputData = { blocks: [] };
 
 export interface UseRichTextOptions {
   initial: string | null | undefined;
@@ -8,13 +10,21 @@ export interface UseRichTextOptions {
   triggerChange: () => void;
 }
 
-interface UseRichTextResult {
+export interface UseRichTextResult {
   editorRef: MutableRefObject<EditorCore | null>;
   handleChange: () => void;
   getValue: () => Promise<OutputData>;
   defaultValue: OutputData | undefined;
   isReadyForMount: boolean;
   isDirty: boolean;
+}
+
+function parseInitialDescription(initial: string): OutputData | null {
+  try {
+    return JSON.parse(initial) as OutputData;
+  } catch {
+    return null;
+  }
 }
 
 export function useRichText({
@@ -25,42 +35,45 @@ export function useRichText({
   const editorRef = useRef<EditorCore | null>(null);
   const [isReadyForMount, setIsReadyForMount] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [defaultValue, setDefaultValue] = useState<OutputData | undefined>(undefined);
+
   const handleChange = () => {
     setIsDirty(true);
     triggerChange();
   };
+
   const getValue = async () => {
     if (editorRef.current) {
       setIsDirty(false);
 
       return editorRef.current.save();
-    } else {
-      throw new Error("Editor instance is not available");
     }
+
+    throw new Error("Editor instance is not available");
   };
 
-  const defaultValue = useMemo<OutputData | undefined>(() => {
+  useEffect(() => {
     if (loading) {
+      setIsReadyForMount(false);
+      setDefaultValue(undefined);
+      setIsDirty(false);
+
       return;
     }
 
     if (!initial) {
+      setDefaultValue(EMPTY_EDITOR_DATA);
       setIsReadyForMount(true);
       setIsDirty(false);
 
-      return "";
+      return;
     }
 
-    try {
-      const result = JSON.parse(initial);
+    const parsed = parseInitialDescription(initial);
 
-      setIsDirty(false);
-      setIsReadyForMount(true);
-
-      return result;
-    } catch (e) {
-      return undefined;
-    }
+    setDefaultValue(parsed ?? EMPTY_EDITOR_DATA);
+    setIsReadyForMount(true);
+    setIsDirty(false);
   }, [initial, loading]);
 
   return {

@@ -1,7 +1,5 @@
-import SearchInput from "@dashboard/components/AppLayout/ListFilters/components/SearchInput";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import { ButtonGroupWithDropdown } from "@dashboard/components/ButtonGroupWithDropdown";
-import { DashboardCard } from "@dashboard/components/Card";
 import { FilterPresetsSelect } from "@dashboard/components/FilterPresetsSelect";
 import { ListPageLayout } from "@dashboard/components/Layouts";
 import { extensionMountPoints } from "@dashboard/extensions/extensionMountPoints";
@@ -10,20 +8,20 @@ import {
   getExtensionsItemsForPageTypeOverviewActions,
 } from "@dashboard/extensions/getExtensionsItems";
 import { useExtensions } from "@dashboard/extensions/hooks/useExtensions";
-import { PageTypeFragment } from "@dashboard/graphql";
+import { type PageTypeFragment } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { sectionNames } from "@dashboard/intl";
-import { pageTypeAddUrl, PageTypeListUrlSortField } from "@dashboard/modelTypes/urls";
-import { Box, Button, ChevronRightIcon } from "@saleor/macaw-ui-next";
+import { pageTypeAddUrl, type PageTypeListUrlSortField } from "@dashboard/modelTypes/urls";
+import { Box, Button } from "@saleor/macaw-ui-next";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import {
-  ListActions,
-  PageListProps,
-  SearchPageProps,
-  SortPage,
-  TabPageProps,
+  type ListActions,
+  type PageListProps,
+  type SearchPageProps,
+  type SortPage,
+  type TabPageProps,
 } from "../../../types";
 import PageTypeList from "../PageTypeList";
 
@@ -76,10 +74,6 @@ const PageTypeListPage = ({
       >
         <Box __flex={1} display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex">
-            <Box marginX={3} display="flex" alignItems="center">
-              <ChevronRightIcon />
-            </Box>
-
             <FilterPresetsSelect
               presetsChanged={hasPresetsChanged()}
               onSelect={onTabChange}
@@ -129,22 +123,19 @@ const PageTypeListPage = ({
           )}
         </Box>
       </TopNav>
-      <DashboardCard gap={0}>
-        <Box paddingX={6} marginBottom={2}>
-          <Box __width="320px">
-            <SearchInput
-              initialSearch={initialSearch}
-              placeholder={intl.formatMessage({
-                id: "INw68F",
-                defaultMessage: "Search model types...",
-              })}
-              onSearchChange={onSearchChange}
-            />
-          </Box>
-        </Box>
-
-        <PageTypeList {...listProps} />
-      </DashboardCard>
+      <Box paddingX={6}>
+        <PageTypeList
+          {...listProps}
+          search={{
+            placeholder: intl.formatMessage({
+              id: "INw68F",
+              defaultMessage: "Search model types...",
+            }),
+            initialValue: initialSearch,
+            onSearchChange,
+          }}
+        />
+      </Box>
     </ListPageLayout>
   );
 };

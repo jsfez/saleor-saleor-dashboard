@@ -3,7 +3,9 @@ import {
   ConditionalFilters,
   useConditionalFilterContext,
 } from "@dashboard/components/ConditionalFilter";
-import { Box, Button, CloseIcon, DropdownButton, Popover, Text } from "@saleor/macaw-ui-next";
+import { iconSize, iconStrokeWidth } from "@dashboard/components/icons";
+import { Box, Button, DropdownButton, Popover, Text } from "@saleor/macaw-ui-next";
+import { X } from "lucide-react";
 import { useIntl } from "react-intl";
 
 export const ExpressionFilters = () => {
@@ -40,7 +42,11 @@ export const ExpressionFilters = () => {
             <Text>{formatMessage(conditionalFilterMessages.popoverTitle)}</Text>
             <Box display="flex" alignItems="center" gap={2}>
               <Popover.Close>
-                <Button variant="tertiary" icon={<CloseIcon />} onClick={clearEmpty} />
+                <Button
+                  variant="tertiary"
+                  icon={<X size={iconSize.medium} strokeWidth={iconStrokeWidth} />}
+                  onClick={clearEmpty}
+                />
               </Popover.Close>
             </Box>
           </Box>

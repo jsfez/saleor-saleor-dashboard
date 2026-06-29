@@ -1,31 +1,27 @@
 // @ts-strict-ignore
 import { attributeUrl } from "@dashboard/attributes/urls";
+import { AttributeNameWithTypeIcon } from "@dashboard/components/AttributeInputTypeIcon/AttributeNameWithTypeIcon";
 import { DashboardCard } from "@dashboard/components/Card";
 import Checkbox from "@dashboard/components/Checkbox";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
+import { Placeholder } from "@dashboard/components/Placeholder";
+import { ResponsiveTable, tableStyles } from "@dashboard/components/ResponsiveTable";
 import { SortableTableBody, SortableTableRow } from "@dashboard/components/SortableTable";
 import { TableButtonWrapper } from "@dashboard/components/TableButtonWrapper/TableButtonWrapper";
 import TableHead from "@dashboard/components/TableHead";
-import TableRowLink from "@dashboard/components/TableRowLink";
-import { ProductAttributeType, ProductTypeDetailsQuery } from "@dashboard/graphql";
-import { maybe, renderCollection } from "@dashboard/misc";
-import { ListActions, ReorderAction } from "@dashboard/types";
+import { ProductAttributeType, type ProductTypeDetailsQuery } from "@dashboard/graphql";
+import { maybe } from "@dashboard/misc";
+import { type ListActions, type ReorderAction } from "@dashboard/types";
 import { TableCell } from "@material-ui/core";
-import HelpOutline from "@material-ui/icons/HelpOutline";
-import { DeleteIcon, IconButton, makeStyles } from "@saleor/macaw-ui";
-import { Button, Skeleton, Tooltip } from "@saleor/macaw-ui-next";
+import { makeStyles } from "@saleor/macaw-ui";
+import { Box, Button, Skeleton, Tooltip } from "@saleor/macaw-ui-next";
 import capitalize from "lodash/capitalize";
+import { CircleQuestionMark, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 const useStyles = makeStyles(
   theme => ({
-    colAction: {
-      "&:last-child": {
-        paddingRight: 0,
-      },
-      width: 80,
-    },
     colGrab: {
       width: 60,
     },
@@ -43,20 +39,17 @@ const useStyles = makeStyles(
       alignItems: "center",
     },
     colVariantDisabled: {
-      fill: theme.palette.alert.icon.info,
-      fillOpacity: 0.6,
+      color: theme.palette.alert.icon.info,
+      opacity: 0.6,
       "&:hover": {
-        fillOpacity: 1,
+        opacity: 1,
       },
     },
     link: {
       cursor: "pointer",
     },
-    textLeft: {
-      textAlign: "left",
-    },
   }),
-  { name: "ProductTypeAttributes" },
+  { name: "ProductTypeVariantAttributes" },
 );
 
 interface ProductTypeVariantAttributesProps extends ListActions {
@@ -136,17 +129,30 @@ const ProductTypeVariantAttributes = (props: ProductTypeVariantAttributesProps) 
           </Button>
         </DashboardCard.Toolbar>
       </DashboardCard.Header>
+      <Box paddingX={6}>
+        <DashboardCard.Subtitle fontSize={3} color="default2">
+          <FormattedMessage
+            id="Uxhquh"
+            defaultMessage="Product attributes and variant attributes are mutually exclusive. An attribute cannot be assigned to both sections within the same product type."
+            description="info message about attribute exclusivity in product type"
+          />
+        </DashboardCard.Subtitle>
+      </Box>
       <DashboardCard.Content>
-        <ResponsiveTable>
-          <colgroup>
-            <col className={classes.colGrab} />
-            <col />
-            <col className={classes.colName} />
-            <col className={classes.colSlug} />
-            <col className={classes.colVariant} />
-            <col className={classes.colAction} />
-          </colgroup>
-          {assignedVariantAttributes?.length > 0 && (
+        {!assignedVariantAttributes?.length ? (
+          <Placeholder>
+            <FormattedMessage id="ztQgD8" defaultMessage="No attributes found" />
+          </Placeholder>
+        ) : (
+          <ResponsiveTable>
+            <colgroup>
+              <col className={classes.colGrab} />
+              <col />
+              <col className={classes.colName} />
+              <col className={classes.colSlug} />
+              <col className={classes.colVariant} />
+              <col className={tableStyles.colAction} />
+            </colgroup>
             <TableHead
               colSpan={numberOfColumns}
               disabled={disabled}
@@ -169,19 +175,36 @@ const ProductTypeVariantAttributes = (props: ProductTypeVariantAttributesProps) 
                 />
               </TableCell>
               <TableCell className={classes.colName}>
-                <FormattedMessage
-                  id="4k9rMQ"
-                  defaultMessage="Variant Selection"
-                  description="variant attribute checkbox"
-                />
+                <Box display="flex" alignItems="center" gap={1}>
+                  <FormattedMessage
+                    id="4k9rMQ"
+                    defaultMessage="Variant Selection"
+                    description="variant attribute checkbox"
+                  />
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <Box color="default2" display="flex" alignItems="center">
+                        <CircleQuestionMark
+                          size={iconSize.small}
+                          strokeWidth={iconStrokeWidthBySize.small}
+                        />
+                      </Box>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content side="bottom">
+                      <Tooltip.Arrow />
+                      <FormattedMessage
+                        id="xfypNP"
+                        defaultMessage="When enabled, this attribute will be used to distinguish variants on the storefront."
+                        description="tooltip for variant selection column header"
+                      />
+                    </Tooltip.Content>
+                  </Tooltip>
+                </Box>
               </TableCell>
               <TableCell />
             </TableHead>
-          )}
-          <SortableTableBody onSortEnd={onAttributeReorder}>
-            {renderCollection(
-              assignedVariantAttributes,
-              (assignedVariantAttribute, attributeIndex) => {
+            <SortableTableBody onSortEnd={onAttributeReorder}>
+              {assignedVariantAttributes.map((assignedVariantAttribute, attributeIndex) => {
                 const { attribute } = assignedVariantAttribute;
                 const isVariantSelected = assignedVariantAttribute
                   ? isChecked(attribute.id)
@@ -218,7 +241,14 @@ const ProductTypeVariantAttributes = (props: ProductTypeVariantAttributesProps) 
                       />
                     </TableCell>
                     <TableCell className={classes.colName} data-test-id="name">
-                      {attribute.name ?? <Skeleton />}
+                      {attribute.name ? (
+                        <AttributeNameWithTypeIcon
+                          name={attribute.name}
+                          inputType={attribute.inputType}
+                        />
+                      ) : (
+                        <Skeleton />
+                      )}
                     </TableCell>
                     <TableCell className={classes.colSlug} data-test-id="slug">
                       {maybe(() => attribute.slug) ? attribute.slug : <Skeleton />}
@@ -242,7 +272,11 @@ const ProductTypeVariantAttributes = (props: ProductTypeVariantAttributesProps) 
                         {!!variantSelectionDisabled && (
                           <Tooltip>
                             <Tooltip.Trigger>
-                              <HelpOutline className={classes.colVariantDisabled} />
+                              <CircleQuestionMark
+                                size={iconSize.small}
+                                strokeWidth={iconStrokeWidthBySize.small}
+                                className={classes.colVariantDisabled}
+                              />
                             </Tooltip.Trigger>
                             <Tooltip.Content side="bottom">
                               <Tooltip.Arrow />
@@ -258,33 +292,28 @@ const ProductTypeVariantAttributes = (props: ProductTypeVariantAttributesProps) 
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className={classes.colAction}>
+                    <TableCell className={tableStyles.colAction}>
                       <TableButtonWrapper>
-                        <IconButton
+                        <Button
                           data-test-id="delete-icon"
-                          onClick={() => onAttributeUnassign(attribute.id)}
+                          disabled={disabled}
                           variant="secondary"
-                        >
-                          <DeleteIcon
-                            onPointerEnterCapture={undefined}
-                            onPointerLeaveCapture={undefined}
-                          />
-                        </IconButton>
+                          onClick={() => onAttributeUnassign(attribute.id)}
+                          icon={
+                            <Trash2
+                              size={iconSize.small}
+                              strokeWidth={iconStrokeWidthBySize.small}
+                            />
+                          }
+                        />
                       </TableButtonWrapper>
                     </TableCell>
                   </SortableTableRow>
                 );
-              },
-              () => (
-                <TableRowLink>
-                  <TableCell colSpan={numberOfColumns}>
-                    <FormattedMessage id="ztQgD8" defaultMessage="No attributes found" />
-                  </TableCell>
-                </TableRowLink>
-              ),
-            )}
-          </SortableTableBody>
-        </ResponsiveTable>
+              })}
+            </SortableTableBody>
+          </ResponsiveTable>
+        )}
       </DashboardCard.Content>
     </DashboardCard>
   );

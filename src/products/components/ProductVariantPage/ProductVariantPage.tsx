@@ -1,49 +1,60 @@
 // @ts-strict-ignore
-import { QueryResult } from "@apollo/client";
+import { type QueryResult } from "@apollo/client";
 import {
   getReferenceAttributeEntityTypeFromAttribute,
   handleContainerReferenceAssignment,
 } from "@dashboard/attributes/utils/data";
-import { useUser } from "@dashboard/auth";
 import { hasPermission } from "@dashboard/auth/misc";
-import { ChannelPriceData } from "@dashboard/channels/utils";
+import { useUser } from "@dashboard/auth/useUser";
+import { type ChannelPriceData } from "@dashboard/channels/utils";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
-import AssignAttributeValueDialog from "@dashboard/components/AssignAttributeValueDialog";
+import AssignAttributeValueDialog, {
+  type AssignAttributeValueDialogFilterChangeMap,
+} from "@dashboard/components/AssignAttributeValueDialog";
 import {
-  AttributeInput,
+  type AttributeInput,
   Attributes,
   VariantAttributeScope,
 } from "@dashboard/components/Attributes";
 import CardSpacer from "@dashboard/components/CardSpacer";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import Grid from "@dashboard/components/Grid";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
-import { Metadata } from "@dashboard/components/Metadata/Metadata";
+import Link from "@dashboard/components/Link";
 import { Savebar } from "@dashboard/components/Savebar";
 import {
   PermissionEnum,
-  ProductChannelListingErrorFragment,
-  ProductErrorWithAttributesFragment,
-  ProductVariantFragment,
-  SearchAttributeValuesQuery,
-  SearchCategoriesQuery,
-  SearchCollectionsQuery,
-  SearchPagesQuery,
-  SearchProductsQuery,
-  SearchWarehousesQuery,
+  type ProductChannelListingErrorFragment,
+  type ProductErrorWithAttributesFragment,
+  type ProductVariantFragment,
+  type SearchAttributeValuesQuery,
+  type SearchCategoriesQuery,
+  type SearchCollectionsQuery,
+  type SearchPagesQuery,
+  type SearchProductsQuery,
+  type SearchWarehousesQuery,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { VariantDetailsChannelsAvailabilityCard } from "@dashboard/products/components/ProductVariantChannels/ChannelsAvailabilityCard";
+import { rippleProductVariantMetadata } from "@dashboard/products/ripples/productVariantMetadata";
 import { productUrl } from "@dashboard/products/urls";
 import { getSelectedMedia } from "@dashboard/products/utils/data";
+import { productTypeUrl } from "@dashboard/productTypes/urls";
 import { TranslationsButton } from "@dashboard/translations/components/TranslationsButton/TranslationsButton";
 import { productVariantUrl } from "@dashboard/translations/urls";
 import { useCachedLocales } from "@dashboard/translations/useCachedLocales";
-import { Container, FetchMoreProps, RelayToFlat, ReorderAction } from "@dashboard/types";
+import {
+  type Container,
+  type FetchMoreProps,
+  type RelayToFlat,
+  type ReorderAction,
+} from "@dashboard/types";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
-import { Box } from "@saleor/macaw-ui-next";
+import { Box, Skeleton, Text, Tooltip } from "@saleor/macaw-ui-next";
+import { CircleHelp } from "lucide-react";
 import { useState } from "react";
-import { defineMessages, useIntl } from "react-intl";
+import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 
 import { ProductShipping } from "../ProductShipping";
 import { ProductStocks } from "../ProductStocks";
@@ -58,13 +69,19 @@ import ProductVariantNavigation from "../ProductVariantNavigation";
 import { ProductVariantPrice } from "../ProductVariantPrice";
 import ProductVariantSetDefault from "../ProductVariantSetDefault";
 import {
-  ProductVariantUpdateData,
+  type ProductVariantUpdateData,
   ProductVariantUpdateForm,
-  ProductVariantUpdateHandlers,
-  ProductVariantUpdateSubmitData,
+  type ProductVariantUpdateHandlers,
+  type ProductVariantUpdateSubmitData,
 } from "./form";
+import { VariantAttributesSection } from "./VariantAttributesSection";
 
 const messages = defineMessages({
+  editVariantMetadata: {
+    id: "H6ad9p",
+    defaultMessage: "Edit variant metadata",
+    description: "product variant detail page, top-bar metadata button tooltip",
+  },
   nonSelectionAttributes: {
     id: "f3B4tc",
     defaultMessage: "Variant Attributes",
@@ -90,6 +107,8 @@ interface ProductVariantPageProps {
   header: string;
   channels: ChannelPriceData[];
   channelErrors: ProductChannelListingErrorFragment[];
+  /** Whether the product type supports variant attributes */
+  hasVariants: boolean;
   loading?: boolean;
   placeholderImage?: string;
   saveButtonBarState: ConfirmButtonTransitionState;
@@ -111,11 +130,13 @@ interface ProductVariantPageProps {
   fetchAttributeValues: (query: string, attributeId: string) => void;
   onAssignReferencesClick: (attribute: AttributeInput) => void;
   onCloseDialog: () => void;
+  onFilterChange?: AssignAttributeValueDialogFilterChangeMap;
   onVariantPreorderDeactivate: (id: string) => void;
   variantDeactivatePreoderButtonState: ConfirmButtonTransitionState;
   onVariantReorder: ReorderAction;
   onAttributeSelectBlur: () => void;
   onDelete: () => any;
+  onShowMetadata: () => void;
   onSubmit: (data: ProductVariantUpdateSubmitData) => any;
   onSetDefaultVariant: () => any;
   onWarehouseConfigure: () => any;
@@ -131,6 +152,7 @@ export const ProductVariantPage = ({
   defaultVariantId,
   defaultWeightUnit,
   errors: apiErrors,
+  hasVariants,
   header,
   loading,
   placeholderImage,
@@ -142,6 +164,7 @@ export const ProductVariantPage = ({
   referenceCollections = [],
   attributeValues,
   onDelete,
+  onShowMetadata,
   onSubmit,
   onVariantPreorderDeactivate,
   variantDeactivatePreoderButtonState,
@@ -150,6 +173,7 @@ export const ProductVariantPage = ({
   onWarehouseConfigure,
   assignReferencesAttributeId,
   onAssignReferencesClick,
+  onFilterChange,
   fetchReferencePages,
   fetchReferenceProducts,
   fetchReferenceCategories,
@@ -199,12 +223,41 @@ export const ProductVariantPage = ({
 
   return (
     <DetailPageLayout gridTemplateColumns={1}>
-      <TopNav href={productUrl(productId)} title={header}>
+      <TopNav
+        href={productUrl(productId)}
+        actionsGap={3}
+        title={
+          loading ? (
+            <Skeleton __width="200px" />
+          ) : (
+            <Box display="flex" alignItems="center" gap={1}>
+              <Text
+                size={6}
+                color="default2"
+                ellipsis
+                __maxWidth="200px"
+                title={variant?.product?.name}
+              >
+                {variant?.product?.name}
+              </Text>
+              <Text size={6} color="default2">
+                /
+              </Text>
+              <Text size={6}>{header}</Text>
+            </Box>
+          )
+        }
+      >
         {variant?.product?.defaultVariant?.id !== variant?.id && (
-          <Box marginRight={3}>
-            <ProductVariantSetDefault onSetDefaultVariant={onSetDefaultVariant} />
-          </Box>
+          <ProductVariantSetDefault onSetDefaultVariant={onSetDefaultVariant} />
         )}
+        <TopNav.MetadataButton
+          onClick={onShowMetadata}
+          disabled={!variant}
+          data-test-id="show-variant-metadata"
+          title={intl.formatMessage(messages.editVariantMetadata)}
+          ripple={rippleProductVariantMetadata}
+        />
         {canTranslate && (
           <TranslationsButton
             onClick={() =>
@@ -213,8 +266,9 @@ export const ProductVariantPage = ({
           />
         )}
       </TopNav>
-      <DetailPageLayout.Content>
+      <DetailPageLayout.Content paddingBottom={10}>
         <ProductVariantUpdateForm
+          key={variant?.id}
           variant={variant}
           onSubmit={onSubmit}
           currentChannels={channels}
@@ -262,6 +316,7 @@ export const ProductVariantPage = ({
                       defaultVariantId={defaultVariantId}
                       fallbackThumbnail={variant?.product?.thumbnail?.url}
                       variants={variant?.product.variants}
+                      loading={loading}
                       onReorder={onVariantReorder}
                     />
                   </div>
@@ -279,33 +334,67 @@ export const ProductVariantPage = ({
                       disabled={loading}
                       onManageClick={toggleManageChannels}
                     />
-                    {nonSelectionAttributes.length > 0 && (
-                      <>
-                        <Attributes
-                          title={intl.formatMessage(messages.nonSelectionAttributes)}
-                          attributes={nonSelectionAttributes}
-                          attributeValues={attributeValues}
-                          loading={loading}
-                          disabled={loading}
-                          errors={errors}
-                          onChange={handlers.selectAttribute}
-                          onMultiChange={handlers.selectAttributeMultiple}
-                          onFileChange={handlers.selectAttributeFile}
-                          onReferencesRemove={handlers.selectAttributeReference}
-                          onReferencesAddClick={onAssignReferencesClick}
-                          onReferencesReorder={handlers.reorderAttributeValue}
-                          fetchAttributeValues={fetchAttributeValues}
-                          fetchMoreAttributeValues={fetchMoreAttributeValues}
-                          onAttributeSelectBlur={onAttributeSelectBlur}
-                          richTextGetters={attributeRichTextGetters}
-                        />
-                        <CardSpacer />
-                      </>
+                    {variant?.product?.productType && (
+                      <VariantAttributesSection
+                        title={intl.formatMessage(messages.nonSelectionAttributes)}
+                        attributes={nonSelectionAttributes}
+                        totalAttributesCount={data.attributes.length}
+                        selectionAttributesExist={selectionAttributes.length > 0}
+                        hasVariants={hasVariants}
+                        attributeValues={attributeValues}
+                        productTypeName={variant.product.productType.name}
+                        productTypeUrl={productTypeUrl(variant.product.productType.id)}
+                        loading={loading}
+                        errors={errors}
+                        onChange={handlers.selectAttribute}
+                        onMultiChange={handlers.selectAttributeMultiple}
+                        onFileChange={handlers.selectAttributeFile}
+                        onReferencesRemove={handlers.selectAttributeReference}
+                        onReferencesAddClick={onAssignReferencesClick}
+                        onReferencesReorder={handlers.reorderAttributeValue}
+                        fetchAttributeValues={fetchAttributeValues}
+                        fetchMoreAttributeValues={fetchMoreAttributeValues}
+                        onAttributeSelectBlur={onAttributeSelectBlur}
+                        richTextGetters={attributeRichTextGetters}
+                      />
                     )}
-                    {selectionAttributes.length > 0 && (
+                    {hasVariants && selectionAttributes.length > 0 && (
                       <>
+                        <CardSpacer />
                         <Attributes
-                          title={intl.formatMessage(messages.selectionAttributesHeader)}
+                          title={
+                            <Box display="flex" alignItems="center" gap={2}>
+                              <Text size={6} fontWeight="medium">
+                                {intl.formatMessage(messages.selectionAttributesHeader)}
+                              </Text>
+                              <Tooltip>
+                                <Tooltip.Trigger>
+                                  <Box color="default2" display="flex" alignItems="center">
+                                    <CircleHelp
+                                      size={iconSize.small}
+                                      strokeWidth={iconStrokeWidthBySize.small}
+                                    />
+                                  </Box>
+                                </Tooltip.Trigger>
+                                <Tooltip.Content side="bottom">
+                                  <Tooltip.Arrow />
+                                  <FormattedMessage
+                                    id="LhGd2m"
+                                    defaultMessage="Attributes that define variant options customers can choose from on the storefront.{br}Can be adjusted in the {productTypeLink} settings."
+                                    description="tooltip for variant selection attributes"
+                                    values={{
+                                      br: <br />,
+                                      productTypeLink: variant?.product?.productType ? (
+                                        <Link href={productTypeUrl(variant.product.productType.id)}>
+                                          {variant.product.productType.name}
+                                        </Link>
+                                      ) : null,
+                                    }}
+                                  />
+                                </Tooltip.Content>
+                              </Tooltip>
+                            </Box>
+                          }
                           attributes={selectionAttributes}
                           attributeValues={attributeValues}
                           loading={loading}
@@ -382,8 +471,6 @@ export const ProductVariantPage = ({
                       isCreate={false}
                       searchWarehouses={searchWarehouses}
                     />
-                    <CardSpacer />
-                    <Metadata data={data} onChange={handlers.changeMetadata} />
                   </div>
                 </Grid>
                 <Savebar>
@@ -417,6 +504,7 @@ export const ProductVariantPage = ({
                     onSubmit={attributeValues =>
                       handleAssignReferenceAttribute(attributeValues, data, handlers)
                     }
+                    onFilterChange={onFilterChange}
                   />
                 )}
                 {variant && (

@@ -1,15 +1,14 @@
 // @ts-strict-ignore
 import {
-  MenuDeleteMutation,
-  MenuItemCreateMutation,
-  MenuItemUpdateMutation,
-  MenuUpdateMutation,
+  type MenuDeleteMutation,
+  type MenuItemCreateMutation,
+  type MenuItemUpdateMutation,
+  type MenuUpdateMutation,
 } from "@dashboard/graphql";
-import { commonMessages } from "@dashboard/intl";
-import { IntlShape } from "react-intl";
+import { type IntlShape } from "react-intl";
 
-import { UseNavigatorResult } from "../../../hooks/useNavigator";
-import { UseNotifierResult } from "../../../hooks/useNotifier";
+import { type UseNavigatorResult } from "../../../hooks/useNavigator";
+import { type UseNotifierResult } from "../../../hooks/useNotifier";
 import { menuListUrl, menuUrl } from "../../urls";
 
 export function handleItemCreate(
@@ -22,7 +21,7 @@ export function handleItemCreate(
     closeModal();
     notify({
       status: "success",
-      text: intl.formatMessage(commonMessages.savedChanges),
+      text: intl.formatMessage({ id: "mqwLmD", defaultMessage: "Menu updated" }),
     });
   }
 }
@@ -37,7 +36,7 @@ export function handleItemUpdate(
   if (data.menuItemUpdate.errors.length === 0) {
     notify({
       status: "success",
-      text: intl.formatMessage(commonMessages.savedChanges),
+      text: intl.formatMessage({ id: "mqwLmD", defaultMessage: "Menu updated" }),
     });
     navigate(
       menuUrl(id, {
@@ -57,7 +56,7 @@ export function handleDelete(
   if (data.menuDelete.errors.length === 0) {
     notify({
       status: "success",
-      text: intl.formatMessage(commonMessages.savedChanges),
+      text: intl.formatMessage({ id: "mqwLmD", defaultMessage: "Menu updated" }),
     });
     navigate(menuListUrl(), { replace: true });
   }
@@ -76,7 +75,7 @@ export function handleUpdate(
   ) {
     notify({
       status: "success",
-      text: intl.formatMessage(commonMessages.savedChanges),
+      text: intl.formatMessage({ id: "mqwLmD", defaultMessage: "Menu updated" }),
     });
     refetch();
   }

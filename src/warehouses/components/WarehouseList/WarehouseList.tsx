@@ -1,18 +1,20 @@
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import { TableButtonWrapper } from "@dashboard/components/TableButtonWrapper/TableButtonWrapper";
 import TableCellHeader from "@dashboard/components/TableCellHeader";
 import { TablePaginationWithContext } from "@dashboard/components/TablePagination";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import { WarehouseWithShippingFragment } from "@dashboard/graphql";
+import { type WarehouseWithShippingFragment } from "@dashboard/graphql";
 import { getPrevLocationState } from "@dashboard/hooks/useBackLinkWithState";
 import { renderCollection } from "@dashboard/misc";
-import { ListProps, SortPage } from "@dashboard/types";
+import { type ListProps, type SortPage } from "@dashboard/types";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { getArrowDirection } from "@dashboard/utils/sort";
 import { WarehouseListUrlSortField, warehouseUrl } from "@dashboard/warehouses/urls";
-import { TableBody, TableCell, TableFooter, TableHead } from "@material-ui/core";
+import { TableBody, TableCell, TableHead } from "@material-ui/core";
 import { makeStyles } from "@saleor/macaw-ui";
-import { Button, Skeleton, TrashBinIcon } from "@saleor/macaw-ui-next";
+import { Button, Skeleton } from "@saleor/macaw-ui-next";
+import { Trash2 } from "lucide-react";
 import { FormattedMessage } from "react-intl";
 import { useLocation } from "react-router";
 
@@ -45,16 +47,33 @@ const useStyles = makeStyles(
 interface WarehouseListProps extends ListProps, SortPage<WarehouseListUrlSortField> {
   warehouses: WarehouseWithShippingFragment[] | undefined;
   onRemove: (id: string | undefined) => void;
+  /** Optional search configuration */
+  search?: {
+    placeholder?: string;
+    initialValue?: string;
+    onSearchChange?: (query: string) => void;
+  };
 }
 
 const numberOfColumns = 3;
 const WarehouseList = (props: WarehouseListProps) => {
-  const { warehouses, disabled, settings, sort, onUpdateListSettings, onRemove, onSort } = props;
+  const { warehouses, disabled, settings, sort, onUpdateListSettings, onRemove, onSort, search } =
+    props;
   const classes = useStyles(props);
   const location = useLocation();
 
   return (
-    <ResponsiveTable data-test-id="warehouse-list">
+    <ResponsiveTable
+      data-test-id="warehouse-list"
+      search={search}
+      footer={
+        <TablePaginationWithContext
+          settings={settings}
+          disabled={disabled}
+          onUpdateListSettings={onUpdateListSettings}
+        />
+      }
+    >
       <TableHead>
         <TableRowLink>
           <TableCellHeader
@@ -72,21 +91,9 @@ const WarehouseList = (props: WarehouseListProps) => {
           <TableCell className={classes.colZones}>
             <FormattedMessage id="PFXGaR" defaultMessage="Shipping Zones" />
           </TableCell>
-          <TableCell className={classes.colActions}>
-            <FormattedMessage id="wL7VAE" defaultMessage="Actions" />
-          </TableCell>
+          <TableCell />
         </TableRowLink>
       </TableHead>
-      <TableFooter>
-        <TableRowLink>
-          <TablePaginationWithContext
-            colSpan={numberOfColumns}
-            settings={settings}
-            disabled={disabled}
-            onUpdateListSettings={onUpdateListSettings}
-          />
-        </TableRowLink>
-      </TableFooter>
       <TableBody data-test-id="warehouses-list">
         {renderCollection(
           warehouses,
@@ -120,7 +127,9 @@ const WarehouseList = (props: WarehouseListProps) => {
               <TableCell>
                 <TableButtonWrapper>
                   <Button
-                    icon={<TrashBinIcon />}
+                    icon={
+                      <Trash2 size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />
+                    }
                     variant="secondary"
                     data-test-id="delete-button"
                     onClick={() => onRemove(warehouse?.id)}

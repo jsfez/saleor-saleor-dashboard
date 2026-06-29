@@ -10,13 +10,13 @@ import {
 import useBulkActions from "@dashboard/hooks/useBulkActions";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { usePaginationReset } from "@dashboard/hooks/usePaginationReset";
 import usePaginator, {
   createPaginationState,
   PaginatorContext,
 } from "@dashboard/hooks/usePaginator";
-import { buttonMessages, commonMessages } from "@dashboard/intl";
+import { buttonMessages } from "@dashboard/intl";
 import { getById, getStringOrPlaceholder, maybe } from "@dashboard/misc";
 import { ListViews } from "@dashboard/types";
 import createSortHandler from "@dashboard/utils/handlers/sortHandler";
@@ -27,7 +27,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import MenuCreateDialog from "../../components/MenuCreateDialog";
 import MenuListPage from "../../components/MenuListPage";
-import { menuListUrl, MenuListUrlQueryParams, menuUrl } from "../../urls";
+import { menuListUrl, type MenuListUrlQueryParams, menuUrl } from "../../urls";
 import { getSortQueryVariables } from "./sort";
 
 interface MenuListProps {
@@ -104,7 +104,7 @@ const MenuList = ({ params }: MenuListProps) => {
       if (data.menuBulkDelete.errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "v20Mra", defaultMessage: "Menus deleted" }),
         });
         closeModal();
         reset();

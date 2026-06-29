@@ -1,117 +1,5 @@
 import { gql } from "@apollo/client";
 
-export const saleUpdate = gql`
-  mutation SaleUpdate($input: SaleInput!, $id: ID!, $channelInput: SaleChannelListingInput!) {
-    saleUpdate(id: $id, input: $input) {
-      errors {
-        ...DiscountError
-      }
-    }
-    saleChannelListingUpdate(id: $id, input: $channelInput) {
-      errors {
-        ...DiscountError
-      }
-      sale {
-        ...Sale
-      }
-    }
-  }
-`;
-
-export const saleCataloguesAdd = gql`
-  mutation SaleCataloguesAdd(
-    $input: CatalogueInput!
-    $id: ID!
-    $after: String
-    $before: String
-    $first: Int
-    $last: Int
-    $includeVariants: Boolean!
-    $includeProducts: Boolean!
-    $includeCollections: Boolean!
-    $includeCategories: Boolean!
-  ) {
-    saleCataloguesAdd(id: $id, input: $input) {
-      errors {
-        ...DiscountError
-      }
-      sale {
-        ...SaleDetails
-      }
-    }
-  }
-`;
-
-export const saleCataloguesRemove = gql`
-  mutation SaleCataloguesRemove(
-    $input: CatalogueInput!
-    $id: ID!
-    $after: String
-    $before: String
-    $first: Int
-    $last: Int
-    $includeVariants: Boolean!
-    $includeProducts: Boolean!
-    $includeCollections: Boolean!
-    $includeCategories: Boolean!
-  ) {
-    saleCataloguesRemove(id: $id, input: $input) {
-      errors {
-        ...DiscountError
-      }
-      sale {
-        ...SaleDetails
-      }
-    }
-  }
-`;
-
-export const saleCreate = gql`
-  mutation SaleCreate($input: SaleInput!) {
-    saleCreate(input: $input) {
-      errors {
-        ...DiscountError
-      }
-      sale {
-        ...Sale
-      }
-    }
-  }
-`;
-
-export const saleDelete = gql`
-  mutation SaleDelete($id: ID!) {
-    saleDelete(id: $id) {
-      errors {
-        ...DiscountError
-      }
-    }
-  }
-`;
-
-export const saleBulkDelete = gql`
-  mutation SaleBulkDelete($ids: [ID!]!) {
-    saleBulkDelete(ids: $ids) {
-      errors {
-        ...SaleBulkDeleteError
-      }
-    }
-  }
-`;
-
-export const saleChannelListingUpdate = gql`
-  mutation SaleChannelListingUpdate($id: ID!, $input: SaleChannelListingInput!) {
-    saleChannelListingUpdate(id: $id, input: $input) {
-      errors {
-        ...DiscountError
-      }
-      sale {
-        ...Sale
-      }
-    }
-  }
-`;
-
 export const voucherChannelListingUpdate = gql`
   mutation VoucherChannelListingUpdate($id: ID!, $input: VoucherChannelListingInput!) {
     voucherChannelListingUpdate(id: $id, input: $input) {
@@ -217,6 +105,17 @@ export const voucherBulkDelete = gql`
     voucherBulkDelete(ids: $ids) {
       errors {
         ...VoucherBulkDeleteError
+      }
+    }
+  }
+`;
+
+export const voucherCodeBulkDelete = gql`
+  mutation VoucherCodeBulkDelete($ids: [ID!]!) {
+    voucherCodeBulkDelete(ids: $ids) {
+      count
+      errors {
+        ...VoucherCodeBulkDeleteError
       }
     }
   }

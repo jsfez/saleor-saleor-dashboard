@@ -27,42 +27,62 @@ export const Ripple = (props: { model: RippleModel }) => {
       </Tooltip.Trigger>
       <Tooltip.Content align="start" side="bottom">
         <Tooltip.Arrow />
-        <Tooltip.ContentHeading>Hint</Tooltip.ContentHeading>
-        <Box marginBottom={4}>{isPlainString ? <Text>{content}</Text> : content}</Box>
-        <Box display="flex" justifyContent="flex-end" gap={2}>
-          {props.model.actions?.map((rippleAction, index) => {
-            return (
-              <Button
-                size="small"
-                key={index}
-                variant="tertiary"
-                onClick={e => {
-                  e.preventDefault();
-                  e.stopPropagation();
+        <Box __maxWidth="320px">
+          <Tooltip.ContentHeading>Hint</Tooltip.ContentHeading>
+          <Box marginBottom={4}>{isPlainString ? <Text>{content}</Text> : content}</Box>
+          <Box display="flex" justifyContent="flex-end" gap={2}>
+            {props.model.actions?.map((rippleAction, index) => {
+              if (rippleAction.href) {
+                return (
+                  <Button
+                    key={index}
+                    size="small"
+                    variant="tertiary"
+                    onClick={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setManuallyHidden(props.model);
+                      window.open(rippleAction.href, "_blank", "noopener,noreferrer");
+                    }}
+                  >
+                    {intl.formatMessage(rippleAction.label)}
+                  </Button>
+                );
+              }
 
-                  setManuallyHidden(props.model);
+              return (
+                <Button
+                  size="small"
+                  key={index}
+                  variant="tertiary"
+                  onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-                  rippleAction.onClick();
-                }}
-              >
-                {intl.formatMessage(rippleAction.label)}
-              </Button>
-            );
-          })}
-          <Button
-            size="small"
-            onClick={e => {
-              e.stopPropagation();
-              e.preventDefault();
+                    setManuallyHidden(props.model);
 
-              setManuallyHidden(props.model);
-            }}
-          >
-            {intl.formatMessage({
-              defaultMessage: "OK",
-              id: "kAEQyV",
+                    rippleAction.onClick?.();
+                  }}
+                >
+                  {intl.formatMessage(rippleAction.label)}
+                </Button>
+              );
             })}
-          </Button>
+            <Button
+              size="small"
+              onClick={e => {
+                e.stopPropagation();
+                e.preventDefault();
+
+                setManuallyHidden(props.model);
+              }}
+            >
+              {intl.formatMessage({
+                defaultMessage: "OK",
+                id: "kAEQyV",
+              })}
+            </Button>
+          </Box>
         </Box>
       </Tooltip.Content>
     </Tooltip>

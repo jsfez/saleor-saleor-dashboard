@@ -8,7 +8,7 @@ import { FilterPresetsSelect } from "@dashboard/components/FilterPresetsSelect";
 import { ListPageLayout } from "@dashboard/components/Layouts";
 import {
   discountAddUrl,
-  DiscountListUrlSortField,
+  type DiscountListUrlSortField,
   discountUrl,
 } from "@dashboard/discounts/discountsUrls";
 import { extensionMountPoints } from "@dashboard/extensions/extensionMountPoints";
@@ -17,12 +17,12 @@ import {
   getExtensionsItemsForDiscountOverviewActions,
 } from "@dashboard/extensions/getExtensionsItems";
 import { useExtensions } from "@dashboard/extensions/hooks/useExtensions";
-import { PromotionFragment } from "@dashboard/graphql";
+import { type PromotionFragment } from "@dashboard/graphql";
 import { getPrevLocationState } from "@dashboard/hooks/useBackLinkWithState";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { commonMessages } from "@dashboard/intl";
-import { FilterPresetsProps, PageListProps, SortPage } from "@dashboard/types";
-import { Box, Button, ChevronRightIcon } from "@saleor/macaw-ui-next";
+import { type FilterPresetsProps, type PageListProps, type SortPage } from "@dashboard/types";
+import { Box, Button } from "@saleor/macaw-ui-next";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLocation } from "react-router";
@@ -79,10 +79,6 @@ const DiscountListPage = ({
       >
         <Box __flex={1} display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex">
-            <Box marginX={3} display="flex" alignItems="center">
-              <ChevronRightIcon />
-            </Box>
-
             <FilterPresetsSelect
               presetsChanged={hasPresetsChanged()}
               onSelect={onFilterPresetChange}
@@ -110,16 +106,16 @@ const DiscountListPage = ({
                 onClick={() => navigation(discountAddUrl())}
               >
                 <FormattedMessage
-                  id="+MJW+8"
-                  defaultMessage="Create Discount"
+                  id="iWmfMe"
+                  defaultMessage="Create promotion"
                   description="button"
                 />
               </ButtonGroupWithDropdown>
             ) : (
               <Button data-test-id="create-discount" onClick={() => navigation(discountAddUrl())}>
                 <FormattedMessage
-                  id="+MJW+8"
-                  defaultMessage="Create Discount"
+                  id="iWmfMe"
+                  defaultMessage="Create promotion"
                   description="button"
                 />
               </Button>

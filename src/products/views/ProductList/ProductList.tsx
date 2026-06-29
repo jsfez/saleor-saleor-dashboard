@@ -9,12 +9,12 @@ import {
   DEFAULT_INITIAL_PAGINATION_DATA,
   DEFAULT_INITIAL_SEARCH_DATA,
   defaultListSettings,
-  ProductListColumns,
+  type ProductListColumns,
 } from "@dashboard/config";
 import { Task } from "@dashboard/containers/BackgroundTasks/types";
 import {
   AttributeTypeEnum,
-  ProductListQueryVariables,
+  type ProductListQueryVariables,
   useAvailableColumnAttributesLazyQuery,
   useGridAttributesLazyQuery,
   useProductBulkDeleteMutation,
@@ -28,7 +28,7 @@ import { useFilterHandlers } from "@dashboard/hooks/useFilterHandlers";
 import { useFilterPresets } from "@dashboard/hooks/useFilterPresets";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { usePaginationReset } from "@dashboard/hooks/usePaginationReset";
 import usePaginator, {
   createPaginationState,
@@ -45,9 +45,9 @@ import ProductTypePickerDialog from "@dashboard/products/components/ProductTypeP
 import {
   productAddUrl,
   productListUrl,
-  ProductListUrlDialog,
-  ProductListUrlQueryParams,
-  ProductListUrlSortField,
+  type ProductListUrlDialog,
+  type ProductListUrlQueryParams,
+  type ProductListUrlSortField,
 } from "@dashboard/products/urls";
 import useAttributeSearch from "@dashboard/searches/useAttributeSearch";
 import useProductTypeSearch from "@dashboard/searches/useProductTypeSearch";
@@ -169,7 +169,10 @@ const ProductList = ({ params }: ProductListProps) => {
         closeModal();
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({
+            id: "wUWSv2",
+            defaultMessage: "Products deleted",
+          }),
         });
         refetch();
         limitOpts.refetch();
@@ -366,10 +369,13 @@ const ProductList = ({ params }: ProductListProps) => {
         channels={availableChannels}
         onClose={closeModal}
         onSubmit={data => {
-          const productsExportParams = new ProductsExportParameters({
-            ...data,
-            ...filterVariables,
-            ids: selectedRowIds,
+          const productsExportParams = ProductsExportParameters.fromFilters({
+            exportData: {
+              ...data,
+              ids: selectedRowIds,
+            },
+            filterContainer: valueProvider.value,
+            searchQuery: params.query,
           });
 
           exportProducts({

@@ -2,7 +2,7 @@ import { borderHeight, topBarHeight } from "@dashboard/components/AppLayout/cons
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { APP_VERSION } from "@dashboard/config";
 import { ExtensionsUrls } from "@dashboard/extensions/urls";
-import { AppQuery } from "@dashboard/graphql";
+import { type AppQuery } from "@dashboard/graphql";
 import useShop from "@dashboard/hooks/useShop";
 import { Box } from "@saleor/macaw-ui-next";
 
@@ -48,6 +48,7 @@ export const AppPage = ({ data, url, onError, refetch }: AppPageProps) => {
         >
           {url && data?.id && data?.accessToken && (
             <AppFrame
+              target="APP_PAGE"
               src={url}
               appToken={data?.accessToken ?? ""}
               onError={onError}

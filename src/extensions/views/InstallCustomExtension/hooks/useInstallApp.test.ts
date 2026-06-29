@@ -1,9 +1,13 @@
-import { PermissionEnum, useAppInstallMutation } from "@dashboard/graphql";
+import {
+  type AppManifestFragment,
+  PermissionEnum,
+  useAppInstallMutation,
+} from "@dashboard/graphql";
 import useLocalStorage from "@dashboard/hooks/useLocalStorage";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { extractMutationErrors } from "@dashboard/misc";
-import { act, renderHook } from "@testing-library/react-hooks";
+import { act, renderHook } from "@testing-library/react";
 import { useIntl } from "react-intl";
 
 import { useInstallApp } from "./useInstallApp";
@@ -19,7 +23,9 @@ jest.mock("@dashboard/graphql", () => {
 
 jest.mock("@dashboard/hooks/useLocalStorage", () => jest.fn());
 jest.mock("@dashboard/hooks/useNavigator", () => jest.fn());
-jest.mock("@dashboard/hooks/useNotifier", () => jest.fn());
+jest.mock("@dashboard/hooks/useNotifier", () => ({
+  useNotifier: jest.fn(),
+}));
 jest.mock("@dashboard/misc", () => ({
   extractMutationErrors: jest.fn(),
 }));
@@ -55,7 +61,8 @@ describe("useInstallApp", () => {
     appUrl: null,
     tokenTargetUrl: null,
     brand: null,
-  };
+    extensions: [],
+  } satisfies AppManifestFragment;
   const mockNavigate = jest.fn();
   const mockNotify = jest.fn();
   const mockSetActiveInstallations = jest.fn();

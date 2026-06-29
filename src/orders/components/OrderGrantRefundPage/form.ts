@@ -1,12 +1,13 @@
 import { useExitFormDialog } from "@dashboard/components/Form/useExitFormDialog";
-import { OrderGrantRefundCreateLineInput } from "@dashboard/graphql";
-import useForm, { FormChange } from "@dashboard/hooks/useForm";
+import { type OrderGrantRefundCreateLineInput } from "@dashboard/graphql";
+import useForm, { type FormChange } from "@dashboard/hooks/useForm";
 import useHandleFormSubmit from "@dashboard/hooks/useHandleFormSubmit";
 import { useEffect, useState } from "react";
 
 export interface OrderGrantRefundFormData {
   amount: number | undefined;
   reason: string;
+  reasonReference: string;
   lines: OrderGrantRefundCreateLineInput[];
   grantRefundForShipping?: boolean;
   transactionId: string;
@@ -15,6 +16,7 @@ export interface OrderGrantRefundFormData {
 const defaultInitialData: OrderGrantRefundFormData = {
   amount: 0,
   reason: "",
+  reasonReference: "",
   transactionId: "",
   lines: [],
   grantRefundForShipping: false,
@@ -23,6 +25,8 @@ const defaultInitialData: OrderGrantRefundFormData = {
 export interface Line {
   id: string;
   quantity: number;
+  reason?: string;
+  reasonReference?: string;
 }
 
 interface GrantRefundFormHookProps {

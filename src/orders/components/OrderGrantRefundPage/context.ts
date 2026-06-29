@@ -1,14 +1,16 @@
-import { UseFormResult } from "@dashboard/hooks/useForm";
+import { type UseFormResult } from "@dashboard/hooks/useForm";
 import { createContext, useContext } from "react";
 
-import { OrderGrantRefundFormData } from "./form";
-import { GrantRefundAction, GrantRefundState } from "./reducer";
+import { type OrderGrantRefundFormData } from "./form";
+import { type GrantRefundAction, type GrantRefundState } from "./reducer";
 
 interface GrantRefundContext {
   state: GrantRefundState;
   dispatch: React.Dispatch<GrantRefundAction>;
   form: Pick<UseFormResult<OrderGrantRefundFormData>, "set" | "data" | "change">;
   totalSelectedPrice: number;
+  /** Configured refund reason Model (Page) Type id; empty when not configured. */
+  reasonReferenceTypeId: string;
 }
 
 export const GrantRefundContext = createContext<GrantRefundContext | null>(null);

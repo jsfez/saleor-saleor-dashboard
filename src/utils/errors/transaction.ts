@@ -1,10 +1,10 @@
 import {
   TransactionCreateErrorCode,
-  TransactionCreateErrorFragment,
+  type TransactionCreateErrorFragment,
   TransactionRequestActionErrorCode,
-  TransactionRequestActionErrorFragment,
+  type TransactionRequestActionErrorFragment,
 } from "@dashboard/graphql";
-import { defineMessages, IntlShape } from "react-intl";
+import { defineMessages, type IntlShape } from "react-intl";
 
 import { getCommonFormFieldErrorMessage } from "./common";
 
@@ -18,9 +18,17 @@ export const transactionRequestMessages = defineMessages({
     defaultMessage: "Transaction wasn't found",
     id: "B06DG8",
   },
-  success: {
-    defaultMessage: "Transaction action requested successfully",
-    id: "gr1BBC",
+  refundSuccess: {
+    defaultMessage: "Refund request sent to payment provider",
+    id: "CQTTke",
+  },
+  chargeSuccess: {
+    defaultMessage: "Capture request sent to payment provider",
+    id: "fqXQq6",
+  },
+  cancelSuccess: {
+    defaultMessage: "Cancel request sent to payment provider",
+    id: "5oVmhu",
   },
 });
 

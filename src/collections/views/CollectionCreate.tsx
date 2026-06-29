@@ -1,11 +1,11 @@
 // @ts-strict-ignore
-import { ChannelsAction } from "@dashboard/channels/urls";
+import { type ChannelsAction } from "@dashboard/channels/urls";
 import { createCollectionChannels } from "@dashboard/channels/utils";
 import useAppChannel from "@dashboard/components/AppLayout/AppChannelContext";
 import ChannelsAvailabilityDialog from "@dashboard/components/ChannelsAvailabilityDialog";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import {
-  CollectionCreateInput,
+  type CollectionCreateInput,
   useCollectionChannelListingUpdateMutation,
   useCreateCollectionMutation,
   useUpdateMetadataMutation,
@@ -13,7 +13,7 @@ import {
 } from "@dashboard/graphql";
 import useChannels from "@dashboard/hooks/useChannels";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { commonMessages } from "@dashboard/intl";
 import { getMutationErrors } from "@dashboard/misc";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
@@ -22,8 +22,8 @@ import { getParsedDataForJsonStringField } from "@dashboard/utils/richText/misc"
 import { useIntl } from "react-intl";
 
 import CollectionCreatePage from "../components/CollectionCreatePage/CollectionCreatePage";
-import { CollectionCreateData } from "../components/CollectionCreatePage/form";
-import { collectionAddUrl, CollectionCreateUrlQueryParams, collectionUrl } from "../urls";
+import { type CollectionCreateData } from "../components/CollectionCreatePage/form";
+import { collectionAddUrl, type CollectionCreateUrlQueryParams, collectionUrl } from "../urls";
 import { COLLECTION_CREATE_FORM_ID } from "./consts";
 
 interface CollectionCreateProps {
@@ -99,7 +99,7 @@ const CollectionCreate = ({ params }: CollectionCreateProps) => {
     if (result.data.collectionCreate.errors.length === 0) {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "6LqbaB", defaultMessage: "Collection created" }),
       });
       navigate(collectionUrl(id));
     } else {

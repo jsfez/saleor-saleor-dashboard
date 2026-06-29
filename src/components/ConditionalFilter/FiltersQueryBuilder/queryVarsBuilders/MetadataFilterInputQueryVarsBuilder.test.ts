@@ -1,6 +1,6 @@
 import { NoopValuesHandler } from "../../API/Handler";
 import { Condition } from "../../FilterElement/Condition";
-import { ConditionItem, ConditionOptions } from "../../FilterElement/ConditionOptions";
+import { type ConditionItem, ConditionOptions } from "../../FilterElement/ConditionOptions";
 import { ConditionSelected } from "../../FilterElement/ConditionSelected";
 import { ExpressionValue, FilterElement } from "../../FilterElement/FilterElement";
 import { MetadataFilterInputQueryVarsBuilder } from "./MetadataFilterInputQueryVarsBuilder";
@@ -247,6 +247,25 @@ describe("MetadataAdvancedFilterQueryVarsBuilder", () => {
       // New AND contains old item + new metadata item
       expect(result).toEqual({
         AND: [{ someOtherField: "value" }, { metadata: { key: "color", value: { eq: "red" } } }],
+      });
+    });
+
+    it("includes key with empty value when both key and value are provided but value is empty", () => {
+      // Arrange
+      const element = createElement(["mykey", ""]);
+
+      // Act
+      const result = builder.updateWhereQueryVariables({}, element);
+
+      // Assert
+      expect(result).toEqual({
+        AND: [
+          {
+            metadata: {
+              key: "mykey",
+            },
+          },
+        ],
       });
     });
   });

@@ -1,12 +1,12 @@
-import { ReorderEvent } from "@dashboard/types";
+import { type ReorderEvent } from "@dashboard/types";
 import { Accordion, Divider, Skeleton, Text } from "@saleor/macaw-ui-next";
 import { defineMessages, useIntl } from "react-intl";
 
-import AssignmentListFooter from "./AssignmentListFooter";
+import { AssignmentListFooter } from "./AssignmentListFooter";
 import Item from "./Item";
 import SortableContainer from "./SortableContainer";
 import { useStyles } from "./styles";
-import { AssignmentListProps } from "./types";
+import { type AssignmentListProps } from "./types";
 
 const messages = defineMessages({
   allSelectedMessage: {
@@ -15,8 +15,9 @@ const messages = defineMessages({
     description: "all selected items message",
   },
 });
-const AssignmentList = (props: AssignmentListProps) => {
-  const { items, itemsName, totalCount = 0, loading, removeItem, reorderItem } = props;
+
+export const AssignmentList = (props: AssignmentListProps) => {
+  const { items, itemsName, totalCount = 0, loading, removeItem, reorderItem, getItemHref } = props;
   const intl = useIntl();
   const classes = useStyles();
   const handleSortStart = () => {
@@ -62,12 +63,13 @@ const AssignmentList = (props: AssignmentListProps) => {
                 <div>
                   {items.map((item, itemIndex) => (
                     <Item
-                      key={itemIndex}
+                      key={item.id}
                       index={itemIndex}
                       // @ts-expect-error legacy types
                       item={item}
                       onDelete={removeItem}
                       sortable={!!reorderItem}
+                      getItemHref={getItemHref}
                     />
                   ))}
                 </div>
@@ -88,5 +90,3 @@ const AssignmentList = (props: AssignmentListProps) => {
     </Accordion>
   );
 };
-
-export default AssignmentList;

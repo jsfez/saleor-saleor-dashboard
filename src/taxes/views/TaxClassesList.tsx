@@ -1,7 +1,7 @@
 // @ts-strict-ignore
 import {
-  TaxClassCreateErrorFragment,
-  TaxClassFragment,
+  type TaxClassCreateErrorFragment,
+  type TaxClassFragment,
   useTaxClassCreateMutation,
   useTaxClassDeleteMutation,
   useTaxClassesListQuery,
@@ -11,10 +11,9 @@ import {
   useUpdatePrivateMetadataMutation,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
-import { commonMessages } from "@dashboard/intl";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import createMetadataCreateHandler, {
-  CreateMetadataHandlerFunctionResult,
+  type CreateMetadataHandlerFunctionResult,
 } from "@dashboard/utils/handlers/metadataCreateHandler";
 import createMetadataUpdateHandler from "@dashboard/utils/handlers/metadataUpdateHandler";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
@@ -23,8 +22,8 @@ import { useIntl } from "react-intl";
 
 import { taxesMessages } from "../messages";
 import TaxClassesPage from "../pages/TaxClassesPage";
-import { TaxClassesPageFormData } from "../types";
-import { taxClassesListUrl, TaxTab, taxTabPath } from "../urls";
+import { type TaxClassesPageFormData } from "../types";
+import { taxClassesListUrl, type TaxTab, taxTabPath } from "../urls";
 import { createTaxClassCreateInput, createTaxClassUpdateInput } from "../utils/data";
 import { useTaxUrlRedirect } from "../utils/useTaxUrlRedirect";
 import { mapUndefinedCountriesToTaxClasses } from "../utils/utils";
@@ -61,7 +60,7 @@ const TaxClassesList = ({ id }: TaxClassesListProps) => {
       if (errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "4oWCm4", defaultMessage: "Tax class updated" }),
         });
       }
     },
@@ -73,7 +72,7 @@ const TaxClassesList = ({ id }: TaxClassesListProps) => {
       if (errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "4oWCm4", defaultMessage: "Tax class updated" }),
         });
       }
     },
@@ -85,7 +84,7 @@ const TaxClassesList = ({ id }: TaxClassesListProps) => {
       if (errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "4oWCm4", defaultMessage: "Tax class updated" }),
         });
         navigate(taxClassesListUrl(data?.taxClassCreate?.taxClass?.id));
       }

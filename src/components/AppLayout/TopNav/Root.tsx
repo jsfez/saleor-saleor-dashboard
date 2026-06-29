@@ -1,7 +1,6 @@
-import { useUser } from "@dashboard/auth";
-import { Box, BoxProps, Text } from "@saleor/macaw-ui-next";
-import { PropsWithChildren } from "react";
-import * as React from "react";
+import { useUser } from "@dashboard/auth/useUser";
+import { Box, type BoxProps, Text, vars } from "@saleor/macaw-ui-next";
+import { type PropsWithChildren } from "react";
 
 import useAppChannel from "../AppChannelContext";
 import AppChannelSelect from "../AppChannelSelect";
@@ -12,17 +11,22 @@ import { TopNavWrapper } from "./TopNavWrapper";
 interface TopNavProps {
   title: React.ReactNode;
   subtitle?: React.ReactNode;
+  subtitleTop?: React.ReactNode;
   href?: string;
   withoutBorder?: boolean;
   isAlignToRight?: boolean;
+  /** Gap between header action buttons. Detail pages use a slightly wider spacing. */
+  actionsGap?: 2 | 3;
 }
 
 export const Root = ({
   title,
   subtitle,
+  subtitleTop,
   href,
   withoutBorder = false,
   isAlignToRight = true,
+  actionsGap = 2,
   children,
   ...wrapperProps
 }: PropsWithChildren<TopNavProps> & Omit<BoxProps, keyof TopNavProps>) => {
@@ -30,14 +34,47 @@ export const Root = ({
   const user = useUser();
   const channels = user?.user?.accessibleChannels ?? [];
 
+  if (subtitleTop && subtitle)
+    throw new Error(
+      "TopNav is not ready to support both subtitle and subtitleTop. Extend the component or use one of them",
+    );
+
   return (
-    <TopNavWrapper withoutBorder={withoutBorder} hasSubtitle={!!subtitle} {...wrapperProps}>
+    <TopNavWrapper
+      withoutBorder={withoutBorder}
+      hasSubtitleTop={!!subtitleTop}
+      hasSubtitle={!!subtitle}
+      {...wrapperProps}
+    >
+      {subtitleTop ? (
+        <ContextualLine
+          gridColumn="8"
+          // The subtitle should be aligned with the title, not back button
+          __marginLeft={href ? `calc(${vars.spacing[12]} + ${vars.spacing[1]})` : 0}
+          paddingBottom={0}
+          __marginBottom="-10px"
+        >
+          {subtitleTop}
+        </ContextualLine>
+      ) : null}
       <Box display="flex" alignItems="center" width="100%">
         {href && <TopNavLink to={href} />}
-        <Box __flex={isAlignToRight ? 1 : 0} __minWidth="max-content">
-          <Text size={6}>{title}</Text>
+        <Box
+          __flex={isAlignToRight ? "1 1 auto" : 0}
+          overflow="hidden"
+          title={typeof title === "string" ? title : undefined}
+        >
+          <Text size={6} ellipsis display="block">
+            {title}
+          </Text>
         </Box>
-        <Box display="flex" flexWrap="nowrap" height="100%" __flex={isAlignToRight ? "initial" : 1}>
+        <Box
+          display="flex"
+          flexWrap="nowrap"
+          height="100%"
+          gap={actionsGap}
+          __flex={isAlignToRight ? "initial" : 1}
+        >
           {isPickerActive && channels.length > 0 && (
             <AppChannelSelect
               channels={channels}
@@ -52,7 +89,7 @@ export const Root = ({
         <ContextualLine
           gridColumn="8"
           // The subtitle should be aligned with the title, not back button
-          marginLeft={href ? 12 : 0}
+          __marginLeft={href ? `calc(${vars.spacing[12]} + ${vars.spacing[1]})` : 0}
           __marginTop={href ? "-0.6rem" : 0}
         >
           {subtitle}

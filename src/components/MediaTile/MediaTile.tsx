@@ -1,9 +1,14 @@
 import { IconButton } from "@dashboard/components/IconButton";
-import { CircularProgress } from "@material-ui/core";
-import { DeleteIcon, EditIcon, makeStyles } from "@saleor/macaw-ui";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
+import { MediaWithFallback } from "@dashboard/components/MediaWithFallback/MediaWithFallback";
+import { parseOembedData } from "@dashboard/products/utils/parseOembedData";
+import { makeStyles } from "@saleor/macaw-ui";
 import { vars } from "@saleor/macaw-ui-next";
 import clsx from "clsx";
-import * as React from "react";
+import { Pencil, Trash2 } from "lucide-react";
+import type * as React from "react";
+
+import { SaleorThrobber } from "../Throbber";
 
 const useStyles = makeStyles(
   theme => ({
@@ -102,8 +107,7 @@ type MediaTileProps = MediaTileBaseProps &
 const MediaTile = (props: MediaTileProps) => {
   const { loading, onDelete, onEdit, editHref, media, disableOverlay = false } = props;
   const classes = useStyles(props);
-  const parsedMediaOembedData = media?.oembedData ? JSON.parse(media.oembedData) : null;
-  const mediaUrl = parsedMediaOembedData?.thumbnail_url || media.url;
+  const mediaUrl = parseOembedData(media.oembedData).thumbnail_url || media.url;
 
   return (
     <div className={classes.mediaContainer} data-test-id="product-image">
@@ -114,7 +118,7 @@ const MediaTile = (props: MediaTileProps) => {
         })}
       >
         {loading ? (
-          <CircularProgress size={32} />
+          <SaleorThrobber size={32} />
         ) : (
           <div className={classes.mediaOverlayToolbar}>
             {(onEdit || editHref) && (
@@ -125,7 +129,7 @@ const MediaTile = (props: MediaTileProps) => {
                 className={classes.controlButton}
                 onClick={onEdit}
               >
-                <EditIcon onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+                <Pencil size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />
               </IconButton>
             )}
             {onDelete && (
@@ -135,13 +139,13 @@ const MediaTile = (props: MediaTileProps) => {
                 className={classes.controlButton}
                 onClick={onDelete}
               >
-                <DeleteIcon onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+                <Trash2 size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />
               </IconButton>
             )}
           </div>
         )}
       </div>
-      <img className={classes.media} src={mediaUrl} alt={media.alt!} />
+      <MediaWithFallback key={mediaUrl} className={classes.media} src={mediaUrl} alt={media.alt} />
     </div>
   );
 };

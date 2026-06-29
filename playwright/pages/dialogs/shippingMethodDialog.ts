@@ -1,5 +1,5 @@
 import { BasePage } from "@pages/basePage";
-import { expect, Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export class ShippingAddressDialog extends BasePage {
   constructor(
@@ -12,9 +12,9 @@ export class ShippingAddressDialog extends BasePage {
     super(page);
   }
 
-  async pickAndConfirmFirstShippingMethod() {
+  async pickAndConfirmShippingMethod() {
     await this.selectShippingMethodInput.click();
-    await this.shippingMethodOption.first().click();
+    await this.shippingMethodOption.last().click();
     await this.confirmButton.click();
     await expect(this.selectShippingMethodInput).not.toBeVisible();
   }

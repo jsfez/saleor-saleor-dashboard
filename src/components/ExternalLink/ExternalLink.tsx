@@ -1,7 +1,6 @@
 import { makeStyles } from "@saleor/macaw-ui";
-import { Text, TextProps } from "@saleor/macaw-ui-next";
-import { HTMLAttributes } from "react";
-import * as React from "react";
+import { Text, type TextProps } from "@saleor/macaw-ui-next";
+import { type HTMLAttributes } from "react";
 
 const useStyles = makeStyles(
   {
@@ -30,7 +29,7 @@ const ExternalLink = (props: ExternalLinkProps) => {
       href={href}
       className={classes.link}
       target={target}
-      rel={(rel ?? opensNewTab) ? "noopener noreferer" : ""}
+      rel={(rel ?? opensNewTab) ? "noopener noreferrer" : ""}
       {...rest}
     >
       <Text className={className} color="default1">
@@ -53,7 +52,7 @@ export const ExternalLinkNext = (
       textDecoration="none"
       {...props}
       as="a"
-      rel={(props.rel ?? opensNewTab) ? "noopener noreferer" : ""}
+      rel={(props.rel ?? opensNewTab) ? "noopener noreferrer" : ""}
     />
   );
 };

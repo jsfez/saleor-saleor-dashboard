@@ -1,5 +1,5 @@
 import { EventDeliveryStatusEnum } from "@dashboard/graphql";
-import { Chip, Text, ThemeTokensValues } from "@saleor/macaw-ui-next";
+import { Chip, Text, type ThemeTokensValues } from "@saleor/macaw-ui-next";
 import { useIntl } from "react-intl";
 
 const mapDeliveryStatusToTextColor = (
@@ -62,7 +62,7 @@ export const EventDeliveryStatusChip = ({ status }: { status: EventDeliveryStatu
       backgroundColor={mapDeliveryStatusToBackgroundColor(status)}
       borderColor={mapDeliveryStatusToBorderColor(status)}
     >
-      <Text color={mapDeliveryStatusToTextColor(status)}>
+      <Text fontWeight="medium" color={mapDeliveryStatusToTextColor(status)}>
         <DeliveryStatusDisplay status={status} />
       </Text>
     </Chip>

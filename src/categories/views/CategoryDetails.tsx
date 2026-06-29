@@ -1,11 +1,12 @@
 import ActionDialog from "@dashboard/components/ActionDialog";
 import NotFoundPage from "@dashboard/components/NotFoundPage";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
+import { useRegisterEntityRefresh } from "@dashboard/extensions/entity-refresh";
 import {
-  CategoryBulkDeleteMutation,
-  CategoryDeleteMutation,
-  CategoryInput,
-  CategoryUpdateMutation,
+  type CategoryBulkDeleteMutation,
+  type CategoryDeleteMutation,
+  type CategoryInput,
+  type CategoryUpdateMutation,
   useCategoryBulkDeleteMutation,
   useCategoryDeleteMutation,
   useCategoryDetailsQuery,
@@ -19,10 +20,10 @@ import useLocalPaginator, {
   useSectionLocalPaginationState,
 } from "@dashboard/hooks/useLocalPaginator";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { PaginatorContext } from "@dashboard/hooks/usePaginator";
 import { useRowSelection } from "@dashboard/hooks/useRowSelection";
-import { commonMessages, errorMessages } from "@dashboard/intl";
+import { errorMessages } from "@dashboard/intl";
 import { ListViews } from "@dashboard/types";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import createMetadataUpdateHandler from "@dashboard/utils/handlers/metadataUpdateHandler";
@@ -40,8 +41,13 @@ import {
   CategoryPageTab,
   CategoryUpdatePage,
 } from "../components/CategoryUpdatePage/CategoryUpdatePage";
-import { CategoryUpdateData } from "../components/CategoryUpdatePage/form";
-import { categoryListUrl, categoryUrl, CategoryUrlDialog, CategoryUrlQueryParams } from "../urls";
+import { type CategoryUpdateData } from "../components/CategoryUpdatePage/form";
+import {
+  categoryListUrl,
+  categoryUrl,
+  type CategoryUrlDialog,
+  type CategoryUrlQueryParams,
+} from "../urls";
 
 interface CategoryDetailsProps {
   params: CategoryUrlQueryParams;
@@ -84,6 +90,9 @@ const CategoryDetails = ({ id, params }: CategoryDetailsProps) => {
     displayLoader: true,
     variables: { ...paginationState, id },
   });
+
+  useRegisterEntityRefresh(refetch);
+
   const category = data?.category;
   const subcategories = mapEdgesToItems(data?.category?.children);
   const products = mapEdgesToItems(data?.category?.products);
@@ -121,7 +130,7 @@ const CategoryDetails = ({ id, params }: CategoryDetailsProps) => {
     } else {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "H4Lcuk", defaultMessage: "Category updated" }),
       });
     }
   };
@@ -135,7 +144,7 @@ const CategoryDetails = ({ id, params }: CategoryDetailsProps) => {
       closeModal();
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "H4Lcuk", defaultMessage: "Category updated" }),
       });
     }
   };
@@ -150,7 +159,7 @@ const CategoryDetails = ({ id, params }: CategoryDetailsProps) => {
         closeModal();
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "H4Lcuk", defaultMessage: "Category updated" }),
         });
         refetch();
       }

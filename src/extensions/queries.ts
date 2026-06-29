@@ -94,7 +94,6 @@ export const appDetails = gql`
         code
         name
       }
-      dataPrivacy
       dataPrivacyUrl
       brand {
         logo {
@@ -114,22 +113,10 @@ export const extensionList = gql`
           id
           label
           url
-          mount
-          target
+          mountName
+          targetName
+          settings
           accessToken
-          options {
-            ... on AppExtensionOptionsWidget {
-              widgetTarget {
-                method
-              }
-            }
-            ... on AppExtensionOptionsNewTab {
-              newTabTarget {
-                method
-              }
-            }
-          }
-
           permissions {
             code
           }
@@ -183,6 +170,43 @@ export const appWebhookDeliveries = gql`
   }
 `;
 
+export const appHasProblems = gql`
+  query AppHasProblems($first: Int!) {
+    apps(first: $first) {
+      edges {
+        node {
+          id
+          problems(limit: 1) {
+            __typename
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const appAllProblems = gql`
+  query AppAllProblems($id: ID!) {
+    app(id: $id) {
+      id
+      problems {
+        __typename
+        key
+        message
+        createdAt
+        count
+        isCritical
+        dismissed {
+          by
+          userEmail
+        }
+        updatedAt
+        id
+      }
+    }
+  }
+`;
+
 export const webhooksDetails = gql`
   query WebhookDetails($id: ID!) {
     webhook(id: $id) {
@@ -227,6 +251,40 @@ export const pluginsDetails = gql`
   query Plugin($id: ID!) {
     plugin(id: $id) {
       ...PluginsDetails
+    }
+  }
+`;
+
+export const appsList = gql`
+  query AppsList(
+    $before: String
+    $after: String
+    $first: Int
+    $last: Int
+    $sort: AppSortingInput
+    $filter: AppFilterInput
+    $canFetchAppEvents: Boolean!
+  ) {
+    apps(
+      before: $before
+      after: $after
+      first: $first
+      last: $last
+      sortBy: $sort
+      filter: $filter
+    ) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      totalCount
+      edges {
+        node {
+          ...AppListItem
+        }
+      }
     }
   }
 `;

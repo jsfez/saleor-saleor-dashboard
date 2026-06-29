@@ -2,14 +2,14 @@ import { stringifyQs } from "@dashboard/utils/urls";
 import urlJoin from "url-join";
 
 import {
-  ActiveTab,
-  BulkAction,
-  Dialog,
-  Filters,
-  Pagination,
-  SingleAction,
-  Sort,
-  TabActionDialog,
+  type ActiveTab,
+  type BulkAction,
+  type Dialog,
+  type Filters,
+  type Pagination,
+  type SingleAction,
+  type Sort,
+  type TabActionDialog,
 } from "../types";
 
 const customerSection = "/customers/";
@@ -40,7 +40,7 @@ export const customerListUrl = (params?: CustomerListUrlQueryParams) =>
   customerListPath + "?" + stringifyQs(params);
 
 export const customerPath = (id: string) => urlJoin(customerSection, id);
-type CustomerUrlDialog = "remove";
+type CustomerUrlDialog = "remove" | "activate" | "deactivate" | "view-metadata";
 export type CustomerUrlQueryParams = Dialog<CustomerUrlDialog>;
 export const customerUrl = (id: string, params?: CustomerUrlQueryParams) =>
   customerPath(encodeURIComponent(id)) + "?" + stringifyQs(params);

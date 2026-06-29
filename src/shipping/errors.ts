@@ -1,7 +1,7 @@
 // @ts-strict-ignore
-import { ShippingErrorCode, ShippingErrorFragment } from "@dashboard/graphql";
+import { ShippingErrorCode, type ShippingErrorFragment } from "@dashboard/graphql";
 import getShippingErrorMessage from "@dashboard/utils/errors/shipping";
-import { defineMessages, IntlShape } from "react-intl";
+import { defineMessages, type IntlShape } from "react-intl";
 
 const messages = defineMessages({
   invalid: {
@@ -10,13 +10,13 @@ const messages = defineMessages({
     description: "error message",
   },
   price: {
-    id: "pwqwcy",
-    defaultMessage: "Maximum price cannot be lower than minimum",
+    id: "oIL8jk",
+    defaultMessage: "Maximum price must be higher than minimum",
     description: "error message",
   },
   weight: {
-    id: "H27/Gy",
-    defaultMessage: "Maximum weight cannot be lower than minimum",
+    id: "M3OlSr",
+    defaultMessage: "Maximum weight must be higher than minimum",
     description: "error message",
   },
 });

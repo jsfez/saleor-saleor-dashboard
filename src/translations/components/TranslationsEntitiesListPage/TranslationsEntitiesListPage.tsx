@@ -1,12 +1,13 @@
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import { DashboardCard } from "@dashboard/components/Card";
 import FilterTabs, { FilterTab } from "@dashboard/components/TableFilter";
-import { LanguageFragment } from "@dashboard/graphql";
+import { type LanguageFragment } from "@dashboard/graphql";
 import { maybe } from "@dashboard/misc";
-import * as React from "react";
+import { Box } from "@saleor/macaw-ui-next";
+import type * as React from "react";
 import { useIntl } from "react-intl";
 
-import { languageListUrl, TranslatableEntities } from "../../urls";
+import { languageListUrl, type TranslatableEntities } from "../../urls";
 
 interface TranslationsEntitiesListPageProps {
   children: React.ReactNode;
@@ -127,8 +128,9 @@ const TranslationsEntitiesListPage = (props: TranslationsEntitiesListPageProps) 
             onClick={filters.onMenuItemsTabClick}
           />
         </FilterTabs>
-        {children}
+        <DashboardCard.Content>{children}</DashboardCard.Content>
       </DashboardCard>
+      <Box paddingBottom={6} />
     </>
   );
 };

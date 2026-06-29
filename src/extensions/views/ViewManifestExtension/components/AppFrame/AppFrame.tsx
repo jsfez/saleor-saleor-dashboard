@@ -1,9 +1,12 @@
-import { AppDetailsUrlQueryParams } from "@dashboard/extensions/urls";
+import { SaleorThrobber } from "@dashboard/components/Throbber";
+import { useWidgetIframeAutoHeight } from "@dashboard/extensions/hooks/useWidgetIframeAutoHeight";
+import { useAppFrameReferences } from "@dashboard/extensions/popup-frame-reference";
+import { type AppDetailsUrlQueryParams } from "@dashboard/extensions/urls";
 import { useAllFlags } from "@dashboard/featureFlags";
-import { CircularProgress } from "@material-ui/core";
+import { useNodeRef } from "@dashboard/hooks/useNodeRef";
 import { DashboardEventFactory } from "@saleor/app-sdk/app-bridge";
 import clsx from "clsx";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect } from "react";
 
 import { AppIFrame } from "./AppIFrame";
 import { useStyles } from "./styles";
@@ -22,6 +25,13 @@ interface Props {
   dashboardVersion: string;
   coreVersion?: string;
   onError?: () => void;
+  target: "POPUP" | "WIDGET" | "APP_PAGE";
+  /**
+   * Let the iframe height follow the app's reported content height instead of
+   * filling its container. Used by detail-page sidebar widgets so they flow
+   * naturally one after another. See {@link useWidgetIframeAutoHeight}.
+   */
+  autoHeight?: boolean;
 }
 
 const getOrigin = (url: string) => new URL(url).origin;
@@ -36,11 +46,14 @@ export const AppFrame = ({
   refetch,
   dashboardVersion,
   coreVersion = "",
+  target,
+  autoHeight = false,
 }: Props) => {
-  const frameRef = useRef<HTMLIFrameElement | null>(null);
+  const { ref: frameRef, node: frameEl, setRef: setFrameRef } = useNodeRef<HTMLIFrameElement>();
   const classes = useStyles();
   const appOrigin = getOrigin(src);
   const flags = useAllFlags();
+  const { setIframe, clearIframe } = useAppFrameReferences();
   /**
    * React on messages from App
    */
@@ -55,6 +68,8 @@ export const AppFrame = ({
     },
   );
 
+  useWidgetIframeAutoHeight(frameEl, autoHeight, { listenForResize: false });
+
   /**
    * Listen to Dashboard context like theme or locale and inform app about it
    */
@@ -62,12 +77,8 @@ export const AppFrame = ({
   useTokenRefresh(appToken, refetch);
 
   const handleLoad = useCallback(() => {
-    /**
-     * @deprecated
-     *
-     * Move handshake to notifyReady, so app is requesting token after it's ready to receive it
-     * Currently handshake it 2 times, for compatibility
-     */
+    setIframe(frameRef.current!, true, target);
+
     postToExtension(
       DashboardEventFactory.createHandshakeEvent(appToken, 1, {
         core: coreVersion,
@@ -86,22 +97,30 @@ export const AppFrame = ({
     enabled: handshakeDone,
   });
 
+  useEffect(() => {
+    return () => {
+      if (frameRef.current) {
+        clearIframe(frameRef?.current);
+      }
+    };
+  }, []);
+
   return (
     <>
       {!handshakeDone && (
         <div className={classes.loader}>
-          <CircularProgress color="primary" />
+          <SaleorThrobber />
         </div>
       )}
       <AppIFrame
-        ref={frameRef}
+        ref={setFrameRef}
         src={src}
         appId={appId}
         featureFlags={flags}
         params={params}
         onLoad={handleLoad}
         onError={onError}
-        className={clsx(classes.iframe, className, {
+        className={clsx(autoHeight ? classes.iframeWidget : classes.iframe, className, {
           [classes.iframeHidden]: !handshakeDone,
         })}
       />

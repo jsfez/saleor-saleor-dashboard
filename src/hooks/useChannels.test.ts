@@ -1,5 +1,5 @@
-import { ChannelData } from "@dashboard/channels/utils";
-import { act, renderHook } from "@testing-library/react-hooks";
+import { type ChannelData } from "@dashboard/channels/utils";
+import { act, renderHook } from "@testing-library/react";
 
 import useChannels from "./useChannels";
 
@@ -92,5 +92,31 @@ describe("useChannels", () => {
     });
     // Then
     expect(result.current.currentChannels).toStrictEqual(channels);
+  });
+
+  it("does not update channels when confirming an unchanged selection", () => {
+    // Given
+    const closeModal = jest.fn();
+    const { result } = renderHook(() =>
+      useChannels(
+        channels,
+        "",
+        {
+          closeModal,
+          openModal: jest.fn(),
+        },
+        { formId: Symbol("channel-test-form-id") },
+      ),
+    );
+    const channelsBefore = result.current.currentChannels;
+
+    // When
+    act(() => {
+      result.current.handleChannelsConfirm();
+    });
+
+    // Then
+    expect(result.current.currentChannels).toBe(channelsBefore);
+    expect(closeModal).toHaveBeenCalled();
   });
 });

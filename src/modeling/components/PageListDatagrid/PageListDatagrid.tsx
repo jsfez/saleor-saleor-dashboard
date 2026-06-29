@@ -1,16 +1,17 @@
 import { ColumnPicker } from "@dashboard/components/Datagrid/ColumnPicker/ColumnPicker";
 import { useColumns } from "@dashboard/components/Datagrid/ColumnPicker/useColumns";
-import Datagrid from "@dashboard/components/Datagrid/Datagrid";
+import { LIST_INSET_ROW_MARKER_WIDTH } from "@dashboard/components/Datagrid/const";
+import { Datagrid } from "@dashboard/components/Datagrid/Datagrid";
 import {
   DatagridChangeStateContext,
   useDatagridChangeState,
 } from "@dashboard/components/Datagrid/hooks/useDatagridChange";
-import { TablePaginationWithContext } from "@dashboard/components/TablePagination";
-import { Page, Pages } from "@dashboard/modeling/types";
-import { PageListUrlSortField } from "@dashboard/modeling/urls";
-import { ListProps, SortPage } from "@dashboard/types";
-import { Item } from "@glideapps/glide-data-grid";
-import { Box, useTheme } from "@saleor/macaw-ui-next";
+import { DatagridPagination } from "@dashboard/components/TablePagination";
+import { type Page, type Pages } from "@dashboard/modeling/types";
+import { type PageListUrlSortField } from "@dashboard/modeling/urls";
+import { type ListProps, type SortPage } from "@dashboard/types";
+import { type Item } from "@glideapps/glide-data-grid";
+import { useTheme } from "@saleor/macaw-ui-next";
 import { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
@@ -21,6 +22,7 @@ interface PageListDatagridProps extends ListProps, SortPage<PageListUrlSortField
   pages: Pages | undefined;
   loading: boolean;
   hasRowHover?: boolean;
+  searchQuery?: string;
   onSelectPageIds: (rowsIndex: number[], clearSelection: () => void) => void;
   onRowClick: (id: string) => void;
   rowAnchor?: (id: string) => string;
@@ -33,6 +35,7 @@ export const PageListDatagrid = ({
   settings,
   onUpdateListSettings,
   hasRowHover,
+  searchQuery,
   onRowClick,
   rowAnchor,
   onSelectPageIds,
@@ -109,6 +112,7 @@ export const PageListDatagrid = ({
         readonly
         loading={loading}
         rowMarkers="checkbox-visible"
+        rowMarkerWidth={LIST_INSET_ROW_MARKER_WIDTH}
         columnSelect="single"
         hasRowHover={hasRowHover}
         onColumnMoved={handlers.onMove}
@@ -116,7 +120,11 @@ export const PageListDatagrid = ({
         verticalBorder={false}
         rows={pages?.length ?? 0}
         availableColumns={visibleColumns}
-        emptyText={intl.formatMessage(messages.empty)}
+        emptyText={
+          searchQuery
+            ? intl.formatMessage(messages.emptySearch, { query: searchQuery })
+            : intl.formatMessage(messages.empty)
+        }
         onRowSelectionChange={onSelectPageIds}
         getCellContent={getCellContent}
         getCellError={() => false}
@@ -135,14 +143,12 @@ export const PageListDatagrid = ({
         )}
       />
 
-      <Box paddingX={6}>
-        <TablePaginationWithContext
-          component="div"
-          settings={settings}
-          disabled={loading}
-          onUpdateListSettings={onUpdateListSettings}
-        />
-      </Box>
+      <DatagridPagination
+        component="div"
+        settings={settings}
+        disabled={loading}
+        onUpdateListSettings={onUpdateListSettings}
+      />
     </DatagridChangeStateContext.Provider>
   );
 };

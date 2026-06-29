@@ -1,7 +1,7 @@
 import { AppErrorCode, PermissionEnum, useAppCreateMutation } from "@dashboard/graphql";
-import { renderHook } from "@testing-library/react-hooks";
-import { act } from "react-dom/test-utils";
-import { UseFormSetError } from "react-hook-form";
+import { renderHook } from "@testing-library/react";
+import { act } from "react";
+import { type UseFormSetError } from "react-hook-form";
 
 import { useHandleCreateAppSubmit } from "./useHandleCreateAppSubmit";
 
@@ -19,7 +19,9 @@ jest.mock("@dashboard/hooks/useNavigator", () => () => jest.fn());
 
 const mockNotify = jest.fn();
 
-jest.mock("@dashboard/hooks/useNotifier", () => () => mockNotify);
+jest.mock("@dashboard/hooks/useNotifier", () => ({
+  useNotifier: () => mockNotify,
+}));
 
 const mockUseAppCreateMutation = useAppCreateMutation as jest.MockedFunction<
   typeof useAppCreateMutation

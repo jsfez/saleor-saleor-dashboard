@@ -21,6 +21,11 @@ export const giftCardCreateMessages = defineMessages({
     defaultMessage: "Customer",
     description: "customer input label",
   },
+  useEmail: {
+    id: "rccigC",
+    defaultMessage: "Use email:",
+    description: "option label prefix for using a typed email address",
+  },
   noteLabel: {
     id: "UKgP89",
     defaultMessage: "Note",
@@ -48,8 +53,8 @@ export const giftCardCreateMessages = defineMessages({
     description: "copied to clipboard alert title",
   },
   createdSuccessAlertTitle: {
-    id: "WzHfj8",
-    defaultMessage: "Successfully created gift card",
+    id: "HFo3Qe",
+    defaultMessage: "Gift card created",
     description: "successfully created gift card alert title",
   },
   requiresActivationLabel: {

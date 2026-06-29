@@ -1,13 +1,14 @@
 import { TopNav } from "@dashboard/components/AppLayout";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { CardSpacer } from "@dashboard/components/CardSpacer";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Savebar } from "@dashboard/components/Savebar";
 import { discountListUrl } from "@dashboard/discounts/discountsUrls";
-import { DiscoutFormData } from "@dashboard/discounts/types";
+import { type DiscoutFormData } from "@dashboard/discounts/types";
 import {
-  ChannelFragment,
-  PromotionCreateErrorCode,
-  PromotionCreateErrorFragment,
+  type ChannelFragment,
+  type PromotionCreateErrorCode,
+  type PromotionCreateErrorFragment,
 } from "@dashboard/graphql";
 import { getFormErrors } from "@dashboard/utils/errors";
 import { getCommonFormFieldErrorMessage } from "@dashboard/utils/errors/common";
@@ -15,9 +16,8 @@ import { useIntl } from "react-intl";
 
 import { DiscountCreateForm } from "../DiscountCreateForm";
 import { DiscountDatesWithController } from "../DiscountDates";
-import { DiscountDescription } from "../DiscountDescription";
 import { DiscountGeneralInfo } from "../DiscountGeneralInfo";
-import { DiscountRules, DiscountRulesErrors } from "../DiscountRules";
+import { DiscountRules, type DiscountRulesErrors } from "../DiscountRules";
 
 interface DiscountCreatePageProps {
   channels: ChannelFragment[];
@@ -40,55 +40,56 @@ export const DiscountCreatePage = ({
   const formErrors = getFormErrors(["name"], errors);
 
   return (
-    <DetailPageLayout gridTemplateColumns={1}>
-      <TopNav
-        href={discountListUrl()}
-        title={intl.formatMessage({
-          id: "FWbv/u",
-          defaultMessage: "Create Discount",
-          description: "page header",
-        })}
-      />
-      <DetailPageLayout.Content>
-        <DiscountCreateForm onSubmit={onSubmit}>
-          {({ rules, discountType, onDeleteRule, onRuleSubmit, submitHandler }) => (
-            <>
-              <DiscountGeneralInfo
-                error={getCommonFormFieldErrorMessage(formErrors.name, intl)}
-                disabled={disabled}
-                typeDisabled={false}
-              />
+    <DiscountCreateForm onSubmit={onSubmit}>
+      {({ rules, discountType, onDeleteRule, onRuleSubmit, submitHandler }) => (
+        <DetailPageLayout gridTemplateColumns={1} testId="discount-form">
+          <TopNav
+            href={discountListUrl()}
+            title={intl.formatMessage({
+              id: "FWbv/u",
+              defaultMessage: "Create Discount",
+              description: "page header",
+            })}
+          />
 
-              <DiscountDescription disabled={disabled} />
+          <DetailPageLayout.Content>
+            <DiscountGeneralInfo
+              error={getCommonFormFieldErrorMessage(formErrors.name, intl)}
+              disabled={disabled}
+              typeDisabled={false}
+            />
 
-              <DiscountDatesWithController errors={errors} disabled={disabled} />
+            <CardSpacer />
 
-              <DiscountRules
-                promotionId={null}
-                discountType={discountType}
-                errors={errors as DiscountRulesErrors<PromotionCreateErrorCode>}
-                channels={channels}
-                disabled={disabled}
-                rules={rules}
-                onRuleDelete={onDeleteRule}
-                onRuleSubmit={onRuleSubmit}
-                getRuleConfirmButtonState={() => "default"}
-                deleteButtonState="default"
-              />
+            <DiscountDatesWithController errors={errors} disabled={disabled} />
 
-              <Savebar>
-                <Savebar.Spacer />
-                <Savebar.CancelButton onClick={onBack} />
-                <Savebar.ConfirmButton
-                  transitionState={submitButtonState}
-                  onClick={submitHandler}
-                  disabled={disabled}
-                />
-              </Savebar>
-            </>
-          )}
-        </DiscountCreateForm>
-      </DetailPageLayout.Content>
-    </DetailPageLayout>
+            <CardSpacer />
+
+            <DiscountRules
+              promotionId={null}
+              discountType={discountType}
+              errors={errors as DiscountRulesErrors<PromotionCreateErrorCode>}
+              channels={channels}
+              disabled={disabled}
+              rules={rules}
+              onRuleDelete={onDeleteRule}
+              onRuleSubmit={onRuleSubmit}
+              getRuleConfirmButtonState={() => "default"}
+              deleteButtonState="default"
+            />
+          </DetailPageLayout.Content>
+
+          <Savebar>
+            <Savebar.Spacer />
+            <Savebar.CancelButton onClick={onBack} />
+            <Savebar.ConfirmButton
+              transitionState={submitButtonState}
+              onClick={submitHandler}
+              disabled={disabled}
+            />
+          </Savebar>
+        </DetailPageLayout>
+      )}
+    </DiscountCreateForm>
   );
 };

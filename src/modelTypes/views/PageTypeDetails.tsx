@@ -7,6 +7,7 @@ import NotFoundPage from "@dashboard/components/NotFoundPage";
 import TypeDeleteWarningDialog from "@dashboard/components/TypeDeleteWarningDialog";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { DEFAULT_INITIAL_SEARCH_DATA } from "@dashboard/config";
+import { useRegisterEntityRefresh } from "@dashboard/extensions/entity-refresh";
 import {
   useAssignPageAttributeMutation,
   usePageTypeAttributeReorderMutation,
@@ -20,19 +21,18 @@ import {
 import useBulkActions from "@dashboard/hooks/useBulkActions";
 import { useListSelectedItems } from "@dashboard/hooks/useListSelectedItems";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
-import { commonMessages } from "@dashboard/intl";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { getStringOrPlaceholder } from "@dashboard/misc";
-import { ReorderEvent } from "@dashboard/types";
+import { type ReorderEvent } from "@dashboard/types";
 import getPageErrorMessage from "@dashboard/utils/errors/page";
 import createMetadataUpdateHandler from "@dashboard/utils/handlers/metadataUpdateHandler";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import useAvailablePageAttributeSearch from "../../searches/useAvailablePageAttributesSearch";
-import PageTypeDetailsPage, { PageTypeForm } from "../components/PageTypeDetailsPage";
+import PageTypeDetailsPage, { type PageTypeForm } from "../components/PageTypeDetailsPage";
 import usePageTypeDelete from "../hooks/usePageTypeDelete";
-import { pageTypeListUrl, pageTypeUrl, PageTypeUrlQueryParams } from "../urls";
+import { pageTypeListUrl, pageTypeUrl, type PageTypeUrlQueryParams } from "../urls";
 
 interface PageTypeDetailsProps {
   id: string;
@@ -48,7 +48,7 @@ const PageTypeDetails = ({ id, params }: PageTypeDetailsProps) => {
   const notifySaved = () =>
     notify({
       status: "success",
-      text: intl.formatMessage(commonMessages.savedChanges),
+      text: intl.formatMessage({ id: "GVGaij", defaultMessage: "Model type updated" }),
     });
   const [updatePageType, updatePageTypeOpts] = usePageTypeUpdateMutation({
     onCompleted: updateData => {
@@ -84,7 +84,7 @@ const PageTypeDetails = ({ id, params }: PageTypeDetailsProps) => {
       if (data.pageAttributeUnassign.errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "GVGaij", defaultMessage: "Model type updated" }),
         });
         closeModal();
         attributeListActions.reset();
@@ -151,9 +151,16 @@ const PageTypeDetails = ({ id, params }: PageTypeDetailsProps) => {
         pageTypeId: id,
       },
     });
-  const { data, loading: dataLoading } = usePageTypeDetailsQuery({
+  const {
+    data,
+    loading: dataLoading,
+    refetch,
+  } = usePageTypeDetailsQuery({
     variables: { id },
   });
+
+  useRegisterEntityRefresh(refetch);
+
   const { loadMore, search, result } = useAvailablePageAttributeSearch({
     variables: {
       ...DEFAULT_INITIAL_SEARCH_DATA,

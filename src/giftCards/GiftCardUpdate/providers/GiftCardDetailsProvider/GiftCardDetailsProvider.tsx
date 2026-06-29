@@ -1,10 +1,11 @@
 // @ts-strict-ignore
-import { GiftCardDetailsQuery, useGiftCardDetailsQuery } from "@dashboard/graphql";
+import { useRegisterEntityRefresh } from "@dashboard/extensions/entity-refresh";
+import { type GiftCardDetailsQuery, useGiftCardDetailsQuery } from "@dashboard/graphql";
 import { createContext } from "react";
 import * as React from "react";
 
 import { useGiftCardPermissions } from "../../../hooks/useGiftCardPermissions";
-import { ExtendedGiftCard } from "./types";
+import { type ExtendedGiftCard } from "./types";
 import { getExtendedGiftCard } from "./utils";
 
 interface GiftCardDetailsProviderProps {
@@ -21,10 +22,13 @@ export const GiftCardDetailsContext = createContext<GiftCardDetailsConsumerProps
 
 const GiftCardDetailsProvider = ({ children, id }: GiftCardDetailsProviderProps) => {
   const { canSeeApp, canSeeUser } = useGiftCardPermissions();
-  const { data, loading } = useGiftCardDetailsQuery({
+  const { data, loading, refetch } = useGiftCardDetailsQuery({
     displayLoader: true,
     variables: { id, canSeeApp, canSeeUser },
   });
+
+  useRegisterEntityRefresh(refetch);
+
   const providerValues: GiftCardDetailsConsumerProps = {
     giftCard: getExtendedGiftCard(data?.giftCard),
     loading,

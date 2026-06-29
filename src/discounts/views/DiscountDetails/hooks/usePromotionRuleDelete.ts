@@ -1,13 +1,12 @@
 import { sortAPIRules } from "@dashboard/discounts/utils";
 import {
   PromotionDetailsDocument,
-  PromotionDetailsFragment,
-  PromotionRuleDeleteMutation,
-  PromotionRuleDetailsFragment,
+  type PromotionDetailsFragment,
+  type PromotionRuleDeleteMutation,
+  type PromotionRuleDetailsFragment,
   usePromotionRuleDeleteMutation,
 } from "@dashboard/graphql";
-import useNotifier from "@dashboard/hooks/useNotifier";
-import { commonMessages } from "@dashboard/intl";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { useIntl } from "react-intl";
 
 export const usePromotionRuleDelete = (id: string) => {
@@ -44,7 +43,10 @@ export const usePromotionRuleDelete = (id: string) => {
       if (data?.promotionRuleDelete?.errors?.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({
+            id: "Y0EpoG",
+            defaultMessage: "Rule deleted",
+          }),
         });
       }
     },

@@ -1,9 +1,9 @@
-import { FetchResult, MutationResult } from "@apollo/client";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
-import { UserPermissionFragment } from "@dashboard/graphql";
-import { Option } from "@saleor/macaw-ui-next";
+import { type FetchResult, type MutationResult } from "@apollo/client";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { type UserPermissionFragment } from "@dashboard/graphql";
+import { type Option } from "@saleor/macaw-ui-next";
 
-import { FilterElement, IFilter } from "./components/Filter/types";
+import { type FilterElement, type IFilter } from "./components/Filter/types";
 
 export interface UserError {
   field: string | null;
@@ -129,6 +129,7 @@ export interface FilterProps<TKeys extends string> {
 
 export interface FilterPresetsProps {
   selectedFilterPreset: number | undefined;
+  builtInFilterPresets?: string[];
   filterPresets: string[];
   onFilterPresetsAll: () => void;
   onFilterPresetChange: (id: number) => void;
@@ -248,6 +249,8 @@ export enum StatusType {
   ERROR = "error",
   WARNING = "warning",
   SUCCESS = "success",
+  NEUTRAL = "neutral",
+  ATTENTION = "attention",
 }
 
 export type RelayToFlat<T extends { edges: Array<{ node: any }> } | null> = T extends {

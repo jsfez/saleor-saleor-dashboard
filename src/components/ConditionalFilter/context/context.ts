@@ -1,10 +1,11 @@
 import { createContext } from "react";
 
-import { FilterAPIProvider } from "../API/FilterAPIProvider";
-import { FilterValueProvider } from "../FilterValueProvider";
-import { LeftOperandsProvider } from "../LeftOperandsProvider";
-import { useContainerState } from "../useContainerState";
-import { FilterWindow } from "../useFilterWindow";
+import { type FilterAPIProvider } from "../API/FilterAPIProvider";
+import { type QueryApiType } from "../FiltersQueryBuilder/types";
+import { type FilterValueProvider } from "../FilterValueProvider";
+import { type LeftOperandsProvider } from "../LeftOperandsProvider";
+import { type useContainerState } from "../useContainerState";
+import { type FilterWindow } from "../useFilterWindow";
 
 export const ConditionalFilterContext = createContext<{
   apiProvider: FilterAPIProvider;
@@ -12,4 +13,5 @@ export const ConditionalFilterContext = createContext<{
   leftOperandsProvider: LeftOperandsProvider;
   containerState: ReturnType<typeof useContainerState>;
   filterWindow: FilterWindow;
+  queryApiType: QueryApiType;
 } | null>(null);

@@ -1,15 +1,17 @@
 import { ChannelsAvailabilityDropdown } from "@dashboard/components/ChannelsAvailabilityDropdown";
 import { EmptyImage } from "@dashboard/components/EmptyImage";
 import { GridTable } from "@dashboard/components/GridTable";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
 import Link from "@dashboard/components/Link";
 import Drag from "@dashboard/icons/Drag";
 import { productUrl } from "@dashboard/products/urls";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Box, Button, Checkbox, Skeleton, Text, TrashBinIcon } from "@saleor/macaw-ui-next";
-import * as React from "react";
+import { Box, Button, Checkbox, Skeleton, Text } from "@saleor/macaw-ui-next";
+import { Trash2 } from "lucide-react";
+import type * as React from "react";
 
-import { Product } from "./types";
+import { type Product } from "./types";
 
 interface ItemProps {
   product: Product;
@@ -120,7 +122,7 @@ export const ProductTableItem = ({
             data-test-id="delete-icon"
             variant="secondary"
             onClick={event => product && onProductUnassign(product.id, event)}
-            icon={<TrashBinIcon />}
+            icon={<Trash2 size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />}
           />
         </Box>
       </GridTable.Cell>

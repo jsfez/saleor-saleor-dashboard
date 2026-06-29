@@ -16,12 +16,12 @@ import {
   createFetchReferencesHandler,
 } from "@dashboard/attributes/utils/handlers";
 import {
-  DatagridChangeOpts,
+  type DatagridChangeOpts,
   DatagridChangeStateContext,
   useDatagridChangeState,
 } from "@dashboard/components/Datagrid/hooks/useDatagridChange";
 import { useExitFormDialog } from "@dashboard/components/Form/useExitFormDialog";
-import { ProductFragment } from "@dashboard/graphql";
+import { type ProductFragment } from "@dashboard/graphql";
 import useForm from "@dashboard/hooks/useForm";
 import useFormset from "@dashboard/hooks/useFormset";
 import useHandleFormSubmit from "@dashboard/hooks/useHandleFormSubmit";
@@ -33,8 +33,6 @@ import {
 import { PRODUCT_UPDATE_FORM_ID } from "@dashboard/products/views/ProductUpdate/consts";
 import createMultiselectChangeHandler from "@dashboard/utils/handlers/multiselectChangeHandler";
 import createSingleAutocompleteSelectHandler from "@dashboard/utils/handlers/singleAutocompleteSelectChangeHandler";
-import getMetadata from "@dashboard/utils/metadata/getMetadata";
-import useMetadataChangeTrigger from "@dashboard/utils/metadata/useMetadataChangeTrigger";
 import { RichTextContext } from "@dashboard/utils/richText/context";
 import { useMultipleRichText } from "@dashboard/utils/richText/useMultipleRichText";
 import useRichText from "@dashboard/utils/richText/useRichText";
@@ -43,12 +41,12 @@ import * as React from "react";
 
 import { useProductChannelListingsForm } from "./formChannels";
 import {
-  ProductUpdateData,
-  ProductUpdateFormProps,
-  ProductUpdateSubmitData,
-  SubmitResult,
-  UseProductUpdateFormOpts,
-  UseProductUpdateFormOutput,
+  type ProductUpdateData,
+  type ProductUpdateFormProps,
+  type ProductUpdateSubmitData,
+  type SubmitResult,
+  type UseProductUpdateFormOpts,
+  type UseProductUpdateFormOutput,
 } from "./types";
 import { prepareVariantChangeData } from "./utils";
 
@@ -104,11 +102,6 @@ export function useProductUpdateForm(
   const { setExitDialogSubmitRef } = useExitFormDialog({
     formId: PRODUCT_UPDATE_FORM_ID,
   });
-  const {
-    isMetadataModified,
-    isPrivateMetadataModified,
-    makeChangeHandler: makeMetadataChangeHandler,
-  } = useMetadataChangeTrigger();
   const {
     channels,
     handleChannelChange,
@@ -171,7 +164,6 @@ export function useProductUpdateForm(
     opts.setSelectedTaxClass,
     opts.taxClasses,
   );
-  const changeMetadata = makeMetadataChangeHandler(handleChange);
   const data: ProductUpdateData = {
     ...formData,
     attributes: getAttributesDisplayData(attributes.data, attributesWithNewFileValue.data, {
@@ -186,7 +178,6 @@ export function useProductUpdateForm(
 
   const getSubmitData = async (): Promise<ProductUpdateSubmitData> => ({
     ...form.changedData,
-    ...getMetadata(data, isMetadataModified, isPrivateMetadataModified),
     attributes: mergeAttributes(
       attributes.data,
       getRichTextAttributesFromMap(attributes.data, await getAttributeRichTextValues()),
@@ -281,7 +272,6 @@ export function useProductUpdateForm(
     formErrors: form.errors,
     handlers: {
       changeChannels: handleChannelChange,
-      changeMetadata,
       changeVariants: handleVariantChange,
       fetchMoreReferences: handleFetchMoreReferences,
       fetchReferences: handleFetchReferences,
@@ -300,6 +290,7 @@ export function useProductUpdateForm(
     isSaveDisabled,
     richText,
     attributeRichTextGetters,
+    touchedChannels: touchedChannels.current,
   };
 }
 
@@ -322,7 +313,9 @@ const ProductUpdateForm = ({
   return (
     <form onSubmit={props.submit} data-test-id="product-update-form">
       <DatagridChangeStateContext.Provider value={datagrid}>
-        <RichTextContext.Provider value={richText}>{children(props)}</RichTextContext.Provider>
+        <RichTextContext.Provider value={richText}>
+          {children({ ...props, richText })}
+        </RichTextContext.Provider>
       </DatagridChangeStateContext.Provider>
     </form>
   );

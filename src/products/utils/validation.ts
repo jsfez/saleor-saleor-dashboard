@@ -1,12 +1,15 @@
-import { ProductErrorCode, ProductErrorWithAttributesFragment } from "@dashboard/graphql";
-import { IntlShape } from "react-intl";
+import { ProductErrorCode, type ProductErrorWithAttributesFragment } from "@dashboard/graphql";
+import { type IntlShape } from "react-intl";
 import { z } from "zod";
 
-import { ProductCreateData } from "../components/ProductCreatePage";
-import { ProductVariantCreateData } from "../components/ProductVariantCreatePage/form";
-import { ProductVariantUpdateSubmitData } from "../components/ProductVariantPage/form";
+import { type ProductCreateData } from "../components/ProductCreatePage";
+import { type ProductVariantCreateData } from "../components/ProductVariantCreatePage/form";
+import { type ProductVariantUpdateSubmitData } from "../components/ProductVariantPage/form";
 
 export const validatePrice = (price: string) => price === "" || parseInt(price, 10) < 0;
+
+export const isMissingPriceValue = (price: string | number | null | undefined) =>
+  price == null || price === "" || parseInt(String(price), 10) < 0;
 
 export const validateCostPrice = (price: string) => price !== "" && parseInt(price, 10) < 0;
 

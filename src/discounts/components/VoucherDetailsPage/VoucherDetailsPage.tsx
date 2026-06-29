@@ -1,15 +1,15 @@
 // @ts-strict-ignore
-import { useUser } from "@dashboard/auth";
 import { hasPermission } from "@dashboard/auth/misc";
-import { ChannelVoucherData } from "@dashboard/channels/utils";
+import { useUser } from "@dashboard/auth/useUser";
+import { type ChannelVoucherData } from "@dashboard/channels/utils";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import CardSpacer from "@dashboard/components/CardSpacer";
 import ChannelsAvailabilityCard from "@dashboard/components/ChannelsAvailabilityCard";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
-import CountryList from "@dashboard/components/CountryList";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { CountryList } from "@dashboard/components/CountryList";
 import Form from "@dashboard/components/Form";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
-import { Metadata, MetadataFormData } from "@dashboard/components/Metadata";
+import { Metadata, type MetadataFormData } from "@dashboard/components/Metadata";
 import { Savebar } from "@dashboard/components/Savebar";
 import { Tab, TabContainer } from "@dashboard/components/Tab";
 import {
@@ -25,36 +25,36 @@ import { extensionMountPoints } from "@dashboard/extensions/extensionMountPoints
 import { getExtensionsItemsForVoucherDetails } from "@dashboard/extensions/getExtensionsItems";
 import { useExtensions } from "@dashboard/extensions/hooks/useExtensions";
 import {
-  DiscountErrorFragment,
+  type DiscountErrorFragment,
   DiscountValueTypeEnum,
   PermissionEnum,
-  SearchProductFragment,
-  VoucherDetailsFragment,
+  type SearchProductFragment,
+  type VoucherDetailsFragment,
   VoucherTypeEnum,
 } from "@dashboard/graphql";
 import { useBackLinkWithState } from "@dashboard/hooks/useBackLinkWithState";
-import { UseListSettings } from "@dashboard/hooks/useListSettings";
-import { LocalPagination } from "@dashboard/hooks/useLocalPaginator";
+import { type UseListSettings } from "@dashboard/hooks/useListSettings";
+import { type LocalPagination } from "@dashboard/hooks/useLocalPaginator";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { TranslationsButton } from "@dashboard/translations/components/TranslationsButton/TranslationsButton";
 import { languageEntityUrl, TranslatableEntities } from "@dashboard/translations/urls";
 import { useCachedLocales } from "@dashboard/translations/useCachedLocales";
 import { mapEdgesToItems, mapMetadataItemToInput } from "@dashboard/utils/maps";
 import useMetadataChangeTrigger from "@dashboard/utils/metadata/useMetadataChangeTrigger";
-import { Box, Divider, Text } from "@saleor/macaw-ui-next";
+import { Divider, Text } from "@saleor/macaw-ui-next";
 import * as React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { splitDateTime } from "../../../misc";
-import { ChannelProps, ListProps, TabListActions } from "../../../types";
+import { type ChannelProps, type ListProps, type TabListActions } from "../../../types";
 import DiscountCategories from "../DiscountCategories";
 import DiscountCollections from "../DiscountCollections";
 import DiscountDates from "../DiscountDates";
 import DiscountProducts from "../DiscountProducts";
 import DiscountVariants from "../DiscountVariants";
 import { VoucherCodes } from "../VoucherCodes";
-import { VoucherCode } from "../VoucherCodesDatagrid/types";
-import { GenerateMultipleVoucherCodeFormData } from "../VoucherCodesGenerateDialog";
+import { type VoucherCode } from "../VoucherCodesDatagrid/types";
+import { type GenerateMultipleVoucherCodeFormData } from "../VoucherCodesGenerateDialog";
 import VoucherInfo from "../VoucherInfo";
 import VoucherLimits from "../VoucherLimits";
 import VoucherRequirements from "../VoucherRequirements";
@@ -128,7 +128,8 @@ interface VoucherDetailsPageProps
   openChannelsModal: () => void;
   onMultipleVoucherCodesGenerate: (data: GenerateMultipleVoucherCodeFormData) => void;
   onCustomVoucherCodeGenerate: (code: string) => void;
-  onDeleteVoucherCodes: () => void;
+  deleteVoucherCodesTransitionState: ConfirmButtonTransitionState;
+  onDeleteVoucherCodes: () => Promise<void>;
   onVoucherCodesSettingsChange: UseListSettings["updateListSettings"];
   voucherCodesPagination: LocalPagination;
   voucherCodesSettings: UseListSettings["settings"];
@@ -164,6 +165,7 @@ const VoucherDetailsPage: React.FC<VoucherDetailsPageProps> = ({
   onRemove,
   onMultipleVoucherCodesGenerate,
   onCustomVoucherCodeGenerate,
+  deleteVoucherCodesTransitionState,
   onDeleteVoucherCodes,
   onSubmit,
   toggle,
@@ -277,9 +279,7 @@ const VoucherDetailsPage: React.FC<VoucherDetailsPageProps> = ({
                 />
               )}
               {extensionMenuItems.length > 0 && (
-                <Box marginLeft={3}>
-                  <TopNav.Menu items={[...extensionMenuItems]} dataTestId="menu" />
-                </Box>
+                <TopNav.Menu items={[...extensionMenuItems]} dataTestId="menu" />
               )}
             </TopNav>
             <DetailPageLayout.Content>
@@ -288,6 +288,7 @@ const VoucherDetailsPage: React.FC<VoucherDetailsPageProps> = ({
                 selectedCodesIds={selectedVoucherCodesIds}
                 onSelectVoucherCodesIds={onSelectVoucherCodesIds}
                 onDeleteCodes={onDeleteVoucherCodes}
+                deleteCodesTransitionState={deleteVoucherCodesTransitionState}
                 loading={voucherCodesLoading}
                 onMultiCodesGenerate={codes => {
                   triggerChange();
@@ -421,6 +422,7 @@ const VoucherDetailsPage: React.FC<VoucherDetailsPageProps> = ({
                     id: "jd/LWa",
                     defaultMessage: "Voucher applies to all countries",
                   })}
+                  summaryContext="voucher"
                   title={
                     <>
                       {intl.formatMessage({

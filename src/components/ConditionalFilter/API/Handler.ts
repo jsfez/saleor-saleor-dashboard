@@ -1,53 +1,55 @@
-import { ApolloClient } from "@apollo/client";
+import { type ApolloClient } from "@apollo/client";
+import { createBooleanOptions } from "@dashboard/components/ConditionalFilter/constants";
 import {
   _GetAttributeChoicesDocument,
-  _GetAttributeChoicesQuery,
-  _GetAttributeChoicesQueryVariables,
+  type _GetAttributeChoicesQuery,
+  type _GetAttributeChoicesQueryVariables,
   _GetCategoriesChoicesDocument,
-  _GetCategoriesChoicesQuery,
-  _GetCategoriesChoicesQueryVariables,
+  type _GetCategoriesChoicesQuery,
+  type _GetCategoriesChoicesQueryVariables,
   _GetChannelOperandsDocument,
-  _GetChannelOperandsQuery,
-  _GetChannelOperandsQueryVariables,
+  type _GetChannelOperandsQuery,
+  type _GetChannelOperandsQueryVariables,
   _GetCollectionsChoicesDocument,
-  _GetCollectionsChoicesQuery,
-  _GetCollectionsChoicesQueryVariables,
+  type _GetCollectionsChoicesQuery,
+  type _GetCollectionsChoicesQueryVariables,
   _GetCustomersChoicesDocument,
-  _GetCustomersChoicesQuery,
-  _GetCustomersChoicesQueryVariables,
+  type _GetCustomersChoicesQuery,
+  type _GetCustomersChoicesQueryVariables,
   _GetDynamicLeftOperandsDocument,
-  _GetDynamicLeftOperandsQuery,
-  _GetDynamicLeftOperandsQueryVariables,
+  type _GetDynamicLeftOperandsQuery,
+  type _GetDynamicLeftOperandsQueryVariables,
   _GetGiftCardTagsChoicesDocument,
-  _GetGiftCardTagsChoicesQuery,
-  _GetGiftCardTagsChoicesQueryVariables,
+  type _GetGiftCardTagsChoicesQuery,
+  type _GetGiftCardTagsChoicesQueryVariables,
   _GetLegacyChannelOperandsDocument,
   _GetPagesChoicesDocument,
-  _GetPagesChoicesQuery,
-  _GetPagesChoicesQueryVariables,
+  type _GetPagesChoicesQuery,
+  type _GetPagesChoicesQueryVariables,
   _GetPageTypesChoicesDocument,
-  _GetPageTypesChoicesQuery,
-  _GetPageTypesChoicesQueryVariables,
+  type _GetPageTypesChoicesQuery,
+  type _GetPageTypesChoicesQueryVariables,
   _GetProductChoicesDocument,
-  _GetProductChoicesQuery,
-  _GetProductChoicesQueryVariables,
+  type _GetProductChoicesQuery,
+  type _GetProductChoicesQueryVariables,
   _GetProductTypesChoicesDocument,
-  _GetProductTypesChoicesQuery,
-  _GetProductTypesChoicesQueryVariables,
+  type _GetProductTypesChoicesQuery,
+  type _GetProductTypesChoicesQueryVariables,
   _GetProductVariantChoicesDocument,
-  _GetProductVariantChoicesQuery,
-  _GetProductVariantChoicesQueryVariables,
+  type _GetProductVariantChoicesQuery,
+  type _GetProductVariantChoicesQueryVariables,
   _GetWarehouseChoicesDocument,
-  _GetWarehouseChoicesQuery,
-  _GetWarehouseChoicesQueryVariables,
+  type _GetWarehouseChoicesQuery,
+  type _GetWarehouseChoicesQueryVariables,
+  AttributeInputTypeEnum,
   ChannelCurrenciesDocument,
-  ChannelCurrenciesQuery,
-  ChannelCurrenciesQueryVariables,
+  type ChannelCurrenciesQuery,
+  type ChannelCurrenciesQueryVariables,
 } from "@dashboard/graphql";
-import { IntlShape } from "react-intl";
+import { type IntlShape } from "react-intl";
 
-import { ItemOption } from "../FilterElement/ConditionValue";
-import { LeftOperand } from "../LeftOperandsProvider";
+import { type ItemOption } from "../FilterElement/ConditionValue";
+import { type LeftOperand } from "../LeftOperandsProvider";
 import { getLocalizedLabel } from "./intl";
 
 export interface Handler {
@@ -120,9 +122,18 @@ export class AttributeChoicesHandler implements Handler {
     public client: ApolloClient<unknown>,
     public attributeSlug: string,
     public query: string,
+    public type: string,
   ) {}
 
   fetch = async () => {
+    /**
+     * Boolean attributes don't expose `choices` to fetch.
+     * Use static true/false options instead.
+     */
+    if (this.type === AttributeInputTypeEnum.BOOLEAN) {
+      return createBooleanOptions();
+    }
+
     const { client, attributeSlug, query } = this;
     const { data } = await client.query<
       _GetAttributeChoicesQuery,

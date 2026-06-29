@@ -1,6 +1,7 @@
 import { ProductMediaType } from "@dashboard/graphql";
+import { type UseFormResult } from "@dashboard/hooks/useForm";
 
-import { handleAssignMedia } from "./handlers";
+import { createPreorderEndDateChangeHandler, handleAssignMedia } from "./handlers";
 
 type HandleAssignMediaParams = Parameters<typeof handleAssignMedia>;
 
@@ -15,14 +16,14 @@ describe("Product handlers", () => {
           id: "1",
           url: "",
           type: ProductMediaType.IMAGE,
-          oembedData: null,
+          oembedData: "",
           __typename: "ProductMedia",
         },
         {
           id: "2",
           url: "",
           type: ProductMediaType.IMAGE,
-          oembedData: null,
+          oembedData: "",
           __typename: "ProductMedia",
         },
       ],
@@ -46,7 +47,7 @@ describe("Product handlers", () => {
           id: "3",
           url: "",
           type: ProductMediaType.IMAGE,
-          oembedData: null,
+          oembedData: "",
           __typename: "ProductMedia",
         },
       ],
@@ -78,21 +79,21 @@ describe("Product handlers", () => {
           id: "1",
           url: "",
           type: ProductMediaType.IMAGE,
-          oembedData: null,
+          oembedData: "",
           __typename: "ProductMedia",
         },
         {
           id: "2",
           url: "",
           type: ProductMediaType.IMAGE,
-          oembedData: null,
+          oembedData: "",
           __typename: "ProductMedia",
         },
         {
           id: "3",
           url: "",
           type: ProductMediaType.IMAGE,
-          oembedData: null,
+          oembedData: "",
           __typename: "ProductMedia",
         },
       ],
@@ -124,14 +125,14 @@ describe("Product handlers", () => {
           id: "1",
           url: "",
           type: ProductMediaType.IMAGE,
-          oembedData: null,
+          oembedData: "",
           __typename: "ProductMedia",
         },
         {
           id: "2",
           url: "",
           type: ProductMediaType.IMAGE,
-          oembedData: null,
+          oembedData: "",
           __typename: "ProductMedia",
         },
       ],
@@ -152,5 +153,63 @@ describe("Product handlers", () => {
       variantId: "1",
       mediaId: "2",
     });
+  });
+});
+
+describe("createPreorderEndDateChangeHandler", () => {
+  const createMockForm = () =>
+    ({
+      change: jest.fn(),
+      setError: jest.fn(),
+      clearErrors: jest.fn(),
+    }) as unknown as UseFormResult<{ preorderEndDateTime?: string }>;
+
+  const errorMessage = "End date cannot be in the past";
+
+  it("sets error when date is in the past", () => {
+    // Arrange
+    const form = createMockForm();
+    const triggerChange = jest.fn();
+    const handler = createPreorderEndDateChangeHandler(form, triggerChange, errorMessage);
+    const event = { target: { name: "preorderEndDateTime", value: "2020-01-01T00:00" } };
+
+    // Act
+    handler(event);
+
+    // Assert
+    expect(form.change).toHaveBeenCalledWith(event);
+    expect(form.setError).toHaveBeenCalledWith("preorderEndDateTime", errorMessage);
+    expect(triggerChange).toHaveBeenCalled();
+  });
+
+  it("clears error when date is in the future", () => {
+    // Arrange
+    const form = createMockForm();
+    const triggerChange = jest.fn();
+    const handler = createPreorderEndDateChangeHandler(form, triggerChange, errorMessage);
+    const event = { target: { name: "preorderEndDateTime", value: "2099-01-01T00:00" } };
+
+    // Act
+    handler(event);
+
+    // Assert
+    expect(form.change).toHaveBeenCalledWith(event);
+    expect(form.clearErrors).toHaveBeenCalledWith("preorderEndDateTime");
+    expect(triggerChange).toHaveBeenCalled();
+  });
+
+  it("always calls form.change and triggerChange", () => {
+    // Arrange
+    const form = createMockForm();
+    const triggerChange = jest.fn();
+    const handler = createPreorderEndDateChangeHandler(form, triggerChange, errorMessage);
+    const event = { target: { name: "preorderEndDateTime", value: "2020-06-15T12:00" } };
+
+    // Act
+    handler(event);
+
+    // Assert
+    expect(form.change).toHaveBeenCalledTimes(1);
+    expect(triggerChange).toHaveBeenCalledTimes(1);
   });
 });

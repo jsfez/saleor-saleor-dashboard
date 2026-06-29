@@ -3,7 +3,7 @@ import { alpha } from "@material-ui/core/styles";
 import { ImageIcon, makeStyles } from "@saleor/macaw-ui";
 import { Text, vars } from "@saleor/macaw-ui-next";
 import clsx from "clsx";
-import * as React from "react";
+import type * as React from "react";
 import { FormattedMessage } from "react-intl";
 
 import Dropzone from "../Dropzone";
@@ -67,7 +67,7 @@ const ImageUpload = (props: ImageUploadProps) => {
   const classes = useStyles(props);
 
   return (
-    <Dropzone disableClick={disableClick} onDrop={onImageUpload}>
+    <Dropzone noClick={disableClick} onDrop={onImageUpload}>
       {({ isDragActive, getInputProps, getRootProps }) => (
         <>
           <div

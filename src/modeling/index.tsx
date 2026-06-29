@@ -1,20 +1,19 @@
-import { ConditionalPageFilterProvider } from "@dashboard/components/ConditionalFilter";
 import { Route } from "@dashboard/components/Router";
 import { sectionNames } from "@dashboard/intl";
+import { parseQs } from "@dashboard/url-utils";
 import { asSortParams } from "@dashboard/utils/sort";
-import { parse as parseQs } from "qs";
 import { useIntl } from "react-intl";
-import { RouteComponentProps, Switch } from "react-router-dom";
+import { type RouteComponentProps, Switch } from "react-router-dom";
 
 import { WindowTitle } from "../components/WindowTitle";
 import {
   pageCreatePath,
-  PageCreateUrlQueryParams,
+  type PageCreateUrlQueryParams,
   pageListPath,
-  PageListUrlQueryParams,
+  type PageListUrlQueryParams,
   PageListUrlSortField,
   pagePath,
-  PageUrlQueryParams,
+  type PageUrlQueryParams,
 } from "./urls";
 import PageCreateComponent from "./views/PageCreate";
 import PageDetailsComponent from "./views/PageDetails";
@@ -28,11 +27,7 @@ const PageList = () => {
     PageListUrlSortField.title,
   );
 
-  return (
-    <ConditionalPageFilterProvider locationSearch={location.search}>
-      <PageListComponent params={params} />
-    </ConditionalPageFilterProvider>
-  );
+  return <PageListComponent params={params} />;
 };
 const PageCreate = ({ match }: RouteComponentProps<{ id: string }>) => {
   const qs = parseQs(location.search.substr(1));

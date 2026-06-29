@@ -1,13 +1,13 @@
 // @ts-strict-ignore
 import ChannelDeleteDialog from "@dashboard/channels/components/ChannelDeleteDialog";
-import { FormData } from "@dashboard/channels/components/ChannelForm/ChannelForm";
+import { type FormData } from "@dashboard/channels/components/ChannelForm/ChannelForm";
 import { getChannelsCurrencyChoices } from "@dashboard/channels/utils";
 import { useChannelWarehousesReorder } from "@dashboard/channels/views/ChannelDetails/useChannelWarehouseReorder";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import {
-  ChannelDeleteMutation,
-  ChannelErrorFragment,
-  ChannelUpdateMutation,
+  type ChannelDeleteMutation,
+  type ChannelErrorFragment,
+  type ChannelUpdateMutation,
   useChannelActivateMutation,
   useChannelDeactivateMutation,
   useChannelDeleteMutation,
@@ -17,7 +17,7 @@ import {
 } from "@dashboard/graphql";
 import { getSearchFetchMoreProps } from "@dashboard/hooks/makeTopLevelSearch/utils";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { getDefaultNotifierSuccessErrorData } from "@dashboard/hooks/useNotifier/utils";
 import useShop from "@dashboard/hooks/useShop";
 import { extractMutationErrors } from "@dashboard/misc";
@@ -27,7 +27,12 @@ import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { useIntl } from "react-intl";
 
 import ChannelDetailsPage from "../../pages/ChannelDetailsPage";
-import { channelsListUrl, channelUrl, ChannelUrlDialog, ChannelUrlQueryParams } from "../../urls";
+import {
+  channelsListUrl,
+  channelUrl,
+  type ChannelUrlDialog,
+  type ChannelUrlQueryParams,
+} from "../../urls";
 import { useShippingZones } from "./useShippingZones";
 import { useWarehouses } from "./useWarehouses";
 
@@ -41,7 +46,9 @@ const ChannelDetails = ({ id, params }: ChannelDetailsProps) => {
   const notify = useNotifier();
   const intl = useIntl();
   const shop = useShop();
-  const channelsListData = useChannelsQuery({ displayLoader: true });
+  const channelsListData = useChannelsQuery({
+    displayLoader: true,
+  });
 
   const [openModal, closeModal] = createDialogActionHandlers<
     ChannelUrlDialog,
@@ -102,14 +109,51 @@ const ChannelDetails = ({ id, params }: ChannelDetailsProps) => {
     warehousesIdsToRemove,
     warehousesToDisplay,
     automaticallyCompleteCheckouts,
+    allowLegacyGiftCardUse,
+    automaticCompletionDelay,
+    automaticCompletionCutOffDate,
+    automaticCompletionCutOffTime,
   }: FormData) => {
+    const getCutOffDateTimeISO = (): string | null => {
+      if (!automaticCompletionCutOffDate) {
+        return null;
+      }
+
+      const time = automaticCompletionCutOffTime || "00:00";
+
+      return new Date(`${automaticCompletionCutOffDate}T${time}`).toISOString();
+    };
+
+    // Build automaticCompletion input - only include delay and cutOffDate when enabled
+    const automaticCompletionInput: {
+      enabled: boolean;
+      delay?: number | null;
+      cutOffDate?: string | null;
+    } = {
+      enabled: automaticallyCompleteCheckouts,
+    };
+
+    if (automaticallyCompleteCheckouts) {
+      // Convert delay to number or null (handle empty string case)
+      const delayValue = automaticCompletionDelay;
+
+      if (delayValue === null || delayValue === undefined || delayValue === "") {
+        automaticCompletionInput.delay = null;
+      } else {
+        automaticCompletionInput.delay = Number(delayValue);
+      }
+
+      automaticCompletionInput.cutOffDate = getCutOffDateTimeISO();
+    }
+
     const updateChannelMutation = updateChannel({
       variables: {
         id: data?.channel.id,
         input: {
           name,
           checkoutSettings: {
-            automaticallyCompleteFullyPaidCheckouts: automaticallyCompleteCheckouts,
+            automaticCompletion: automaticCompletionInput,
+            allowLegacyGiftCardUse,
           },
           slug,
           defaultCountry,

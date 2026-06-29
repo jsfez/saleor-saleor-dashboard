@@ -1,12 +1,12 @@
 import { ExtensionsUrls } from "@dashboard/extensions/urls";
-import { AppErrorCode, PermissionEnum, useAppCreateMutation } from "@dashboard/graphql";
+import { AppErrorCode, type PermissionEnum, useAppCreateMutation } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { commonMessages } from "@dashboard/intl";
-import { SubmitHandler, UseFormSetError } from "react-hook-form";
+import { type SubmitHandler, type UseFormSetError } from "react-hook-form";
 import { useIntl } from "react-intl";
 
-import { CustomExtensionFormData } from "../AddCustomExtension";
+import { type CustomExtensionFormData } from "../AddCustomExtension";
 
 export const useHandleCreateAppSubmit = ({
   setToken,
@@ -25,7 +25,7 @@ export const useHandleCreateAppSubmit = ({
       if (data?.appCreate?.errors?.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "GyXEWS", defaultMessage: "App created" }),
         });
 
         if (data.appCreate?.authToken) {

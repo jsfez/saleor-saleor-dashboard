@@ -1,18 +1,27 @@
 import { DashboardCard } from "@dashboard/components/Card";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
+import { Placeholder } from "@dashboard/components/Placeholder";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
+import { SearchInput } from "@dashboard/components/SearchInput/SearchInput";
 import { SortableTableBody, SortableTableRow } from "@dashboard/components/SortableTable";
 import { TablePagination } from "@dashboard/components/TablePagination";
 import TableRowLink from "@dashboard/components/TableRowLink";
 import {
   AttributeInputTypeEnum,
-  AttributeValueFragment,
-  AttributeValueListFragment,
+  type AttributeValueFragment,
+  type AttributeValueListFragment,
 } from "@dashboard/graphql";
 import { renderCollection, stopPropagation } from "@dashboard/misc";
-import { ListProps, PaginateListProps, RelayToFlat, ReorderAction } from "@dashboard/types";
-import { TableCell, TableFooter, TableHead } from "@material-ui/core";
+import {
+  type ListProps,
+  type PaginateListProps,
+  type RelayToFlat,
+  type ReorderAction,
+} from "@dashboard/types";
+import { TableCell, TableHead } from "@material-ui/core";
 import { makeStyles } from "@saleor/macaw-ui";
-import { Box, Button, Skeleton, TrashBinIcon } from "@saleor/macaw-ui-next";
+import { Box, Button, Skeleton } from "@saleor/macaw-ui-next";
+import { Trash2 } from "lucide-react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 interface AttributeValuesProps
@@ -25,6 +34,8 @@ interface AttributeValuesProps
   onValueReorder: ReorderAction;
   onValueUpdate: (id: string) => void;
   inputType: AttributeInputTypeEnum;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
 const useStyles = makeStyles(
@@ -45,7 +56,7 @@ const useStyles = makeStyles(
       cursor: "grab",
     },
     iconCell: {
-      width: 84,
+      width: 48,
     },
     link: {
       cursor: "pointer",
@@ -69,6 +80,7 @@ const getSwatchCellStyle = (value?: AttributeValueFragment | undefined) => {
     ? { backgroundImage: `url(${value.file.url})` }
     : { backgroundColor: value.value ?? undefined };
 };
+
 const AttributeValues = ({
   disabled,
   onValueAdd,
@@ -82,11 +94,15 @@ const AttributeValues = ({
   onNextPage,
   onPreviousPage,
   inputType,
+  searchQuery = "",
+  onSearchChange,
 }: AttributeValuesProps) => {
   const classes = useStyles({});
   const intl = useIntl();
   const isSwatch = inputType === AttributeInputTypeEnum.SWATCH;
-  const numberOfColumns = isSwatch ? 5 : 4;
+
+  // Show search when callback is provided (controlled by parent)
+  const showSearch = Boolean(onSearchChange);
 
   return (
     <DashboardCard data-test-id="attribute-values-section">
@@ -113,115 +129,149 @@ const AttributeValues = ({
           </Button>
         </DashboardCard.Toolbar>
       </DashboardCard.Header>
-
-      <ResponsiveTable>
-        <TableHead>
-          <TableRowLink>
-            <TableCell className={classes.columnDrag} />
-            {isSwatch && (
-              <TableCell className={classes.columnSwatch}>
-                <FormattedMessage
-                  id="NUevU9"
-                  defaultMessage="Swatch"
-                  description="attribute values list: slug column header"
-                />
-              </TableCell>
+      <DashboardCard.Content>
+        {values === undefined ? (
+          <Skeleton />
+        ) : (
+          <Box display="flex" flexDirection="column" gap={4}>
+            {/* Search input - always visible when search is enabled */}
+            {showSearch && (
+              <SearchInput
+                value={searchQuery}
+                onChange={onSearchChange!}
+                placeholder={intl.formatMessage({
+                  id: "9seX5T",
+                  defaultMessage: "Search attribute values...",
+                  description: "attribute values search placeholder",
+                })}
+                data-test-id="attribute-value-search-input"
+              />
             )}
-            <TableCell className={classes.columnAdmin}>
-              <FormattedMessage
-                id="3psvRS"
-                defaultMessage="Admin"
-                description="attribute values list: slug column header"
-              />
-            </TableCell>
-            <TableCell className={classes.columnStore}>
-              <FormattedMessage
-                id="H60H6L"
-                defaultMessage="Default Store View"
-                description="attribute values list: name column header"
-              />
-            </TableCell>
-            <TableCell className={classes.iconCell} />
-          </TableRowLink>
-        </TableHead>
-        <TableFooter>
-          <TableRowLink>
-            <TablePagination
-              colSpan={numberOfColumns}
-              hasNextPage={pageInfo && !disabled ? pageInfo.hasNextPage : false}
-              onNextPage={onNextPage}
-              hasPreviousPage={pageInfo && !disabled ? pageInfo.hasPreviousPage : false}
-              onPreviousPage={onPreviousPage}
-              settings={settings}
-              onUpdateListSettings={onUpdateListSettings}
-            />
-          </TableRowLink>
-        </TableFooter>
-        <SortableTableBody onSortEnd={onValueReorder}>
-          {renderCollection(
-            values,
-            (value, valueIndex) => (
-              <SortableTableRow<"row">
-                data-test-id="attributes-rows"
-                className={value ? classes.link : undefined}
-                hover={!!value}
-                onClick={value ? () => onValueUpdate(value.id) : undefined}
-                key={value?.id}
-                index={valueIndex || 0}
+            {/* No values at all (not searching) */}
+            {values.length === 0 && !searchQuery ? (
+              <Placeholder>
+                <FormattedMessage
+                  id="dAst+b"
+                  defaultMessage="No values found"
+                  description="attribute values list: no attribute values found"
+                />
+              </Placeholder>
+            ) : /* Search returned no results */
+            values.length === 0 && searchQuery ? (
+              <Placeholder>
+                <FormattedMessage
+                  id="oegjWf"
+                  defaultMessage="No values match your search"
+                  description="attribute values list: no search results"
+                />
+              </Placeholder>
+            ) : (
+              <ResponsiveTable
+                footer={
+                  <TablePagination
+                    hasNextPage={pageInfo && !disabled ? pageInfo.hasNextPage : false}
+                    onNextPage={onNextPage}
+                    hasPreviousPage={pageInfo && !disabled ? pageInfo.hasPreviousPage : false}
+                    onPreviousPage={onPreviousPage}
+                    settings={settings}
+                    onUpdateListSettings={onUpdateListSettings}
+                  />
+                }
               >
-                {isSwatch && (
-                  <TableCell className={classes.columnSwatch}>
-                    {value?.file ? (
-                      <Box
-                        as="img"
-                        objectFit="cover"
-                        alt=""
-                        src={value.file.url}
-                        __width={32}
-                        __height={32}
-                        data-test-id="swatch-image"
-                      />
-                    ) : (
-                      <div
-                        data-test-id="swatch-image"
-                        className={classes.swatch}
-                        style={getSwatchCellStyle(value)}
-                      />
+                <TableHead>
+                  <TableRowLink>
+                    <TableCell className={classes.columnDrag} />
+                    {isSwatch && (
+                      <TableCell className={classes.columnSwatch}>
+                        <FormattedMessage
+                          id="NUevU9"
+                          defaultMessage="Swatch"
+                          description="attribute values list: slug column header"
+                        />
+                      </TableCell>
                     )}
-                  </TableCell>
-                )}
-                <TableCell className={classes.columnAdmin} data-test-id="attribute-value-name">
-                  {value?.slug ?? <Skeleton />}
-                </TableCell>
-                <TableCell className={classes.columnStore}>{value?.name ?? <Skeleton />}</TableCell>
-                <TableCell className={classes.iconCell}>
-                  <Button
-                    icon={<TrashBinIcon />}
-                    data-test-id="delete-attribute-value-button"
-                    variant="secondary"
-                    disabled={disabled}
-                    onClick={stopPropagation(() => onValueDelete(value?.id ?? ""))}
-                  />
-                </TableCell>
-              </SortableTableRow>
-            ),
-            () => (
-              <TableRowLink>
-                <TableCell colSpan={numberOfColumns}>
-                  <FormattedMessage
-                    id="g5zIpS"
-                    defaultMessage="No values found"
-                    description="No attribute values found"
-                  />
-                </TableCell>
-              </TableRowLink>
-            ),
-          )}
-        </SortableTableBody>
-      </ResponsiveTable>
+                    <TableCell className={classes.columnAdmin}>
+                      <FormattedMessage
+                        id="3psvRS"
+                        defaultMessage="Admin"
+                        description="attribute values list: slug column header"
+                      />
+                    </TableCell>
+                    <TableCell className={classes.columnStore}>
+                      <FormattedMessage
+                        id="H60H6L"
+                        defaultMessage="Default Store View"
+                        description="attribute values list: name column header"
+                      />
+                    </TableCell>
+                    <TableCell className={classes.iconCell} />
+                  </TableRowLink>
+                </TableHead>
+                <SortableTableBody onSortEnd={onValueReorder} disabled={!!searchQuery}>
+                  {renderCollection(values, (value, valueIndex) => (
+                    <SortableTableRow<"row">
+                      data-test-id="attributes-rows"
+                      className={value ? classes.link : undefined}
+                      hover={!!value}
+                      onClick={value ? () => onValueUpdate(value.id) : undefined}
+                      key={value?.id}
+                      index={valueIndex || 0}
+                    >
+                      {isSwatch && (
+                        <TableCell className={classes.columnSwatch}>
+                          {value?.file ? (
+                            <Box
+                              as="img"
+                              objectFit="cover"
+                              alt=""
+                              src={value.file.url}
+                              __width={32}
+                              __height={32}
+                              data-test-id="swatch-image"
+                            />
+                          ) : (
+                            <div
+                              data-test-id="swatch-image"
+                              className={classes.swatch}
+                              style={getSwatchCellStyle(value)}
+                            />
+                          )}
+                        </TableCell>
+                      )}
+                      <TableCell
+                        className={classes.columnAdmin}
+                        data-test-id="attribute-value-name"
+                      >
+                        {value?.slug ?? <Skeleton />}
+                      </TableCell>
+                      <TableCell className={classes.columnStore}>
+                        {value?.name ?? <Skeleton />}
+                      </TableCell>
+                      <TableCell className={classes.iconCell}>
+                        <Button
+                          icon={
+                            <Trash2
+                              size={iconSize.small}
+                              strokeWidth={iconStrokeWidthBySize.small}
+                            />
+                          }
+                          data-test-id="delete-attribute-value-button"
+                          variant="secondary"
+                          disabled={disabled}
+                          onClick={stopPropagation(() => onValueDelete(value?.id ?? ""))}
+                        />
+                      </TableCell>
+                    </SortableTableRow>
+                  ))}
+                </SortableTableBody>
+              </ResponsiveTable>
+            )}
+          </Box>
+        )}
+      </DashboardCard.Content>
     </DashboardCard>
   );
 };
 
 AttributeValues.displayName = "AttributeValues";
-export default AttributeValues;
+export { AttributeValues };

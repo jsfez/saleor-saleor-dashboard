@@ -1,6 +1,6 @@
 import { useUserPermissions } from "@dashboard/auth/hooks/useUserPermissions";
 import { channelsList } from "@dashboard/channels/fixtures";
-import { ChannelFragment, PermissionEnum } from "@dashboard/graphql";
+import { type ChannelFragment, PermissionEnum } from "@dashboard/graphql";
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -32,8 +32,7 @@ jest.mock("./components/WelcomePageStocksAnalytics/useWelcomePageStocksAnalytics
 }));
 
 jest.mock("@dashboard/hooks/useNotifier", () => ({
-  __esModule: true,
-  default: jest.fn(() => () => undefined),
+  useNotifier: jest.fn(() => () => undefined),
 }));
 
 afterEach(() => {

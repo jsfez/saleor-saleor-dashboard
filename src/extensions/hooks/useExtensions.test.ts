@@ -1,7 +1,7 @@
 import { useUserPermissions } from "@dashboard/auth/hooks/useUserPermissions";
-import { ExtensionWithParams } from "@dashboard/extensions/types";
-import { AppExtensionMountEnum, PermissionEnum, useExtensionListQuery } from "@dashboard/graphql";
-import { renderHook } from "@testing-library/react-hooks";
+import { type ExtensionWithParams } from "@dashboard/extensions/types";
+import { type ExtensionListQuery, PermissionEnum, useExtensionListQuery } from "@dashboard/graphql";
+import { renderHook } from "@testing-library/react";
 
 import { useExtensions } from "./useExtensions";
 
@@ -22,20 +22,22 @@ jest.mock("@dashboard/graphql", () => ({
   ...(jest.requireActual("@dashboard/graphql") as jest.Mocked<typeof import("@dashboard/graphql")>),
   useExtensionListQuery: jest.fn(),
 }));
-jest.mock("../components/ExternalAppContext/ExternalAppContext", () => ({
-  useExternalApp: () => ({
-    openApp: mockOpenApp,
-  }),
+
+jest.mock("../components/AppExtensionContext/AppExtensionContextProvider", () => ({
+  useActiveAppExtension: jest.fn(),
 }));
 
+import { useActiveAppExtension } from "../components/AppExtensionContext/AppExtensionContextProvider";
 import { newTabActions } from "../new-tab-actions";
 
 const useUserPermissionsMock = jest.fn();
 const useExtensionListQueryMock = jest.fn();
+const useActiveAppExtensionMock = jest.fn();
 
 // Set up the mocks
 (useUserPermissions as jest.Mock).mockImplementation(useUserPermissionsMock);
 (useExtensionListQuery as jest.Mock).mockImplementation(useExtensionListQueryMock);
+(useActiveAppExtension as jest.Mock).mockImplementation(useActiveAppExtensionMock);
 
 describe("Extensions / hooks / useExtensions", () => {
   const mockExtensionsData = {
@@ -43,129 +45,166 @@ describe("Extensions / hooks / useExtensions", () => {
       edges: [
         {
           node: {
+            __typename: "AppExtension",
             id: "ext1",
             accessToken: "token1",
-            permissions: [{ code: PermissionEnum.MANAGE_ORDERS }],
+            permissions: [{ code: PermissionEnum.MANAGE_ORDERS, __typename: "Permission" }],
             url: "https://example.com/ext1",
             label: "Extension 1",
-            mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
-            target: "POPUP",
+            mountName: "PRODUCT_OVERVIEW_CREATE",
+            targetName: "POPUP",
+            settings: {},
             app: {
               id: "app1",
               name: "Test App 1",
+              __typename: "App",
+              appUrl: "https://example.com",
+              brand: null,
             },
           },
+          __typename: "AppExtensionCountableEdge",
         },
         {
           node: {
             id: "ext2",
             accessToken: "token2",
-            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS }],
+            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "https://example.com/ext2",
             label: "Extension 2",
-            mount: AppExtensionMountEnum.PRODUCT_DETAILS_MORE_ACTIONS,
-            target: "APP_PAGE",
+            mountName: "PRODUCT_DETAILS_MORE_ACTIONS",
+            targetName: "APP_PAGE",
             app: {
               id: "app2",
               name: "Test App 2",
+              __typename: "App",
+              appUrl: "https://example.com",
+              brand: null,
             },
+            __typename: "AppExtension",
+            settings: {},
           },
+          __typename: "AppExtensionCountableEdge",
         },
         {
+          __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext3",
             accessToken: null,
-            permissions: [{ code: PermissionEnum.MANAGE_CHANNELS }],
+            permissions: [{ code: PermissionEnum.MANAGE_CHANNELS, __typename: "Permission" }],
             url: "https://example.com/ext3",
             label: "Extension 3",
-            mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
-            target: "POPUP",
+            mountName: "PRODUCT_OVERVIEW_CREATE",
+            targetName: "POPUP",
             app: {
               id: "app3",
               name: "Test App 3",
+              __typename: "App",
+              appUrl: "https://example.com",
+              brand: null,
             },
+            __typename: "AppExtension",
+            settings: {},
           },
         },
         {
+          __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext4",
             accessToken: "token4",
-            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS }],
+            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "https://example.com/ext4",
             label: "Extension 4",
-            mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
-            target: "NEW_TAB",
+            mountName: "PRODUCT_OVERVIEW_CREATE",
+            targetName: "NEW_TAB",
             app: {
               id: "app4",
+              __typename: "App",
+              appUrl: "https://example.com",
+              brand: null,
               name: "Test App 4",
             },
+            __typename: "AppExtension",
+            settings: {},
           },
         },
         {
+          __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext5",
             accessToken: "token5",
-            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS }],
+            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "https://example.com/ext5",
             label: "Extension 5",
-            mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
-            target: "NEW_TAB",
+            mountName: "PRODUCT_OVERVIEW_CREATE",
+            targetName: "NEW_TAB",
             app: {
               id: "app5",
+              __typename: "App",
+              appUrl: "https://example.com",
+              brand: null,
               name: "Test App 5",
             },
-            options: {
-              __typename: "AppExtensionOptionsNewTab",
+            settings: {
               newTabTarget: { method: "POST" },
             },
+            __typename: "AppExtension",
           },
         },
         {
+          __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext6",
             accessToken: "token6",
-            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS }],
+            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "/ext6",
             label: "Extension 6",
-            mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
-            target: "NEW_TAB",
+            mountName: "PRODUCT_OVERVIEW_CREATE",
+            targetName: "NEW_TAB",
             app: {
               id: "app6",
+              __typename: "App",
+              brand: null,
               name: "Test App 6",
               appUrl: "https://app6.example.com",
             },
-            options: {
-              __typename: "AppExtensionOptionsNewTab",
+            settings: {
               newTabTarget: { method: "GET" },
             },
+            __typename: "AppExtension",
           },
         },
         {
+          __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext7",
             accessToken: "token7",
-            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS }],
+            permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "/ext7",
             label: "Extension 7",
-            mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
-            target: "NEW_TAB",
+            mountName: "PRODUCT_OVERVIEW_CREATE",
+            targetName: "NEW_TAB",
             app: {
+              __typename: "App",
+              brand: null,
               id: "app7",
               name: "Test App 7",
               appUrl: "https://app7.example.com",
             },
-            options: {
-              __typename: "AppExtensionOptionsNewTab",
+            settings: {
               newTabTarget: { method: "POST" },
             },
+            __typename: "AppExtension",
           },
         },
       ],
+      __typename: "AppExtensionCountableConnection",
     },
-  };
+    __typename: "Query",
+  } satisfies ExtensionListQuery;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    useActiveAppExtensionMock.mockReturnValue({ activate: mockOpenApp });
   });
 
   it("should fetch and return extensions grouped by mount", () => {
@@ -176,10 +215,7 @@ describe("Extensions / hooks / useExtensions", () => {
     ]);
     useExtensionListQueryMock.mockReturnValue({ data: mockExtensionsData });
 
-    const mountList = [
-      AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
-      AppExtensionMountEnum.PRODUCT_DETAILS_MORE_ACTIONS,
-    ];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE", "PRODUCT_DETAILS_MORE_ACTIONS"] as const;
 
     // Act
     const { result } = renderHook(() => useExtensions(mountList));
@@ -189,20 +225,22 @@ describe("Extensions / hooks / useExtensions", () => {
       fetchPolicy: "cache-first",
       variables: {
         filter: {
-          mount: mountList,
+          mountName: mountList,
         },
       },
     });
 
     expect(result.current).toEqual({
-      [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE]: [
+      ["PRODUCT_OVERVIEW_CREATE"]: [
         expect.objectContaining({
           id: "ext1",
           accessToken: "token1",
           permissions: [PermissionEnum.MANAGE_ORDERS],
           url: "https://example.com/ext1",
           label: "Extension 1",
-          mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
+          mountName: "PRODUCT_OVERVIEW_CREATE",
+          targetName: "POPUP",
+          settings: {},
           app: expect.objectContaining({
             id: "app1",
             name: "Test App 1",
@@ -215,7 +253,9 @@ describe("Extensions / hooks / useExtensions", () => {
           permissions: [PermissionEnum.MANAGE_CHANNELS],
           url: "https://example.com/ext3",
           label: "Extension 3",
-          mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
+          mountName: "PRODUCT_OVERVIEW_CREATE",
+          targetName: "POPUP",
+          settings: {},
           app: expect.objectContaining({
             id: "app3",
             name: "Test App 3",
@@ -228,7 +268,9 @@ describe("Extensions / hooks / useExtensions", () => {
           permissions: [PermissionEnum.MANAGE_PRODUCTS],
           url: "https://example.com/ext4",
           label: "Extension 4",
-          mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
+          mountName: "PRODUCT_OVERVIEW_CREATE",
+          targetName: "NEW_TAB",
+          settings: {},
           app: expect.objectContaining({
             id: "app4",
             name: "Test App 4",
@@ -241,7 +283,9 @@ describe("Extensions / hooks / useExtensions", () => {
           permissions: [PermissionEnum.MANAGE_PRODUCTS],
           url: "https://example.com/ext5",
           label: "Extension 5",
-          mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
+          mountName: "PRODUCT_OVERVIEW_CREATE",
+          targetName: "NEW_TAB",
+          settings: { newTabTarget: { method: "POST" } },
           app: expect.objectContaining({
             id: "app5",
             name: "Test App 5",
@@ -254,7 +298,9 @@ describe("Extensions / hooks / useExtensions", () => {
           permissions: [PermissionEnum.MANAGE_PRODUCTS],
           url: "/ext6",
           label: "Extension 6",
-          mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
+          mountName: "PRODUCT_OVERVIEW_CREATE",
+          targetName: "NEW_TAB",
+          settings: { newTabTarget: { method: "GET" } },
           app: expect.objectContaining({
             id: "app6",
             name: "Test App 6",
@@ -268,7 +314,9 @@ describe("Extensions / hooks / useExtensions", () => {
           permissions: [PermissionEnum.MANAGE_PRODUCTS],
           url: "/ext7",
           label: "Extension 7",
-          mount: AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
+          mountName: "PRODUCT_OVERVIEW_CREATE",
+          targetName: "NEW_TAB",
+          settings: { newTabTarget: { method: "POST" } },
           app: expect.objectContaining({
             id: "app7",
             name: "Test App 7",
@@ -277,14 +325,16 @@ describe("Extensions / hooks / useExtensions", () => {
           open: expect.any(Function),
         }),
       ],
-      [AppExtensionMountEnum.PRODUCT_DETAILS_MORE_ACTIONS]: [
+      ["PRODUCT_DETAILS_MORE_ACTIONS"]: [
         expect.objectContaining({
           id: "ext2",
           accessToken: "token2",
           permissions: [PermissionEnum.MANAGE_PRODUCTS],
           url: "https://example.com/ext2",
           label: "Extension 2",
-          mount: AppExtensionMountEnum.PRODUCT_DETAILS_MORE_ACTIONS,
+          mountName: "PRODUCT_DETAILS_MORE_ACTIONS",
+          targetName: "APP_PAGE",
+          settings: {},
           app: expect.objectContaining({
             id: "app2",
             name: "Test App 2",
@@ -300,14 +350,14 @@ describe("Extensions / hooks / useExtensions", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: { appExtensions: { edges: [] } } });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
 
     // Act
     const { result } = renderHook(() => useExtensions(mountList));
 
     // Assert
     expect(result.current).toEqual({
-      [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE]: [],
+      ["PRODUCT_OVERVIEW_CREATE"]: [],
     });
   });
 
@@ -316,14 +366,14 @@ describe("Extensions / hooks / useExtensions", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: undefined });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
 
     // Act
     const { result } = renderHook(() => useExtensions(mountList));
 
     // Assert
     expect(result.current).toEqual({
-      [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE]: [],
+      ["PRODUCT_OVERVIEW_CREATE"]: [],
     });
   });
 
@@ -332,14 +382,13 @@ describe("Extensions / hooks / useExtensions", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: mockExtensionsData });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
     const mockParams = { productIds: ["test-id"] };
 
     // Act
     const { result } = renderHook(() => useExtensions(mountList));
-    const extension = result.current[AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE][0];
+    const extension = result.current["PRODUCT_OVERVIEW_CREATE"][0] as ExtensionWithParams;
 
-    // @ts-expect-error - there are broken types in useExtensions - this hook should return either Extension or ExtensionWithParams
     extension.open(mockParams);
 
     // Assert
@@ -348,8 +397,9 @@ describe("Extensions / hooks / useExtensions", () => {
       appToken: "token1",
       src: "https://example.com/ext1",
       label: "Extension 1",
-      target: "POPUP",
+      targetName: "POPUP",
       params: mockParams,
+      formState: {},
     });
   });
 
@@ -358,13 +408,13 @@ describe("Extensions / hooks / useExtensions", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: mockExtensionsData });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
 
     // Act
     const { result } = renderHook(() => useExtensions(mountList));
-    const extension = result.current[AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE][1]; // ext3 has null accessToken
+    const extension = result.current["PRODUCT_OVERVIEW_CREATE"][1] as ExtensionWithParams; // ext3 has null accessToken
 
-    extension.open();
+    extension.open({});
 
     // Assert
     expect(mockOpenApp).toHaveBeenCalledWith({
@@ -372,8 +422,9 @@ describe("Extensions / hooks / useExtensions", () => {
       appToken: "", // Should use empty string for null accessToken
       src: "https://example.com/ext3",
       label: "Extension 3",
-      target: "POPUP",
-      params: undefined,
+      targetName: "POPUP",
+      params: {},
+      formState: {},
     });
   });
 
@@ -383,19 +434,19 @@ describe("Extensions / hooks / useExtensions", () => {
     useExtensionListQueryMock.mockReturnValue({ data: { appExtensions: { edges: [] } } });
 
     const mountList = [
-      AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE,
-      AppExtensionMountEnum.PRODUCT_DETAILS_MORE_ACTIONS,
-      AppExtensionMountEnum.NAVIGATION_CATALOG,
-    ];
+      "PRODUCT_OVERVIEW_CREATE",
+      "PRODUCT_DETAILS_MORE_ACTIONS",
+      "NAVIGATION_CATALOG",
+    ] as const;
 
     // Act
     const { result } = renderHook(() => useExtensions(mountList));
 
     // Assert
     expect(result.current).toEqual({
-      [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE]: [],
-      [AppExtensionMountEnum.PRODUCT_DETAILS_MORE_ACTIONS]: [],
-      [AppExtensionMountEnum.NAVIGATION_CATALOG]: [],
+      ["PRODUCT_OVERVIEW_CREATE"]: [],
+      ["PRODUCT_DETAILS_MORE_ACTIONS"]: [],
+      ["NAVIGATION_CATALOG"]: [],
     });
   });
 
@@ -404,7 +455,7 @@ describe("Extensions / hooks / useExtensions", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: mockExtensionsData });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
 
     // Act
     renderHook(() => useExtensions(mountList));
@@ -422,13 +473,13 @@ describe("Extensions / hooks / useExtensions", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: mockExtensionsData });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
 
     // Act
     const { result } = renderHook(() => useExtensions(mountList));
 
     // Assert
-    const extension = result.current[AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE][0];
+    const extension = result.current["PRODUCT_OVERVIEW_CREATE"][0];
 
     expect(extension.permissions).toEqual([PermissionEnum.MANAGE_ORDERS]);
   });
@@ -437,9 +488,9 @@ describe("Extensions / hooks / useExtensions", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: mockExtensionsData });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
     const { result } = renderHook(() => useExtensions(mountList));
-    const extension = result.current[AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE].find(
+    const extension = result.current["PRODUCT_OVERVIEW_CREATE"].find(
       e => e.id === "ext4",
     ) as ExtensionWithParams;
 
@@ -453,9 +504,9 @@ describe("Extensions / hooks / useExtensions", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: mockExtensionsData });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
     const { result } = renderHook(() => useExtensions(mountList));
-    const extension = result.current[AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE].find(
+    const extension = result.current["PRODUCT_OVERVIEW_CREATE"].find(
       e => e.id === "ext5",
     ) as ExtensionWithParams;
 
@@ -474,9 +525,9 @@ describe("Extensions / hooks / useExtensions", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: mockExtensionsData });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
     const { result } = renderHook(() => useExtensions(mountList));
-    const extension = result.current[AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE].find(
+    const extension = result.current["PRODUCT_OVERVIEW_CREATE"].find(
       e => e.id === "ext6",
     ) as ExtensionWithParams;
 
@@ -486,13 +537,120 @@ describe("Extensions / hooks / useExtensions", () => {
     );
   });
 
+  describe("filtering invalid extensions", () => {
+    let warnSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      warnSpy = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    it("drops extensions with relative URL when app.appUrl is missing", () => {
+      // Arrange
+      useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
+      useExtensionListQueryMock.mockReturnValue({
+        data: {
+          appExtensions: {
+            edges: [
+              {
+                __typename: "AppExtensionCountableEdge",
+                node: {
+                  id: "ext-relative-no-appurl",
+                  accessToken: "token",
+                  permissions: [],
+                  url: "/relative",
+                  label: "Broken",
+                  mountName: "PRODUCT_OVERVIEW_CREATE",
+                  targetName: "POPUP",
+                  app: {
+                    id: "appX",
+                    name: "App X",
+                    __typename: "App",
+                    appUrl: null,
+                    brand: null,
+                  },
+                  __typename: "AppExtension",
+                  settings: {},
+                },
+              },
+            ],
+            __typename: "AppExtensionCountableConnection",
+          },
+          __typename: "Query",
+        },
+      });
+
+      // Act
+      const { result } = renderHook(() => useExtensions(["PRODUCT_OVERVIEW_CREATE"] as const));
+
+      // Assert
+      expect(result.current["PRODUCT_OVERVIEW_CREATE"]).toEqual([]);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("relative URL"),
+        expect.objectContaining({
+          appId: "appX",
+          extensionId: "ext-relative-no-appurl",
+          label: "Broken",
+          mountName: "PRODUCT_OVERVIEW_CREATE",
+        }),
+      );
+    });
+
+    it("keeps extensions with absolute URL even when app.appUrl is missing", () => {
+      // Arrange
+      useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
+      useExtensionListQueryMock.mockReturnValue({
+        data: {
+          appExtensions: {
+            edges: [
+              {
+                __typename: "AppExtensionCountableEdge",
+                node: {
+                  id: "ext-absolute-no-appurl",
+                  accessToken: "token",
+                  permissions: [],
+                  url: "https://example.com/path",
+                  label: "Absolute",
+                  mountName: "PRODUCT_OVERVIEW_CREATE",
+                  targetName: "POPUP",
+                  app: {
+                    id: "appY",
+                    name: "App Y",
+                    __typename: "App",
+                    appUrl: null,
+                    brand: null,
+                  },
+                  __typename: "AppExtension",
+                  settings: {},
+                },
+              },
+            ],
+            __typename: "AppExtensionCountableConnection",
+          },
+          __typename: "Query",
+        },
+      });
+
+      // Act
+      const { result } = renderHook(() => useExtensions(["PRODUCT_OVERVIEW_CREATE"] as const));
+
+      // Assert
+      expect(result.current["PRODUCT_OVERVIEW_CREATE"]).toHaveLength(1);
+      expect(result.current["PRODUCT_OVERVIEW_CREATE"][0].id).toBe("ext-absolute-no-appurl");
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+  });
+
   it("should call newTabActions.openPOSTinNewTab for NEW_TAB POST extension with relative url", () => {
     useUserPermissionsMock.mockReturnValue([{ code: PermissionEnum.MANAGE_APPS }]);
     useExtensionListQueryMock.mockReturnValue({ data: mockExtensionsData });
 
-    const mountList = [AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE];
+    const mountList = ["PRODUCT_OVERVIEW_CREATE"] as const;
     const { result } = renderHook(() => useExtensions(mountList));
-    const extension = result.current[AppExtensionMountEnum.PRODUCT_OVERVIEW_CREATE].find(
+    const extension = result.current["PRODUCT_OVERVIEW_CREATE"].find(
       e => e.id === "ext7",
     ) as ExtensionWithParams;
     const params = { productId: "2137" };

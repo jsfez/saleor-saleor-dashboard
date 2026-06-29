@@ -1,22 +1,26 @@
 // @ts-strict-ignore
 import BackButton from "@dashboard/components/BackButton";
 import Checkbox from "@dashboard/components/Checkbox";
-import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import {
+  ConfirmButton,
+  type ConfirmButtonTransitionState,
+} from "@dashboard/components/ConfirmButton";
 import FormSpacer from "@dashboard/components/FormSpacer";
 import { InfiniteScroll } from "@dashboard/components/InfiniteScroll";
 import { DashboardModal } from "@dashboard/components/Modal";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import TableCellAvatar from "@dashboard/components/TableCellAvatar";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import { OrderErrorFragment, SearchOrderVariantQuery } from "@dashboard/graphql";
+import { SaleorThrobber } from "@dashboard/components/Throbber";
+import { type OrderErrorFragment, type SearchOrderVariantQuery } from "@dashboard/graphql";
 import useModalDialogErrors from "@dashboard/hooks/useModalDialogErrors";
 import useModalDialogOpen from "@dashboard/hooks/useModalDialogOpen";
 import useSearchQuery from "@dashboard/hooks/useSearchQuery";
 import { buttonMessages } from "@dashboard/intl";
 import { maybe, renderCollection } from "@dashboard/misc";
-import { FetchMoreProps, RelayToFlat } from "@dashboard/types";
+import { type FetchMoreProps, type RelayToFlat } from "@dashboard/types";
 import getOrderErrorMessage from "@dashboard/utils/errors/order";
-import { CircularProgress, TableBody, TableCell, TextField } from "@material-ui/core";
+import { TableBody, TableCell, TextField } from "@material-ui/core";
 import { Box, Text } from "@saleor/macaw-ui-next";
 import { Fragment, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -113,7 +117,7 @@ const OrderProductAddDialog = (props: OrderProductAddDialogProps) => {
             fullWidth
             InputProps={{
               autoComplete: "off",
-              endAdornment: loading && <CircularProgress size={16} />,
+              endAdornment: loading && <SaleorThrobber size={16} />,
             }}
           />
         </Box>
@@ -133,7 +137,7 @@ const OrderProductAddDialog = (props: OrderProductAddDialogProps) => {
                 (product, productIndex) => (
                   <Fragment key={product ? product.id : "skeleton"}>
                     <TableRowLink data-test-id="product">
-                      <TableCell padding="checkbox" className={classes.productCheckboxCell}>
+                      <TableCell padding="checkbox">
                         <Checkbox
                           checked={productsWithAllVariantsSelected[productIndex]}
                           disabled={loading}
@@ -152,11 +156,7 @@ const OrderProductAddDialog = (props: OrderProductAddDialogProps) => {
                         className={classes.avatar}
                         thumbnail={maybe(() => product.thumbnail.url)}
                       />
-                      <TableCell
-                        className={classes.colName}
-                        colSpan={2}
-                        data-test-id="product-name"
-                      >
+                      <TableCell colSpan={2} data-test-id="product-name">
                         {maybe(() => product.name)}
                       </TableCell>
                     </TableRowLink>
@@ -182,7 +182,7 @@ const OrderProductAddDialog = (props: OrderProductAddDialogProps) => {
                               }
                             />
                           </TableCell>
-                          <TableCell className={classes.colName}>
+                          <TableCell>
                             <div>{variant.name}</div>
                             {variant.sku && (
                               <Box color="default2">

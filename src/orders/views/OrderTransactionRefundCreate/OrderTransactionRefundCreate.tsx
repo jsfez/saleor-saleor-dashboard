@@ -4,10 +4,10 @@ import {
   useRefundSettingsQuery,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import OrderTransactionRefundPage, {
-  OrderTransactionRefundError,
-  OrderTransactionRefundPageFormData,
+  type OrderTransactionRefundError,
+  type OrderTransactionRefundPageFormData,
 } from "@dashboard/orders/components/OrderTransactionRefundPage/OrderTransactionRefundPage";
 import { useState } from "react";
 import { useIntl } from "react-intl";

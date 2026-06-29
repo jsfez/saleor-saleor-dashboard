@@ -1,38 +1,39 @@
 // @ts-strict-ignore
-import { FetchResult } from "@apollo/client";
+import { type FetchResult } from "@apollo/client";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { DEFAULT_INITIAL_SEARCH_DATA } from "@dashboard/config";
 import {
-  OrderDetailsWithMetadataQueryResult,
-  OrderDraftCancelMutation,
-  OrderDraftCancelMutationVariables,
-  OrderDraftFinalizeMutation,
-  OrderDraftFinalizeMutationVariables,
-  OrderDraftUpdateMutation,
-  OrderDraftUpdateMutationVariables,
-  OrderLineUpdateMutation,
-  OrderLineUpdateMutationVariables,
-  OrderNoteUpdateMutation,
-  OrderNoteUpdateMutationVariables,
+  type OrderDetailsQueryResult,
+  type OrderDraftCancelMutation,
+  type OrderDraftCancelMutationVariables,
+  type OrderDraftFinalizeMutation,
+  type OrderDraftFinalizeMutationVariables,
+  type OrderDraftUpdateMutation,
+  type OrderDraftUpdateMutationVariables,
+  type OrderLineUpdateMutation,
+  type OrderLineUpdateMutationVariables,
+  type OrderNoteUpdateMutation,
+  type OrderNoteUpdateMutationVariables,
   StockAvailability,
   useChannelUsabilityDataQuery,
   useCustomerAddressesQuery,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import { CustomerEditData } from "@dashboard/orders/components/OrderCustomer";
-import { OrderCustomerAddressesEditDialogOutput } from "@dashboard/orders/components/OrderCustomerAddressesEditDialog/types";
+import { type CustomerEditData } from "@dashboard/orders/components/OrderCustomer";
+import { type OrderCustomerAddressesEditDialogOutput } from "@dashboard/orders/components/OrderCustomerAddressesEditDialog/types";
 import {
   CustomerChangeActionEnum,
-  OrderCustomerChangeData,
+  type OrderCustomerChangeData,
 } from "@dashboard/orders/components/OrderCustomerChangeDialog/form";
 import OrderCustomerChangeDialog from "@dashboard/orders/components/OrderCustomerChangeDialog/OrderCustomerChangeDialog";
-import { OrderMetadataDialog } from "@dashboard/orders/components/OrderMetadataDialog";
+import { OrderLineMetadataDialog } from "@dashboard/orders/components/OrderLineMetadataDialog/OrderLineMetadataDialog";
+import { OrderMetadataDialog } from "@dashboard/orders/components/OrderMetadataDialog/OrderMetadataDialog";
 import { getVariantSearchAddress, isAnyAddressEditModalOpen } from "@dashboard/orders/utils/data";
 import { OrderDiscountProvider } from "@dashboard/products/components/OrderDiscountProviders/OrderDiscountProvider";
 import { OrderLineDiscountProvider } from "@dashboard/products/components/OrderDiscountProviders/OrderLineDiscountProvider";
 import useCustomerSearch from "@dashboard/searches/useCustomerSearch";
 import { useOrderVariantSearch } from "@dashboard/searches/useOrderVariantSearch";
-import { PartialMutationProviderOutput } from "@dashboard/types";
+import { type PartialMutationProviderOutput } from "@dashboard/types";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { useIntl } from "react-intl";
 
@@ -41,16 +42,16 @@ import { extractMutationErrors, getStringOrPlaceholder } from "../../../../misc"
 import { productUrl } from "../../../../products/urls";
 import OrderAddressFields from "../../../components/OrderAddressFields/OrderAddressFields";
 import OrderDraftCancelDialog from "../../../components/OrderDraftCancelDialog/OrderDraftCancelDialog";
-import OrderDraftPage from "../../../components/OrderDraftPage";
+import OrderDraftPage from "../../../components/OrderDraftPage/OrderDraftPage";
 import OrderProductAddDialog from "../../../components/OrderProductAddDialog";
 import OrderShippingMethodEditDialog from "../../../components/OrderShippingMethodEditDialog";
-import { orderDraftListUrl, OrderUrlDialog, OrderUrlQueryParams } from "../../../urls";
+import { orderDraftListUrl, type OrderUrlDialog, type OrderUrlQueryParams } from "../../../urls";
 
 interface OrderDraftDetailsProps {
   id: string;
   params: OrderUrlQueryParams;
   loading: any;
-  data: OrderDetailsWithMetadataQueryResult["data"];
+  data: OrderDetailsQueryResult["data"];
   orderAddNote: any;
   orderUpdateNote: PartialMutationProviderOutput<
     OrderNoteUpdateMutation,
@@ -227,7 +228,8 @@ export const OrderDraftDetails = ({
             onDraftFinalize={() => orderDraftFinalize.mutate({ id })}
             onDraftRemove={() => openModal("cancel")}
             onOrderLineAdd={() => openModal("add-order-line")}
-            onShowMetadata={id => openModal("view-metadata", { id })}
+            onOrderLineShowMetadata={id => openModal("view-order-line-metadata", { id })}
+            onOrderShowMetadata={() => openModal("view-order-metadata")}
             order={order}
             channelUsabilityData={channelUsabilityData}
             onProductClick={id => () => navigate(productUrl(encodeURIComponent(id)))}
@@ -257,8 +259,11 @@ export const OrderDraftDetails = ({
       <OrderShippingMethodEditDialog
         confirmButtonState={orderShippingMethodUpdate.opts.status}
         errors={orderShippingMethodUpdate.opts.data?.orderUpdateShipping.errors || []}
+        isClearable
         open={params.action === "edit-shipping"}
         shippingMethod={order?.shippingMethod?.id}
+        shippingMethodName={order?.shippingMethodName}
+        shippingPrice={order?.shippingPrice}
         shippingMethods={order?.shippingMethods}
         onClose={closeModal}
         onSubmit={variables =>
@@ -298,10 +303,15 @@ export const OrderDraftDetails = ({
         onClose={closeModal}
         onConfirm={handleCustomerChangeAction}
       />
-      <OrderMetadataDialog
-        open={params.action === "view-metadata"}
+      <OrderLineMetadataDialog
+        open={params.action === "view-order-line-metadata"}
         onClose={closeModal}
         lineId={params.id}
+        orderId={id}
+      />
+      <OrderMetadataDialog
+        open={params.action === "view-order-metadata"}
+        onClose={closeModal}
         orderId={id}
       />
       <OrderAddressFields

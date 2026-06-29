@@ -1,6 +1,6 @@
 // @ts-strict-ignore
-import { PostalCodeRuleInclusionTypeEnum } from "@dashboard/graphql";
-import { MinMax } from "@dashboard/types";
+import { type PostalCodeRuleInclusionTypeEnum } from "@dashboard/graphql";
+import { type MinMax } from "@dashboard/types";
 
 export const filterPostalCodes = (postalCodes, codeToFilterOut) =>
   postalCodes.filter(
@@ -19,3 +19,10 @@ export const getRuleObject = (rule: MinMax, inclusionType: PostalCodeRuleInclusi
   inclusionType,
   start: rule.min,
 });
+
+export const mapPostalCodeRulesInclusionType = <
+  TRule extends { inclusionType?: PostalCodeRuleInclusionTypeEnum | null },
+>(
+  rules: TRule[] | null | undefined,
+  inclusionType: PostalCodeRuleInclusionTypeEnum,
+): TRule[] => (rules ?? []).map(rule => ({ ...rule, inclusionType }));

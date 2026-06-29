@@ -1,17 +1,17 @@
-import { useUser } from "@dashboard/auth";
+import { useUser } from "@dashboard/auth/useUser";
 import useAppChannel from "@dashboard/components/AppLayout/AppChannelContext";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { usePermissionGroupCreateMutation } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import useShop from "@dashboard/hooks/useShop";
 import { extractMutationErrors } from "@dashboard/misc";
-import { PermissionData } from "@dashboard/permissionGroups/components/PermissionGroupDetailsPage";
+import { type PermissionData } from "@dashboard/permissionGroups/components/PermissionGroupDetailsPage";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import {
-  PermissionGroupCreateFormData,
+  type PermissionGroupCreateFormData,
   PermissionGroupCreatePage,
 } from "../../components/PermissionGroupCreatePage";
 import { permissionGroupDetailsUrl } from "../../urls";

@@ -9,9 +9,8 @@ import {
   useUpdateCustomerAddressMutation,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import useShop from "@dashboard/hooks/useShop";
-import { commonMessages } from "@dashboard/intl";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import { Box } from "@saleor/macaw-ui-next";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -20,8 +19,8 @@ import CustomerAddressDialog from "../components/CustomerAddressDialog";
 import CustomerAddressListPage from "../components/CustomerAddressListPage";
 import {
   customerAddressesUrl,
-  CustomerAddressesUrlDialog,
-  CustomerAddressesUrlQueryParams,
+  type CustomerAddressesUrlDialog,
+  type CustomerAddressesUrlQueryParams,
 } from "../urls";
 
 interface CustomerAddressesProps {
@@ -46,27 +45,42 @@ const CustomerAddresses = ({ id, params }: CustomerAddressesProps) => {
         closeModal();
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "bIAY+o", defaultMessage: "Address updated" }),
         });
       }
     },
   });
 
+  // The address dialog already surfaces backend validation errors inline (the
+  // `AccountErrorFragment` list is forwarded to `AddressEdit`, which renders
+  // them as `helperText` under each affected field). We opt out of the global
+  // "one error toast per nested mutation error" behavior in `makeMutation.ts`
+  // so users don't see redundant "This field is required" toasts on top of
+  // the highlighted fields.
   const [createCustomerAddress, createCustomerAddressOpts] = useCreateCustomerAddressMutation({
+    disableErrorHandling: true,
     onCompleted: data => {
       if (data.addressCreate.errors.length === 0) {
         closeModal();
+        notify({
+          status: "success",
+          text: intl.formatMessage({
+            id: "sWvBZa",
+            defaultMessage: "Address created",
+          }),
+        });
       }
     },
   });
 
   const [updateCustomerAddress, updateCustomerAddressOpts] = useUpdateCustomerAddressMutation({
+    disableErrorHandling: true,
     onCompleted: data => {
       if (data.addressUpdate.errors.length === 0) {
         closeModal();
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "bIAY+o", defaultMessage: "Address updated" }),
         });
       }
     },
@@ -78,7 +92,11 @@ const CustomerAddresses = ({ id, params }: CustomerAddressesProps) => {
         closeModal();
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({
+            id: "C7n+ew",
+            defaultMessage: "Address deleted",
+            description: "address removed from a customer's address book, success toast",
+          }),
         });
       }
     },

@@ -1,12 +1,13 @@
-import { ChannelShippingZones } from "@dashboard/channels/pages/ChannelDetailsPage/types";
+import { type ChannelShippingZones } from "@dashboard/channels/pages/ChannelDetailsPage/types";
 import { DashboardCard } from "@dashboard/components/Card";
-import { SearchShippingZonesQuery } from "@dashboard/graphql";
+import { type SearchShippingZonesQuery } from "@dashboard/graphql";
 import { sectionNames } from "@dashboard/intl";
-import { FetchMoreProps, RelayToFlat } from "@dashboard/types";
+import { shippingZoneUrl } from "@dashboard/shipping/urls";
+import { type FetchMoreProps, type RelayToFlat } from "@dashboard/types";
 import { Text } from "@saleor/macaw-ui-next";
 import { useIntl } from "react-intl";
 
-import AssignmentList from "../AssignmentList";
+import { AssignmentList } from "../AssignmentList/AssignmentList";
 import { messages } from "./messages";
 
 interface ShippingZonesProps {
@@ -20,7 +21,7 @@ interface ShippingZonesProps {
   shippingZonesChoices: RelayToFlat<SearchShippingZonesQuery["search"]>;
 }
 
-const ShippingZones = (props: ShippingZonesProps) => {
+export const ShippingZones = (props: ShippingZonesProps) => {
   const {
     addShippingZone,
     removeShippingZone,
@@ -53,9 +54,8 @@ const ShippingZones = (props: ShippingZonesProps) => {
         dataTestId="shipping"
         inputName="shippingZone"
         itemsName={intl.formatMessage(sectionNames.shippingZones)}
+        getItemHref={({ id }) => shippingZoneUrl(id)}
       />
     </DashboardCard>
   );
 };
-
-export default ShippingZones;

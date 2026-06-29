@@ -2,13 +2,14 @@ import ActionDialog from "@dashboard/components/ActionDialog";
 import DeleteFilterTabDialog from "@dashboard/components/DeleteFilterTabDialog";
 import SaveFilterTabDialog from "@dashboard/components/SaveFilterTabDialog";
 import {
-  CategoryBulkDeleteMutation,
+  type CategoryBulkDeleteMutation,
   useCategoryBulkDeleteMutation,
   useRootCategoriesQuery,
 } from "@dashboard/graphql";
 import { useFilterPresets } from "@dashboard/hooks/useFilterPresets";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useNavigator from "@dashboard/hooks/useNavigator";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { usePaginationReset } from "@dashboard/hooks/usePaginationReset";
 import usePaginator, {
   createPaginationState,
@@ -28,9 +29,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { CategoryListPage } from "../../components/CategoryListPage/CategoryListPage";
 import {
   categoryListUrl,
-  CategoryListUrlDialog,
-  CategoryListUrlFilters,
-  CategoryListUrlQueryParams,
+  type CategoryListUrlDialog,
+  type CategoryListUrlFilters,
+  type CategoryListUrlQueryParams,
 } from "../../urls";
 import { getActiveFilters, getFilterVariables, storageUtils } from "./filter";
 import { getSortQueryVariables } from "./sort";
@@ -42,6 +43,7 @@ interface CategoryListProps {
 const CategoryList = ({ params }: CategoryListProps) => {
   const navigate = useNavigator();
   const intl = useIntl();
+  const notify = useNotifier();
   const { updateListSettings, settings } = useListSettings(ListViews.CATEGORY_LIST);
   const handleSort = createSortHandler(navigate, categoryListUrl, params);
   const {
@@ -107,6 +109,13 @@ const CategoryList = ({ params }: CategoryListProps) => {
       navigate(categoryListUrl(), { replace: true });
       refetch();
       clearRowSelection();
+      notify({
+        status: "success",
+        text: intl.formatMessage({
+          id: "G5ETO0",
+          defaultMessage: "Categories deleted",
+        }),
+      });
     }
   };
   const handleSetSelectedCategoryIds = useCallback(

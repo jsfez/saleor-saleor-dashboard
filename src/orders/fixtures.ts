@@ -1,43 +1,43 @@
 // @ts-strict-ignore
 import {
-  AppAvatarFragment,
-  ChannelUsabilityDataQuery,
-  CountryWithCodeFragment,
+  type AppAvatarFragment,
+  type ChannelUsabilityDataQuery,
+  type CountryWithCodeFragment,
   FulfillmentStatus,
-  InvoiceFragment,
+  type InvoiceFragment,
   JobStatusEnum,
   MarkAsPaidStrategyEnum,
   OrderAction,
+  OrderAuthorizeStatusEnum,
   OrderChargeStatusEnum,
-  OrderDetailsFragment,
-  OrderDetailsQuery,
-  OrderDetailsWithMetadataFragment,
+  type OrderDetailsFragment,
+  type OrderDetailsQuery,
   OrderEventsEmailsEnum,
   OrderEventsEnum,
-  OrderFulfillLineFragment,
-  OrderGrantedRefundFragment,
+  type OrderFulfillLineFragment,
+  type OrderGrantedRefundFragment,
   OrderGrantedRefundStatusEnum,
-  OrderListQuery,
-  OrderPaymentFragment,
-  OrderSettingsFragment,
+  type OrderListQuery,
+  type OrderPaymentFragment,
+  type OrderSettingsFragment,
   OrderStatus,
   PaymentChargeStatusEnum,
-  PaymentGatewayFragment,
-  SearchCustomersQuery,
-  SearchOrderVariantQuery,
-  SearchWarehousesQuery,
-  ShopOrderSettingsFragment,
+  type PaymentGatewayFragment,
+  type SearchCustomersQuery,
+  type SearchOrderVariantQuery,
+  type SearchWarehousesQuery,
+  type ShopOrderSettingsFragment,
   TransactionActionEnum,
-  TransactionEventFragment,
+  type TransactionEventFragment,
   TransactionEventTypeEnum,
-  TransactionItemFragment,
+  type TransactionItemFragment,
   TransactionKind,
   WeightUnitsEnum,
 } from "@dashboard/graphql";
 import { staffMember } from "@dashboard/staff/fixtures";
-import { RelayToFlat } from "@dashboard/types";
+import { type RelayToFlat } from "@dashboard/types";
 import { warehouseForPickup, warehouseList } from "@dashboard/warehouses/fixtures";
-import { MessageDescriptor } from "react-intl";
+import { type MessageDescriptor } from "react-intl";
 
 import { transformOrderStatus, transformPaymentStatus } from "../misc";
 
@@ -114,6 +114,7 @@ export const orderTransactions: TransactionItemFragment[] = [
     actions: [],
     externalUrl: null,
     createdAt: "2022-08-12T14:10:22.226875+00:00",
+    createdBy: null,
     events: [
       {
         id: "VHJhbnNhY3Rpb25FdmVudDox",
@@ -140,6 +141,15 @@ export const orderTransactions: TransactionItemFragment[] = [
     refundPendingAmount: prepareMoney(0),
     canceledAmount: prepareMoney(0),
     cancelPendingAmount: prepareMoney(0),
+    paymentMethodDetails: {
+      __typename: "CardPaymentMethodDetails",
+      name: "Credit card",
+      brand: "visa",
+      expMonth: 12,
+      expYear: 2025,
+      firstDigits: "4242",
+      lastDigits: "4242",
+    },
     __typename: "TransactionItem",
   },
   {
@@ -148,6 +158,7 @@ export const orderTransactions: TransactionItemFragment[] = [
     pspReference: "123",
     externalUrl: null,
     createdAt: "2022-08-12T14:10:22.226875+00:00",
+    createdBy: null,
     actions: [],
     events: [
       {
@@ -207,6 +218,10 @@ export const orderTransactions: TransactionItemFragment[] = [
     refundPendingAmount: prepareMoney(0),
     canceledAmount: prepareMoney(0),
     cancelPendingAmount: prepareMoney(0),
+    paymentMethodDetails: {
+      __typename: "OtherPaymentMethodDetails",
+      name: "PayPal",
+    },
     __typename: "TransactionItem",
   },
 ];
@@ -1038,9 +1053,11 @@ export const orders: RelayToFlat<OrderListQuery["orders"]> = [
 
 export const ORDER_AMOUNT = 234.93;
 
-export const order = (placeholder: string): OrderDetailsWithMetadataFragment => ({
+export const order = (placeholder: string): OrderDetailsFragment => ({
   __typename: "Order",
+  voucher: null,
   giftCards: [],
+  displayGrossPrices: true,
   actions: [OrderAction.CAPTURE, OrderAction.MARK_AS_PAID, OrderAction.REFUND, OrderAction.VOID],
   shippingMethods: [
     {
@@ -1099,7 +1116,6 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
     streetAddress1: "487 Roberto Shores",
     streetAddress2: "",
   },
-  canFinalize: true,
   channel: {
     __typename: "Channel",
     slug: "channel-default",
@@ -1173,6 +1189,7 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
             id: "h47gfncfgwegfehfhj",
             productName: "Milk",
             variantName: "Cow's milk",
+            thumbnail: { __typename: "Image", url: "https://placehold.co/64x64" },
           },
           quantity: 4,
         },
@@ -1185,6 +1202,7 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
             id: "7846f857t4t84y8fgh",
             productName: "Milk",
             variantName: "Goat's milk",
+            thumbnail: { __typename: "Image", url: "https://placehold.co/64x64" },
           },
           quantity: 4,
         },
@@ -1337,13 +1355,15 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
       __typename: "Fulfillment",
       fulfillmentOrder: 2,
       id: "RnVsZmlsbG1lbnQ6MjQ=",
-      metadata: [],
+      reason: null,
+      reasonReference: null,
       created: "2019-09-17T13:22:24.376193+00:00",
-      privateMetadata: [],
       lines: [
         {
           __typename: "FulfillmentLine",
           id: "RnVsZmlsbG1lbnRMaW5lOjM5",
+          reason: null,
+          reasonReference: null,
           orderLine: {
             __typename: "OrderLine",
             id: "T3JkZXJMaW5lOjIz",
@@ -1354,8 +1374,6 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
             quantityFulfilled: 2,
             quantityToFulfill: 0,
             isGift: false,
-            metadata: [],
-            privateMetadata: [],
             allocations: [
               {
                 id: "allocation_test_id",
@@ -1372,16 +1390,23 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
               __typename: "Image" as const,
               url: placeholder,
             },
+            discounts: [],
             totalPrice: {
               __typename: "TaxedMoney",
               gross: {
                 __typename: "Money",
                 amount: 159.42,
                 currency: "USD",
+                fractionDigits: 2,
               },
               net: {
                 __typename: "Money",
                 amount: 159.42,
+                currency: "USD",
+              },
+              tax: {
+                __typename: "Money",
+                amount: 0,
                 currency: "USD",
               },
             },
@@ -1396,6 +1421,29 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
               net: {
                 __typename: "Money",
                 amount: 79.71,
+                currency: "USD",
+              },
+              tax: {
+                __typename: "Money",
+                amount: 0,
+                currency: "USD",
+              },
+            },
+            undiscountedTotalPrice: {
+              __typename: "TaxedMoney",
+              gross: {
+                __typename: "Money",
+                amount: 159.42,
+                currency: "USD",
+              },
+              net: {
+                __typename: "Money",
+                amount: 159.42,
+                currency: "USD",
+              },
+              tax: {
+                __typename: "Money",
+                amount: 0,
                 currency: "USD",
               },
             },
@@ -1419,6 +1467,11 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
                 amount: 79.71,
                 currency: "USD",
               },
+              tax: {
+                __typename: "Money",
+                amount: 0,
+                currency: "USD",
+              },
             },
             variant: {
               __typename: "ProductVariant",
@@ -1426,8 +1479,6 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
               name: "XS",
               quantityAvailable: 10,
               preorder: null,
-              metadata: [],
-              privateMetadata: [],
               product: {
                 __typename: "Product",
                 id: "UHJvZHVjdDo1",
@@ -1458,6 +1509,9 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
                 },
               ],
             },
+            taxRate: 0,
+            voucherCode: null,
+            taxClass: null,
           },
           quantity: 1,
         },
@@ -1470,13 +1524,15 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
       __typename: "Fulfillment",
       fulfillmentOrder: 1,
       id: "RnVsZmlsbG1lbnQ6OQ==",
-      metadata: [],
-      privateMetadata: [],
+      reason: null,
+      reasonReference: null,
       created: "2019-09-17T13:22:24.376193+00:00",
       lines: [
         {
           __typename: "FulfillmentLine",
           id: "RnVsZmlsbG1lbnRMaW5lOjE1",
+          reason: null,
+          reasonReference: null,
           orderLine: {
             __typename: "OrderLine",
             id: "T3JkZXJMaW5lOjIz",
@@ -1487,8 +1543,6 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
             quantityFulfilled: 2,
             quantityToFulfill: 0,
             isGift: false,
-            metadata: [],
-            privateMetadata: [],
             allocations: [
               {
                 id: "allocation_test_id",
@@ -1505,16 +1559,23 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
               __typename: "Image" as const,
               url: placeholder,
             },
+            discounts: [],
             totalPrice: {
               __typename: "TaxedMoney",
               gross: {
                 __typename: "Money",
                 amount: 159.42,
                 currency: "USD",
+                fractionDigits: 2,
               },
               net: {
                 __typename: "Money",
                 amount: 159.42,
+                currency: "USD",
+              },
+              tax: {
+                __typename: "Money",
+                amount: 0,
                 currency: "USD",
               },
             },
@@ -1529,6 +1590,29 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
               net: {
                 __typename: "Money",
                 amount: 79.71,
+                currency: "USD",
+              },
+              tax: {
+                __typename: "Money",
+                amount: 0,
+                currency: "USD",
+              },
+            },
+            undiscountedTotalPrice: {
+              __typename: "TaxedMoney",
+              gross: {
+                __typename: "Money",
+                amount: 159.42,
+                currency: "USD",
+              },
+              net: {
+                __typename: "Money",
+                amount: 159.42,
+                currency: "USD",
+              },
+              tax: {
+                __typename: "Money",
+                amount: 0,
                 currency: "USD",
               },
             },
@@ -1552,6 +1636,11 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
                 amount: 79.71,
                 currency: "USD",
               },
+              tax: {
+                __typename: "Money",
+                amount: 0,
+                currency: "USD",
+              },
             },
             variant: {
               __typename: "ProductVariant",
@@ -1559,8 +1648,6 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
               name: "XS",
               quantityAvailable: 10,
               preorder: null,
-              metadata: [],
-              privateMetadata: [],
               product: {
                 __typename: "Product",
                 id: "UHJvZHVjdDo1",
@@ -1591,6 +1678,9 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
                 },
               ],
             },
+            taxRate: 0,
+            voucherCode: null,
+            taxClass: null,
           },
           quantity: 1,
         },
@@ -1640,16 +1730,23 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
         __typename: "Image" as const,
         url: placeholder,
       },
+      discounts: [],
       totalPrice: {
         __typename: "TaxedMoney",
         gross: {
           __typename: "Money",
           amount: 55.53,
           currency: "USD",
+          fractionDigits: 2,
         },
         net: {
           __typename: "Money",
           amount: 55.53,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -1664,6 +1761,29 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
         net: {
           __typename: "Money",
           amount: 18.51,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
+          currency: "USD",
+        },
+      },
+      undiscountedTotalPrice: {
+        __typename: "TaxedMoney",
+        gross: {
+          __typename: "Money",
+          amount: 55.53,
+          currency: "USD",
+        },
+        net: {
+          __typename: "Money",
+          amount: 55.53,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -1685,6 +1805,11 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
         net: {
           __typename: "Money",
           amount: 18.51,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -1724,6 +1849,9 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
           },
         ],
       },
+      taxRate: 0,
+      voucherCode: null,
+      taxClass: null,
     },
     {
       __typename: "OrderLine",
@@ -1751,16 +1879,23 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
         __typename: "Image" as const,
         url: placeholder,
       },
+      discounts: [],
       totalPrice: {
         __typename: "TaxedMoney",
         gross: {
           __typename: "Money",
           amount: 159.42,
           currency: "USD",
+          fractionDigits: 2,
         },
         net: {
           __typename: "Money",
           amount: 159.42,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -1775,6 +1910,29 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
         net: {
           __typename: "Money",
           amount: 79.71,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
+          currency: "USD",
+        },
+      },
+      undiscountedTotalPrice: {
+        __typename: "TaxedMoney",
+        gross: {
+          __typename: "Money",
+          amount: 159.42,
+          currency: "USD",
+        },
+        net: {
+          __typename: "Money",
+          amount: 159.42,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -1796,6 +1954,11 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
         net: {
           __typename: "Money",
           amount: 79.71,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -1835,19 +1998,15 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
           },
         ],
       },
-    },
-  ],
-  metadata: [
-    {
-      __typename: "MetadataItem",
-      key: "integration.key",
-      value: "some-value",
+      taxRate: 0,
+      voucherCode: null,
+      taxClass: null,
     },
   ],
   number: "9",
   paymentStatus: PaymentChargeStatusEnum.NOT_CHARGED,
   chargeStatus: OrderChargeStatusEnum.NONE,
-  privateMetadata: [],
+  authorizeStatus: OrderAuthorizeStatusEnum.NONE,
   shippingAddress: {
     __typename: "Address",
     city: "West Patriciastad",
@@ -1945,16 +2104,19 @@ export const order = (placeholder: string): OrderDetailsWithMetadataFragment => 
   totalCancelPending: prepareMoney(0),
   totalRemainingGrant: prepareMoney(0),
   transactions: orderTransactions,
+  voucherCode: null,
 });
 
-export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragment => ({
+export const draftOrder = (placeholder: string): OrderDetailsFragment => ({
   __typename: "Order" as const,
+  voucher: null,
   chargeStatus: OrderChargeStatusEnum.NONE,
+  displayGrossPrices: true,
+  authorizeStatus: OrderAuthorizeStatusEnum.NONE,
   giftCards: [],
   actions: [OrderAction.CAPTURE],
   shippingMethods: [],
   billingAddress: null,
-  canFinalize: true,
   grantedRefunds: [],
   totalGrantedRefund: prepareMoney(0),
   totalAuthorizePending: prepareMoney(0),
@@ -2028,16 +2190,23 @@ export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragmen
         __typename: "Image" as const,
         url: placeholder,
       },
+      discounts: [],
       totalPrice: {
         __typename: "TaxedMoney",
         gross: {
           __typename: "Money",
           amount: 159.42,
           currency: "USD",
+          fractionDigits: 2,
         },
         net: {
           __typename: "Money",
           amount: 159.42,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -2052,6 +2221,29 @@ export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragmen
         net: {
           __typename: "Money",
           amount: 79.71,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
+          currency: "USD",
+        },
+      },
+      undiscountedTotalPrice: {
+        __typename: "TaxedMoney",
+        gross: {
+          __typename: "Money",
+          amount: 159.42,
+          currency: "USD",
+        },
+        net: {
+          __typename: "Money",
+          amount: 159.42,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -2073,6 +2265,11 @@ export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragmen
         net: {
           __typename: "Money" as const,
           amount: 65.95,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money" as const,
+          amount: 0,
           currency: "USD",
         },
       },
@@ -2112,6 +2309,9 @@ export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragmen
           },
         ],
       },
+      taxRate: 0,
+      voucherCode: null,
+      taxClass: null,
     },
     {
       __typename: "OrderLine" as const,
@@ -2139,16 +2339,23 @@ export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragmen
         __typename: "Image" as const,
         url: placeholder,
       },
+      discounts: [],
       totalPrice: {
         __typename: "TaxedMoney",
         gross: {
           __typename: "Money",
           amount: 159.42,
           currency: "USD",
+          fractionDigits: 2,
         },
         net: {
           __typename: "Money",
           amount: 159.42,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -2163,6 +2370,29 @@ export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragmen
         net: {
           __typename: "Money",
           amount: 79.71,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
+          currency: "USD",
+        },
+      },
+      undiscountedTotalPrice: {
+        __typename: "TaxedMoney",
+        gross: {
+          __typename: "Money",
+          amount: 159.42,
+          currency: "USD",
+        },
+        net: {
+          __typename: "Money",
+          amount: 159.42,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money",
+          amount: 0,
           currency: "USD",
         },
       },
@@ -2184,6 +2414,11 @@ export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragmen
         net: {
           __typename: "Money" as const,
           amount: 68.2,
+          currency: "USD",
+        },
+        tax: {
+          __typename: "Money" as const,
+          amount: 0,
           currency: "USD",
         },
       },
@@ -2223,12 +2458,13 @@ export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragmen
           },
         ],
       },
+      taxRate: 0,
+      voucherCode: null,
+      taxClass: null,
     },
   ],
-  metadata: [],
   number: "24",
   paymentStatus: null,
-  privateMetadata: [],
   shippingAddress: null,
   shippingMethod: null,
   shippingMethodName: null,
@@ -2296,6 +2532,7 @@ export const draftOrder = (placeholder: string): OrderDetailsWithMetadataFragmen
   },
   user: null,
   userEmail: null,
+  voucherCode: null,
 });
 
 export const draftOrderWithTransactions: OrderDetailsFragment = {
@@ -2742,6 +2979,7 @@ export const transactionApp: AppAvatarFragment = {
   name: "Checkout App",
   id: "1234",
   __typename: "App",
+  brand: null,
 };
 
 export const transactionEvent: Omit<TransactionEventFragment, "createdBy"> & {
@@ -2782,6 +3020,7 @@ export const transactions: Record<
       actions: [TransactionActionEnum.CANCEL, TransactionActionEnum.CHARGE],
       externalUrl: null,
       createdAt: "2022-08-12T14:10:22.226875+00:00",
+      createdBy: transactionApp,
       events: [
         {
           id: "VHJhbnNhY3Rpb25FdmVudDox",
@@ -2808,6 +3047,15 @@ export const transactions: Record<
       refundPendingAmount: prepareMoney(0),
       canceledAmount: prepareMoney(0),
       cancelPendingAmount: prepareMoney(0),
+      paymentMethodDetails: {
+        __typename: "CardPaymentMethodDetails",
+        name: "Credit card",
+        brand: "visa",
+        expMonth: 12,
+        expYear: 2025,
+        firstDigits: "4242",
+        lastDigits: "4242",
+      },
       __typename: "TransactionItem",
     },
   ],
@@ -2819,6 +3067,7 @@ export const transactions: Record<
       externalUrl: null,
       actions: [],
       createdAt: "2022-08-12T14:10:22.226875+00:00",
+      createdBy: transactionApp,
       events: [
         {
           id: "VHJhbnNhY3Rpb25FdmVudDox",
@@ -2861,6 +3110,15 @@ export const transactions: Record<
       refundPendingAmount: prepareMoney(0),
       canceledAmount: prepareMoney(0),
       cancelPendingAmount: prepareMoney(0),
+      paymentMethodDetails: {
+        __typename: "CardPaymentMethodDetails",
+        name: "Credit card",
+        brand: "visa",
+        expMonth: 12,
+        expYear: 2025,
+        firstDigits: "4242",
+        lastDigits: "4242",
+      },
       __typename: "TransactionItem",
     },
   ],
@@ -2871,6 +3129,7 @@ export const transactions: Record<
       pspReference: "ord_3d41ih",
       actions: [TransactionActionEnum.REFUND],
       externalUrl: null,
+      createdBy: transactionApp,
       createdAt: "2022-08-12T14:10:22.226875+00:00",
       events: [
         {
@@ -2930,6 +3189,15 @@ export const transactions: Record<
       refundPendingAmount: prepareMoney(0),
       canceledAmount: prepareMoney(0),
       cancelPendingAmount: prepareMoney(0),
+      paymentMethodDetails: {
+        __typename: "CardPaymentMethodDetails",
+        name: "Credit card",
+        brand: "mastercard",
+        expMonth: 3,
+        expYear: 2026,
+        firstDigits: "5555",
+        lastDigits: "4444",
+      },
       __typename: "TransactionItem",
     },
   ],
@@ -2939,6 +3207,7 @@ export const transactions: Record<
       name: "Mollie",
       pspReference: "ord_3d41ih",
       actions: [TransactionActionEnum.REFUND],
+      createdBy: transactionApp,
       externalUrl: null,
       createdAt: "2022-08-12T14:10:22.226875+00:00",
       events: [
@@ -2999,6 +3268,10 @@ export const transactions: Record<
       refundPendingAmount: prepareMoney(0),
       canceledAmount: prepareMoney(0),
       cancelPendingAmount: prepareMoney(0),
+      paymentMethodDetails: {
+        __typename: "OtherPaymentMethodDetails",
+        name: "PayPal",
+      },
       __typename: "TransactionItem",
     },
   ],
@@ -3008,6 +3281,7 @@ export const transactions: Record<
       name: "Mollie",
       pspReference: "ord_3d41ih",
       actions: [TransactionActionEnum.CHARGE],
+      createdBy: transactionApp,
       externalUrl: null,
       createdAt: "2022-08-12T14:10:22.226875+00:00",
       events: [
@@ -3068,6 +3342,7 @@ export const transactions: Record<
       refundPendingAmount: prepareMoney(0),
       canceledAmount: prepareMoney(0),
       cancelPendingAmount: prepareMoney(0),
+      paymentMethodDetails: null,
       __typename: "TransactionItem",
     },
   ],
@@ -3077,6 +3352,7 @@ export const transactions: Record<
       name: "Mollie",
       pspReference: "ord_3d41ih",
       actions: [],
+      createdBy: transactionApp,
       externalUrl: null,
       createdAt: "2022-08-12T14:10:22.226875+00:00",
       events: [
@@ -3153,6 +3429,15 @@ export const transactions: Record<
       refundPendingAmount: prepareMoney(58.98),
       canceledAmount: prepareMoney(0),
       cancelPendingAmount: prepareMoney(0),
+      paymentMethodDetails: {
+        __typename: "CardPaymentMethodDetails",
+        name: "Credit card",
+        brand: "visa",
+        expMonth: 6,
+        expYear: 2027,
+        firstDigits: "4111",
+        lastDigits: "1111",
+      },
       __typename: "TransactionItem",
     },
   ],
@@ -3162,6 +3447,7 @@ export const transactions: Record<
       name: "Mollie",
       pspReference: "ord_3d41ih",
       actions: [],
+      createdBy: transactionApp,
       externalUrl: null,
       createdAt: "2022-08-12T14:10:22.226875+00:00",
       events: [
@@ -3254,6 +3540,10 @@ export const transactions: Record<
       refundPendingAmount: prepareMoney(0),
       canceledAmount: prepareMoney(0),
       cancelPendingAmount: prepareMoney(0),
+      paymentMethodDetails: {
+        __typename: "OtherPaymentMethodDetails",
+        name: "Bank Transfer",
+      },
       __typename: "TransactionItem",
     },
   ],
@@ -3263,6 +3553,7 @@ export const transactions: Record<
       name: "Mollie",
       pspReference: "ord_3d41ih",
       actions: [],
+      createdBy: transactionApp,
       externalUrl: null,
       createdAt: "2022-08-12T14:10:22.226875+00:00",
       events: [
@@ -3355,6 +3646,7 @@ export const transactions: Record<
       refundPendingAmount: prepareMoney(0),
       canceledAmount: prepareMoney(0),
       cancelPendingAmount: prepareMoney(0),
+      paymentMethodDetails: null,
       __typename: "TransactionItem",
     },
   ],
@@ -3507,7 +3799,7 @@ export const grantedRefunds: OrderGrantedRefundFragment[] = [
     shippingCostsIncluded: true,
     amount: prepareMoney(),
     reason: "Products returned",
-    app: { id: "123", name: "Saleor Checkout", __typename: "App" },
+    app: { id: "123", name: "Saleor Checkout", __typename: "App", brand: null },
     user: null,
     createdAt: "2022-08-22T10:40:22.226875+00:00",
     __typename: "OrderGrantedRefund",
@@ -3518,9 +3810,17 @@ export const grantedRefunds: OrderGrantedRefundFragment[] = [
       {
         __typename: "OrderGrantedRefundLine" as const,
         id: "grantedRefund1",
+        reason: null,
+        reasonReference: null,
         orderLine: {
           __typename: "OrderLine" as const,
           id: "orderLine1",
+          productName: "Test product",
+          variantName: "Test variant",
+          thumbnail: {
+            __typename: "Image" as const,
+            url: "https://example.com/thumbnail.png",
+          },
         },
         quantity: 1,
       },
@@ -3549,9 +3849,17 @@ export const grantedRefunds: OrderGrantedRefundFragment[] = [
       {
         __typename: "OrderGrantedRefundLine" as const,
         id: "grantedRefund2",
+        reason: null,
+        reasonReference: null,
         orderLine: {
           __typename: "OrderLine" as const,
           id: "orderLine1",
+          productName: "Test product",
+          variantName: "Test variant",
+          thumbnail: {
+            __typename: "Image" as const,
+            url: "https://example.com/thumbnail.png",
+          },
         },
         quantity: 1,
       },

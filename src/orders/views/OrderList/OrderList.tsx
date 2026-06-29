@@ -1,5 +1,5 @@
 // @ts-strict-ignore
-import { useUser } from "@dashboard/auth";
+import { useUser } from "@dashboard/auth/useUser";
 import ChannelPickerDialog from "@dashboard/channels/components/ChannelPickerDialog";
 import useAppChannel from "@dashboard/components/AppLayout/AppChannelContext";
 import { useConditionalFilterContext } from "@dashboard/components/ConditionalFilter";
@@ -12,7 +12,7 @@ import { useFilterHandlers } from "@dashboard/hooks/useFilterHandlers";
 import { useFilterPresets } from "@dashboard/hooks/useFilterPresets";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { usePaginationReset } from "@dashboard/hooks/usePaginationReset";
 import usePaginator, {
   createPaginationState,
@@ -29,9 +29,10 @@ import { useIntl } from "react-intl";
 
 import OrderListPage from "../../components/OrderListPage/OrderListPage";
 import {
+  orderDraftUrl,
   orderListUrl,
-  OrderListUrlDialog,
-  OrderListUrlQueryParams,
+  type OrderListUrlDialog,
+  type OrderListUrlQueryParams,
   orderSettingsPath,
   orderUrl,
 } from "../../urls";
@@ -82,11 +83,11 @@ const OrderList = ({ params }: OrderListProps) => {
       notify({
         status: "success",
         text: intl.formatMessage({
-          id: "6udlH+",
-          defaultMessage: "Order draft successfully created",
+          id: "AQDJ1d",
+          defaultMessage: "Draft order created",
         }),
       });
-      navigate(orderUrl(data.draftOrderCreate.order.id));
+      navigate(orderDraftUrl(data.draftOrderCreate.order.id));
     },
   });
   const limitOpts = useShopLimitsQuery({
@@ -138,6 +139,10 @@ const OrderList = ({ params }: OrderListProps) => {
   return (
     <PaginatorContext.Provider value={paginationValues}>
       <OrderListPage
+        // @ts-expect-error - due to strict-ignores, this prop is not typed properly but it is passed.
+        onRowClick={item => {
+          navigate(orderUrl(item));
+        }}
         settings={settings}
         currentTab={selectedPreset}
         disabled={!data}

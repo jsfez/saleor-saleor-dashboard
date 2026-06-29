@@ -1,9 +1,10 @@
 // @ts-strict-ignore
 import { Box, List, sprinkles, Text } from "@saleor/macaw-ui-next";
+import { useLocation } from "react-router";
 import { Link } from "react-router-dom";
 
 import { MenuItem } from "./Item";
-import { SidebarMenuItem } from "./types";
+import { type SidebarMenuItem } from "./types";
 import { isMenuActive } from "./utils";
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export const ItemGroup = ({ menuItem }: Props) => {
+  const location = useLocation();
+
   const hasSubmenuActive = menuItem?.children.some(item => isMenuActive(location.pathname, item));
   const isActive = isMenuActive(location.pathname, menuItem) && !hasSubmenuActive;
   const isExpanded = isActive || hasSubmenuActive;

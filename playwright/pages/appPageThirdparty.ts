@@ -1,6 +1,6 @@
 import { URL_LIST } from "@data/url";
 import { BasePage } from "@pages/basePage";
-import { expect, Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 import { DeleteDialog } from "./dialogs/deleteDialog";
 
@@ -24,7 +24,7 @@ export class AppPage extends BasePage {
   }
 
   async goToExistingAppPage(appId: string) {
-    const appUrl = URL_LIST.apps + appId;
+    const appUrl = `${URL_LIST.apps}${appId}/edit`;
 
     await this.page.goto(appUrl);
   }

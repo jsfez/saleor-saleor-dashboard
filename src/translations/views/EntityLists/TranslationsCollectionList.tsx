@@ -5,8 +5,8 @@ import TranslationsEntitiesList from "@dashboard/translations/components/Transla
 import { languageEntityUrl, TranslatableEntities } from "@dashboard/translations/urls";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 
-import { TranslationsEntityListProps } from "./types";
-import { sumCompleted } from "./utils";
+import { type TranslationsEntityListProps } from "./types";
+import { getGeneralEntityTranslationCompletion } from "./utils";
 
 const TranslationsCollectionList = ({ params, variables }: TranslationsEntityListProps) => {
   const { data, loading } = useCollectionTranslationsQuery({
@@ -26,15 +26,7 @@ const TranslationsCollectionList = ({ params, variables }: TranslationsEntityLis
         entities={mapEdgesToItems(data?.translations)?.map(
           node =>
             node.__typename === "CollectionTranslatableContent" && {
-              completion: {
-                current: sumCompleted([
-                  node.translation?.description,
-                  node.translation?.name,
-                  node.translation?.seoDescription,
-                  node.translation?.seoTitle,
-                ]),
-                max: 4,
-              },
+              completion: getGeneralEntityTranslationCompletion(node.translation),
               id: node.collection.id,
               name: node.collection.name,
             },

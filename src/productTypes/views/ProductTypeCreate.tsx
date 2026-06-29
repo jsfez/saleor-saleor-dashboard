@@ -1,21 +1,21 @@
 // @ts-strict-ignore
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import {
-  ProductTypeKindEnum,
+  type ProductTypeKindEnum,
   useProductTypeCreateDataQuery,
   useProductTypeCreateMutation,
   useUpdateMetadataMutation,
   useUpdatePrivateMetadataMutation,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { useTaxClassFetchMore } from "@dashboard/taxes/utils/useTaxClassFetchMore";
 import createMetadataCreateHandler from "@dashboard/utils/handlers/metadataCreateHandler";
 import { useIntl } from "react-intl";
 
 import { getMutationErrors } from "../../misc";
-import ProductTypeCreatePage, { ProductTypeForm } from "../components/ProductTypeCreatePage";
-import { productTypeAddUrl, ProductTypeAddUrlQueryParams, productTypeUrl } from "../urls";
+import ProductTypeCreatePage, { type ProductTypeForm } from "../components/ProductTypeCreatePage";
+import { productTypeAddUrl, type ProductTypeAddUrlQueryParams, productTypeUrl } from "../urls";
 
 interface ProductTypeCreateProps {
   params: ProductTypeAddUrlQueryParams;
@@ -44,8 +44,8 @@ const ProductTypeCreate = ({ params }: ProductTypeCreateProps) => {
         notify({
           status: "success",
           text: intl.formatMessage({
-            id: "paa4m0",
-            defaultMessage: "Successfully created product type",
+            id: "SZyphU",
+            defaultMessage: "Product type created",
           }),
         });
         navigate(productTypeUrl(data.productTypeCreate.productType.id));

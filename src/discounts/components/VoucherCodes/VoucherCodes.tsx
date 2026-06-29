@@ -1,27 +1,28 @@
 import { BulkDeleteButton } from "@dashboard/components/BulkDeleteButton";
-import { UseListSettings } from "@dashboard/hooks/useListSettings";
-import { LocalPagination } from "@dashboard/hooks/useLocalPaginator";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { type UseListSettings } from "@dashboard/hooks/useListSettings";
+import { type LocalPagination } from "@dashboard/hooks/useLocalPaginator";
 import { PaginatorContext } from "@dashboard/hooks/usePaginator";
 import { Box, Text } from "@saleor/macaw-ui-next";
 import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { VoucherCodesAddButton } from "../VoucherCodesAddButton/VoucherCodesAddButton";
-import { VoucherCodesDatagrid, VoucherCodesDatagridProps } from "../VoucherCodesDatagrid";
+import { VoucherCodesDatagrid, type VoucherCodesDatagridProps } from "../VoucherCodesDatagrid";
 import { VoucherCodesDeleteDialog } from "../VoucherCodesDeleteDialog";
 import {
-  GenerateMultipleVoucherCodeFormData,
+  type GenerateMultipleVoucherCodeFormData,
   VoucherCodesGenerateDialog,
 } from "../VoucherCodesGenerateDialog";
 import { VoucherCodesManualDialog } from "../VoucherCodesManualDialog";
-import { VoucherCodesUrlDialog } from "./types";
-import { hasSavedVoucherCodesToDelete } from "./utils";
+import { type VoucherCodesUrlDialog } from "./types";
 
 export interface VoucherCodesProps extends VoucherCodesDatagridProps {
   selectedCodesIds: string[];
   voucherCodesPagination: LocalPagination;
   settings: UseListSettings["settings"];
-  onDeleteCodes: () => void;
+  deleteCodesTransitionState: ConfirmButtonTransitionState;
+  onDeleteCodes: () => Promise<void>;
   onSelectVoucherCodesIds: (rows: number[], clearSelection: () => void) => void;
   onSettingsChange: UseListSettings["updateListSettings"];
   onMultiCodesGenerate: (data: GenerateMultipleVoucherCodeFormData) => void;
@@ -33,12 +34,12 @@ export const VoucherCodes = ({
   onMultiCodesGenerate,
   onCustomCodeGenerate,
   onDeleteCodes,
+  deleteCodesTransitionState,
   voucherCodesPagination,
   ...datagridProps
 }: VoucherCodesProps) => {
   const { pageInfo, ...paginationValues } = voucherCodesPagination;
   const [openModal, setOpenModal] = useState<VoucherCodesUrlDialog | null>(null);
-  const hasSavedCodesToDelete = hasSavedVoucherCodesToDelete(selectedCodesIds, datagridProps.codes);
   const closeModal = () => {
     setOpenModal(null);
   };
@@ -59,15 +60,8 @@ export const VoucherCodes = ({
           </Text>
           <Box display="flex" gap={3}>
             {selectedCodesIds.length > 0 && (
-              <BulkDeleteButton
-                disabled={hasSavedCodesToDelete}
-                onClick={() => setOpenModal("delete-codes")}
-              >
-                {hasSavedCodesToDelete ? (
-                  <FormattedMessage defaultMessage="Can't delete saved codes" id="4gJAm6" />
-                ) : (
-                  <FormattedMessage defaultMessage="Delete codes" id="UJ97Lb" />
-                )}
+              <BulkDeleteButton onClick={() => setOpenModal("delete-codes")}>
+                <FormattedMessage defaultMessage="Delete codes" id="UJ97Lb" />
               </BulkDeleteButton>
             )}
             <VoucherCodesAddButton
@@ -94,6 +88,7 @@ export const VoucherCodes = ({
       <VoucherCodesDeleteDialog
         onClose={closeModal}
         open={openModal === "delete-codes"}
+        confirmButtonTransitionState={deleteCodesTransitionState}
         onDelete={onDeleteCodes}
       />
     </>

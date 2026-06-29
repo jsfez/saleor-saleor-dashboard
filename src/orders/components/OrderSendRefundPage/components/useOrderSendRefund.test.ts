@@ -1,16 +1,16 @@
-import { useUser } from "@dashboard/auth";
+import { useUser } from "@dashboard/auth/useUser";
 import {
-  OrderDetailsWithMetadataDocument,
+  OrderDetailsDocument,
   PermissionEnum,
   useOrderSendRefundMutation,
 } from "@dashboard/graphql";
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react";
 
 import { useOrderSendRefund } from "./useOrderSendRefund";
 
 const mockSendRefund = jest.fn();
 
-jest.mock("@dashboard/auth");
+jest.mock("@dashboard/auth/useUser");
 jest.mock("@dashboard/graphql");
 
 describe("useOrderSendRefund", () => {
@@ -36,7 +36,7 @@ describe("useOrderSendRefund", () => {
     expect(useOrderSendRefundMutation).toHaveBeenCalledWith({
       refetchQueries: [
         {
-          query: OrderDetailsWithMetadataDocument,
+          query: OrderDetailsDocument,
           variables: { id: "456", hasManageProducts: true },
         },
       ],
@@ -69,7 +69,7 @@ describe("useOrderSendRefund", () => {
     expect(useOrderSendRefundMutation).toHaveBeenCalledWith({
       refetchQueries: [
         {
-          query: OrderDetailsWithMetadataDocument,
+          query: OrderDetailsDocument,
           variables: { id: "456", hasManageProducts: false },
         },
       ],

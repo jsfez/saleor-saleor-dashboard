@@ -1,4 +1,8 @@
-import { AttributeInputTypeEnum, AttributeTypeEnum, PageDetailsFragment } from "@dashboard/graphql";
+import {
+  AttributeInputTypeEnum,
+  AttributeTypeEnum,
+  type PageDetailsFragment,
+} from "@dashboard/graphql";
 
 import * as richTextEditorFixtures from "../components/RichTextEditor/fixtures.json";
 
@@ -90,8 +94,6 @@ export const page: PageDetailsFragment = {
         visibleInStorefront: false,
         filterableInDashboard: false,
         filterableInStorefront: false,
-        metadata: [],
-        privateMetadata: [],
       },
       values: [
         {
@@ -212,8 +214,6 @@ export const page: PageDetailsFragment = {
         filterableInDashboard: false,
         filterableInStorefront: false,
         referenceTypes: [],
-        metadata: [],
-        privateMetadata: [],
       },
       values: [
         {

@@ -35,11 +35,28 @@ export const columnsMessages = defineMessages({
     defaultMessage: "Is gift",
     description: "order line is gift",
   },
+  reason: {
+    id: "GY93MP",
+    defaultMessage: "Reason",
+    description: "order line return/refund reason",
+  },
 });
 
 export const messages = defineMessages({
   productDetails: {
     id: "VYK2nN",
     defaultMessage: "Product details",
+  },
+  editOrderLineMetadata: {
+    id: "N6s/fl",
+    defaultMessage: "Edit order line metadata",
+  },
+  openProductDetail: {
+    id: "mMOskm",
+    defaultMessage: "Open product detail",
+  },
+  showMetadata: {
+    id: "IpOugE",
+    defaultMessage: "Show metadata",
   },
 });

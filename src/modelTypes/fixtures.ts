@@ -1,8 +1,8 @@
 import {
   AttributeInputTypeEnum,
   AttributeTypeEnum,
-  PageTypeDetailsFragment,
-  PageTypeFragment,
+  type PageTypeDetailsFragment,
+  type PageTypeFragment,
 } from "@dashboard/graphql";
 
 export const pageTypes: PageTypeFragment[] = [
@@ -44,8 +44,6 @@ export const pageType: PageTypeDetailsFragment = {
       id: "UHJvZHVjdEF0dHJpYnV0ZTo5",
       name: "Author",
       slug: "author",
-      metadata: [],
-      privateMetadata: [],
       visibleInStorefront: true,
       filterableInDashboard: true,
       filterableInStorefront: true,
@@ -58,8 +56,6 @@ export const pageType: PageTypeDetailsFragment = {
       id: "UHJvZHVjdEF0dHJpYnV0ZToxMQ==",
       name: "Language",
       slug: "language",
-      metadata: [],
-      privateMetadata: [],
       visibleInStorefront: true,
       filterableInDashboard: true,
       filterableInStorefront: true,
@@ -72,8 +68,6 @@ export const pageType: PageTypeDetailsFragment = {
       id: "UHJvZHVjdEF0dHJpYnV0ZTo5",
       name: "Author",
       slug: "author",
-      metadata: [],
-      privateMetadata: [],
       visibleInStorefront: true,
       filterableInDashboard: true,
       filterableInStorefront: true,

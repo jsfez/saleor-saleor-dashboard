@@ -1,11 +1,12 @@
-import { Box, Modal, PropsWithBox } from "@saleor/macaw-ui-next";
-import { ReactNode } from "react";
+import { Box, Modal, type PropsWithBox } from "@saleor/macaw-ui-next";
+import { type ReactNode } from "react";
 
 export type ContentSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 type ContentProps = PropsWithBox<{
   children: ReactNode;
   disableAutofocus?: boolean;
+  disableEscapeKeyDown?: boolean;
   size: ContentSize;
 }>;
 
@@ -17,7 +18,13 @@ const sizes: Record<ContentSize, number> = {
   xl: 1920,
 };
 
-export const Content = ({ children, disableAutofocus, size, ...rest }: ContentProps) => {
+export const Content = ({
+  children,
+  disableAutofocus,
+  disableEscapeKeyDown,
+  size,
+  ...rest
+}: ContentProps) => {
   return (
     <Modal.Content
       disableAutofocus={disableAutofocus}
@@ -25,9 +32,18 @@ export const Content = ({ children, disableAutofocus, size, ...rest }: ContentPr
         onPointerDownOutside: e => {
           // This fixes issues when cursor was clicked on DataGrid x/y coordinates
           // For example: when in modal clicked on "View metadata" button in DataGrid
-          // This doesn't prevent default action from Radix which is to close modal
           e.detail.originalEvent.preventDefault();
         },
+        onInteractOutside: e => {
+          // Prevent modal from closing when interacting with popovers (e.g., filter dropdowns)
+          // Popovers render in portals outside the modal's DOM tree, so Radix treats them as "outside"
+          const target = e.target as HTMLElement;
+
+          if (target?.closest("[data-radix-popper-content-wrapper]")) {
+            e.preventDefault();
+          }
+        },
+        onEscapeKeyDown: disableEscapeKeyDown ? e => e.preventDefault() : undefined,
       }}
     >
       <Box

@@ -50,7 +50,7 @@ test("TC: SALEOR_32 Add price rate to shipping method - with excluded zip codes 
   await shippingRatesPage.expectSuccessBanner();
   await shippingRatesPage.excludedProductsRows.waitFor({ state: "visible" });
   await expect(shippingRatesPage.excludedProductsRows).toContainText("Bean Juice");
-  await expect(await shippingRatesPage.assignedPostalCodesRows.count()).toEqual(1);
+  await expect(shippingRatesPage.assignedPostalCodesRows).toHaveCount(1);
 });
 test("TC: SALEOR_33 Add weight rate to shipping method - with included zip codes and excluded product #shipping-method #e2e", async () => {
   await shippingMethodsPage.gotoExistingShippingMethod(
@@ -88,7 +88,9 @@ test("TC: SALEOR_34 Delete a single shipping rate from the shipping zone details
   await shippingMethodsPage.clickDeletePriceBasedShippingMethod();
   await shippingMethodsPage.deleteShippingMethodDialog.clickDeleteButton();
   await shippingMethodsPage.expectSuccessBanner();
-  await expect(shippingMethodsPage.priceBasedRatesSection).toContainText("No shipping rates found");
+  await expect(shippingMethodsPage.priceBasedRatesSection).toContainText(
+    "No shipping methods in this zone",
+  );
   await expect(shippingMethodsPage.priceBasedRatesSection).not.toContainText(priceBasedRate);
 });
 test("TC: SALEOR_35 Delete a single shipping rate from its details page #shipping-method #e2e", async () => {
@@ -102,10 +104,17 @@ test("TC: SALEOR_35 Delete a single shipping rate from its details page #shippin
   await shippingMethodsPage.clickDeleteShippingRateButton();
   await shippingMethodsPage.deleteShippingMethodDialog.clickDeleteButton();
   await shippingMethodsPage.expectSuccessBanner();
-  await expect(shippingMethodsPage.weightBasedRatesSection).toContainText(
-    "No shipping rates found",
+  await shippingMethodsPage.page.waitForURL(
+    url => url.pathname.includes("/shipping/") && !url.pathname.includes(shippingRateId),
+    { timeout: 30000 },
   );
-  await expect(shippingMethodsPage.weightBasedRatesSection).not.toContainText(weightBasedRate);
+  // Wait for the rate row to disappear from the table after deletion
+  await expect(
+    shippingMethodsPage.weightBasedRatesSection.getByRole("link", { name: weightBasedRate }),
+  ).toBeHidden({ timeout: 30000 });
+  await expect(shippingMethodsPage.weightBasedRatesSection).toContainText(
+    "No shipping methods in this zone",
+  );
 });
 test("TC: SALEOR_36 Delete shipping zones in bulk #shipping-method #e2e", async () => {
   const shippingZone1 = SHIPPING_METHODS.shippingMethodToBeBulkDeleted1.name;

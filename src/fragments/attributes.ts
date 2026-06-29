@@ -36,7 +36,25 @@ export const attributeFragment = gql`
     filterableInStorefront
     unit
     inputType
-    ...Metadata
+  }
+`;
+
+export const attributeUpdateResultFragment = gql`
+  fragment AttributeUpdateResult on Attribute {
+    ...Attribute
+    availableInGrid
+    storefrontSearchPosition
+    valueRequired
+    referenceTypes {
+      ... on ProductType {
+        id
+        name
+      }
+      ... on PageType {
+        id
+        name
+      }
+    }
   }
 `;
 
@@ -57,7 +75,13 @@ export const attributeDetailsFragment = gql`
         name
       }
     }
-    choices(first: $firstValues, after: $afterValues, last: $lastValues, before: $beforeValues) {
+    choices(
+      first: $firstValues
+      after: $afterValues
+      last: $lastValues
+      before: $beforeValues
+      search: $searchValues
+    ) {
       ...AttributeValueList
     }
   }
@@ -82,5 +106,6 @@ export const availableAttributeFragment = gql`
     id
     name
     slug
+    inputType
   }
 `;

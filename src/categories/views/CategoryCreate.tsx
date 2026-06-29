@@ -1,19 +1,19 @@
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import {
-  CategoryCreateMutation,
+  type CategoryCreateMutation,
   useCategoryCreateMutation,
   useUpdateMetadataMutation,
   useUpdatePrivateMetadataMutation,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { getMutationErrors } from "@dashboard/misc";
 import createMetadataCreateHandler from "@dashboard/utils/handlers/metadataCreateHandler";
 import { getParsedDataForJsonStringField } from "@dashboard/utils/richText/misc";
 import { useIntl } from "react-intl";
 
 import CategoryCreatePage from "../components/CategoryCreatePage";
-import { CategoryCreateData } from "../components/CategoryCreatePage/form";
+import { type CategoryCreateData } from "../components/CategoryCreatePage/form";
 import { categoryListUrl, categoryUrl } from "../urls";
 
 interface CategoryCreateViewProps {

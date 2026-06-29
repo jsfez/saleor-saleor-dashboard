@@ -2,13 +2,13 @@ import { stringifyQs } from "@dashboard/utils/urls";
 import urlJoin from "url-join";
 
 import {
-  ActiveTab,
-  Dialog,
-  Filters,
-  Pagination,
-  SingleAction,
-  Sort,
-  TabActionDialog,
+  type ActiveTab,
+  type Dialog,
+  type Filters,
+  type Pagination,
+  type SingleAction,
+  type Sort,
+  type TabActionDialog,
 } from "../types";
 
 export const warehouseSection = "/warehouses/";
@@ -33,7 +33,7 @@ export const warehouseListUrl = (params?: WarehouseListUrlQueryParams) =>
   warehouseListPath + "?" + stringifyQs(params);
 
 export const warehousePath = (id: string) => urlJoin(warehouseSection, id);
-type WarehouseUrlDialog = "delete";
+type WarehouseUrlDialog = "delete" | "view-warehouse-metadata";
 export type WarehouseUrlQueryParams = Dialog<WarehouseUrlDialog> & SingleAction;
 export const warehouseUrl = (id: string, params?: WarehouseUrlQueryParams) =>
   warehousePath(encodeURIComponent(id)) + "?" + stringifyQs(params);

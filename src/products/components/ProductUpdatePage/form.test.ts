@@ -1,8 +1,8 @@
-import { ProductFragment } from "@dashboard/graphql";
-import { act, renderHook } from "@testing-library/react-hooks";
+import { type ProductFragment } from "@dashboard/graphql";
+import { act, renderHook } from "@testing-library/react";
 
 import { useProductUpdateForm } from "./form";
-import { UseProductUpdateFormOpts } from "./types";
+import { type UseProductUpdateFormOpts } from "./types";
 
 jest.mock("@dashboard/utils/richText/useRichText", () => {
   return {
@@ -24,8 +24,6 @@ const baseData = {
     updateChannels: [],
   },
   description: undefined,
-  metadata: undefined,
-  privateMetadata: undefined,
 };
 
 describe("useProductUpdateForm", () => {
@@ -112,8 +110,6 @@ describe("useProductUpdateForm", () => {
         updateChannels: [],
       },
       description: undefined,
-      metadata: undefined,
-      privateMetadata: undefined,
       slug: "test-slug-1",
       category: "test-category",
       collections: ["collection-1"],

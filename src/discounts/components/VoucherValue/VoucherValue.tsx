@@ -2,23 +2,24 @@
 import { DashboardCard } from "@dashboard/components/Card";
 import ControlledCheckbox from "@dashboard/components/ControlledCheckbox";
 import { FormSpacer } from "@dashboard/components/FormSpacer";
+import { Placeholder } from "@dashboard/components/Placeholder";
 import RadioGroupField from "@dashboard/components/RadioGroupField";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import TableHead from "@dashboard/components/TableHead";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import { ChannelInput } from "@dashboard/discounts/handlers";
+import { type ChannelInput } from "@dashboard/discounts/handlers";
 import { DiscountTypeEnum } from "@dashboard/discounts/types";
-import { DiscountErrorFragment } from "@dashboard/graphql";
+import { type DiscountErrorFragment } from "@dashboard/graphql";
 import { renderCollection } from "@dashboard/misc";
 import { getFormErrors } from "@dashboard/utils/errors";
 import getDiscountErrorMessage from "@dashboard/utils/errors/discounts";
 import { TableBody, TableCell } from "@material-ui/core";
 import { Input, Skeleton, Text } from "@saleor/macaw-ui-next";
-import * as React from "react";
+import type * as React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { translateVoucherTypes } from "../../translations";
-import { VoucherDetailsPageFormData } from "../VoucherDetailsPage";
+import { type VoucherDetailsPageFormData } from "../VoucherDetailsPage";
 import { useStyles } from "./styles";
 
 interface VoucherValueProps {
@@ -58,28 +59,35 @@ const VoucherValue = (props: VoucherValueProps) => {
         </DashboardCard.Title>
       </DashboardCard.Header>
       <DashboardCard.Content>
-        <div className={classes.tableContainer}>
-          <ResponsiveTable className={classes.table}>
-            <TableHead colSpan={numberOfColumns} disabled={disabled} items={[]}>
-              <TableCell className={classes.colName}>
-                <span>
-                  <FormattedMessage
-                    id="Hj3T7P"
-                    defaultMessage="Channel name"
-                    description="column title"
-                  />
-                </span>
-              </TableCell>
-              <TableCell className={classes.colType}>
-                <span>
-                  <FormattedMessage id="1shOIS" defaultMessage="Price" description="column title" />
-                </span>
-              </TableCell>
-            </TableHead>
-            <TableBody>
-              {renderCollection(
-                data.channelListings,
-                (listing, index) => {
+        {data.channelListings?.length === 0 ? (
+          <Placeholder>
+            <FormattedMessage id="/glQgs" defaultMessage="No channels found" />
+          </Placeholder>
+        ) : (
+          <div className={classes.tableContainer}>
+            <ResponsiveTable className={classes.table}>
+              <TableHead colSpan={numberOfColumns} disabled={disabled} items={[]}>
+                <TableCell className={classes.colName}>
+                  <span>
+                    <FormattedMessage
+                      id="Hj3T7P"
+                      defaultMessage="Channel name"
+                      description="column title"
+                    />
+                  </span>
+                </TableCell>
+                <TableCell className={classes.colType}>
+                  <span>
+                    <FormattedMessage
+                      id="1shOIS"
+                      defaultMessage="Price"
+                      description="column title"
+                    />
+                  </span>
+                </TableCell>
+              </TableHead>
+              <TableBody>
+                {renderCollection(data.channelListings, (listing, index) => {
                   const error = formErrors.discountValue?.channels?.find(id => id === listing.id);
 
                   return (
@@ -125,18 +133,11 @@ const VoucherValue = (props: VoucherValueProps) => {
                       </TableCell>
                     </TableRowLink>
                   );
-                },
-                () => (
-                  <TableRowLink>
-                    <TableCell colSpan={numberOfColumns}>
-                      <FormattedMessage id="/glQgs" defaultMessage="No channels found" />
-                    </TableCell>
-                  </TableRowLink>
-                ),
-              )}
-            </TableBody>
-          </ResponsiveTable>
-        </div>
+                })}
+              </TableBody>
+            </ResponsiveTable>
+          </div>
+        )}
 
         <FormSpacer />
 

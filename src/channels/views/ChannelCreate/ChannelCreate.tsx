@@ -1,18 +1,17 @@
 // @ts-strict-ignore
-import { FormData } from "@dashboard/channels/components/ChannelForm/ChannelForm";
+import { type FormData } from "@dashboard/channels/components/ChannelForm/ChannelForm";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import {
-  ChannelCreateInput,
-  ChannelCreateMutation,
-  ChannelErrorFragment,
+  type ChannelCreateInput,
+  type ChannelCreateMutation,
+  type ChannelErrorFragment,
   useChannelCreateMutation,
   useChannelReorderWarehousesMutation,
 } from "@dashboard/graphql";
 import { getSearchFetchMoreProps } from "@dashboard/hooks/makeTopLevelSearch/utils";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import useShop from "@dashboard/hooks/useShop";
-import { commonMessages } from "@dashboard/intl";
 import getChannelsErrorMessage from "@dashboard/utils/errors/channels";
 import currencyCodes from "currency-codes";
 import { useIntl } from "react-intl";
@@ -39,7 +38,7 @@ const ChannelCreateView = () => {
       if (!errors.length) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "HA0fD3", defaultMessage: "Channel created" }),
         });
       }
     },
@@ -74,6 +73,7 @@ const ChannelCreateView = () => {
     warehousesIdsToAdd,
     warehousesToDisplay,
     automaticallyCompleteCheckouts,
+    allowLegacyGiftCardUse,
   }: FormData) => {
     const input: ChannelCreateInput = {
       name,
@@ -95,6 +95,7 @@ const ChannelCreateView = () => {
       },
       checkoutSettings: {
         automaticallyCompleteFullyPaidCheckouts: automaticallyCompleteCheckouts,
+        allowLegacyGiftCardUse: allowLegacyGiftCardUse,
       },
     };
 

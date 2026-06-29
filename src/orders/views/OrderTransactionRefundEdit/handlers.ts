@@ -1,11 +1,11 @@
-import { IMessage } from "@dashboard/components/messages";
+import { type INotification } from "@dashboard/components/notifications";
 import {
-  OrderGrantRefundEditMutation,
+  type OrderGrantRefundEditMutation,
   OrderGrantRefundUpdateErrorCode,
-  OrderGrantRefundUpdateErrorFragment,
+  type OrderGrantRefundUpdateErrorFragment,
 } from "@dashboard/graphql";
-import { OrderTransactionRefundError } from "@dashboard/orders/components/OrderTransactionRefundPage/OrderTransactionRefundPage";
-import { IntlShape } from "react-intl";
+import { type OrderTransactionRefundError } from "@dashboard/orders/components/OrderTransactionRefundPage/OrderTransactionRefundPage";
+import { type IntlShape } from "react-intl";
 
 import { transactionRefundEditMessages } from "./messages";
 
@@ -16,7 +16,7 @@ export const handleRefundEditComplete = ({
   intl,
 }: {
   submitData: OrderGrantRefundEditMutation;
-  notify: (message: IMessage) => void;
+  notify: (notification: INotification) => void;
   setLinesErrors: (value: React.SetStateAction<OrderTransactionRefundError[]>) => void;
   intl: IntlShape;
   orderId: string;

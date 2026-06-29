@@ -1,15 +1,25 @@
-import { OrderDetailsGrantRefundFragment, OrderGrantedRefundStatusEnum } from "@dashboard/graphql";
-import { ConfirmButtonTransitionState, SavebarLabels } from "@saleor/macaw-ui";
+import {
+  type OrderDetailsGrantRefundFragment,
+  OrderGrantedRefundStatusEnum,
+} from "@dashboard/graphql";
+import { type ConfirmButtonTransitionState, type SavebarLabels } from "@saleor/macaw-ui";
 import { useEffect } from "react";
-import { UseFieldArrayUpdate, UseFormGetValues, UseFormSetValue } from "react-hook-form";
-import { IntlShape } from "react-intl";
+import {
+  type UseFieldArrayUpdate,
+  type UseFormGetValues,
+  type UseFormSetValue,
+} from "react-hook-form";
+import { type IntlShape } from "react-intl";
 
 import {
   orderTransactionRefundMessages,
   refundSavebarMessages,
   refundStatusMessages,
 } from "./messages";
-import { LineToRefund, OrderTransactionRefundPageFormData } from "./OrderTransactionRefundPage";
+import {
+  type LineToRefund,
+  type OrderTransactionRefundPageFormData,
+} from "./OrderTransactionRefundPage";
 
 export const canRefundShipping = (
   order: OrderDetailsGrantRefundFragment | undefined | null,
@@ -102,16 +112,22 @@ export const handleLinesToRefundChange = ({
 
 export const handleReasonChange = ({
   reason,
+  reasonReference,
   index,
   linesToRefund,
   refundFieldsUpdate,
 }: {
   reason: string;
+  reasonReference: string;
   index: number;
   linesToRefund: LineToRefund[];
   refundFieldsUpdate: UseFieldArrayUpdate<OrderTransactionRefundPageFormData, "linesToRefund">;
 }) => {
-  refundFieldsUpdate(index, { quantity: linesToRefund[index].quantity, reason });
+  refundFieldsUpdate(index, {
+    quantity: linesToRefund[index].quantity,
+    reason,
+    reasonReference,
+  });
 };
 
 const roundToTwoDecimals = (num: number) => {
@@ -199,7 +215,7 @@ export const getRefundStatusColor = (status: OrderGrantedRefundStatusEnum) => {
     case OrderGrantedRefundStatusEnum.PENDING:
       return "warning";
     default:
-      return "generic";
+      return "neutral";
   }
 };
 

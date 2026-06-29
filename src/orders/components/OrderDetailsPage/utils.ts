@@ -1,8 +1,7 @@
 // @ts-strict-ignore
-import { MetadataIdSchema } from "@dashboard/components/Metadata";
-import { OrderDetailsFragment } from "@dashboard/graphql";
-import { ChangeEvent } from "@dashboard/hooks/useForm";
-import { mapMetadataItemToInput } from "@dashboard/utils/maps";
+import { type MetadataIdSchema } from "@dashboard/components/Metadata";
+import { type OrderDetailsFragment } from "@dashboard/graphql";
+import { type ChangeEvent } from "@dashboard/hooks/useForm";
 
 import {
   getFulfilledFulfillemnts,
@@ -30,15 +29,18 @@ interface ConditionalItem {
 export const filteredConditionalItems = (items: ConditionalItem[]) =>
   items.filter(({ shouldExist }) => shouldExist).map(({ item }) => item);
 
+// Order and fulfillment metadata are no longer fetched eagerly with order details
+// (they are loaded on demand by their dedicated dialogs). The page-level confirm form
+// keeps the id-keyed schema shape, but with empty metadata since it is not edited inline.
 export const createOrderMetadataIdSchema = (order: OrderDetailsFragment): MetadataIdSchema => ({
   [order?.id]: {
-    metadata: order?.metadata.map(mapMetadataItemToInput),
-    privateMetadata: order?.privateMetadata.map(mapMetadataItemToInput),
+    metadata: [],
+    privateMetadata: [],
   },
   ...order?.fulfillments.reduce((p, c) => {
     p[c.id] = {
-      metadata: c?.metadata.map(mapMetadataItemToInput),
-      privateMetadata: c?.privateMetadata.map(mapMetadataItemToInput),
+      metadata: [],
+      privateMetadata: [],
     };
 
     return p;

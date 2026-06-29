@@ -1,8 +1,8 @@
-import { ArrowLeftIcon, CloseIcon } from "@saleor/macaw-ui-next";
-import { Dispatch, SetStateAction } from "react";
+import { ArrowLeft, X } from "lucide-react";
+import { type Dispatch, type SetStateAction } from "react";
 
-import { AvailableColumn } from "../types";
-import { ColumnCategory } from "./useColumns";
+import { type AvailableColumn } from "../types";
+import { type ColumnCategory } from "./useColumns";
 
 export const filterEmptyColumn = (column: AvailableColumn) => column.title !== "";
 
@@ -11,14 +11,14 @@ export const getExitIcon = (
   currentCategory: ColumnCategory | undefined,
 ) => {
   if (columnCategories.length === 1) {
-    return <CloseIcon />;
+    return <X />;
   }
 
   if (currentCategory) {
-    return <ArrowLeftIcon />;
+    return <ArrowLeft />;
   }
 
-  return <CloseIcon />;
+  return <X />;
 };
 
 export const getExitOnClick = ({
@@ -90,3 +90,5 @@ export const mergeSelectedColumns = ({
 
   return columns;
 };
+
+export const rightColumnBoxShadow = "-8px 0px 8px -4px rgba(0, 0, 0, 0.12)";

@@ -17,10 +17,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v3
-      with:
-        node-version-file: ".nvmrc"
-
     - name: Restore accounts
       shell: bash
       env:

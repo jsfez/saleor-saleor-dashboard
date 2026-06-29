@@ -1,5 +1,5 @@
-import { DragOverEvent } from "@dnd-kit/core";
-import { renderHook } from "@testing-library/react-hooks";
+import { type DragOverEvent } from "@dnd-kit/core";
+import { renderHook } from "@testing-library/react";
 
 import { useSortableDragOver } from "./useSortableDragOver";
 

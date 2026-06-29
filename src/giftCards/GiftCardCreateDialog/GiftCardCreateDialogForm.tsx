@@ -1,29 +1,31 @@
 // @ts-strict-ignore
 import BackButton from "@dashboard/components/BackButton";
-import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import {
+  ConfirmButton,
+  type ConfirmButtonTransitionState,
+} from "@dashboard/components/ConfirmButton";
 import { DashboardModal } from "@dashboard/components/Modal";
 import GiftCardTagInput from "@dashboard/giftCards/components/GiftCardTagInput";
 import {
-  GiftCardErrorFragment,
+  type GiftCardErrorFragment,
   GiftCardSettingsExpiryTypeEnum,
   TimePeriodTypeEnum,
   useGiftCardSettingsQuery,
 } from "@dashboard/graphql";
 import useForm from "@dashboard/hooks/useForm";
-import { commonMessages } from "@dashboard/intl";
 import Label from "@dashboard/orders/components/OrderHistory/Label";
 import { getFormErrors } from "@dashboard/utils/errors";
 import { Box, Textarea } from "@saleor/macaw-ui-next";
 import { useState } from "react";
 import { useIntl } from "react-intl";
 
-import GiftCardSendToCustomer from "../components/GiftCardSendToCustomer/GiftCardSendToCustomer";
-import { GiftCardCreateCommonFormData } from "../GiftCardBulkCreateDialog/types";
+import { GiftCardSendToCustomer } from "../components/GiftCardSendToCustomer/GiftCardSendToCustomer";
+import { type GiftCardCreateCommonFormData } from "../GiftCardBulkCreateDialog/types";
 import GiftCardCreateExpirySelect from "./GiftCardCreateExpirySelect";
 import { GiftCardCreateMoneyInput } from "./GiftCardCreateMoneyInput";
 import GiftCardCreateRequiresActivationSection from "./GiftCardCreateRequiresActivationSection";
 import { giftCardCreateMessages as messages } from "./messages";
-import { GiftCardCreateFormCommonProps, GiftCardCreateFormCustomer } from "./types";
+import { type GiftCardCreateFormCommonProps, type GiftCardCreateFormCustomer } from "./types";
 
 export interface GiftCardCreateFormData extends GiftCardCreateCommonFormData {
   note: string;
@@ -55,7 +57,7 @@ interface GiftCardCreateDialogFormProps {
 
 const defaultInitialCustomer = { email: "", name: "" };
 
-const GiftCardCreateDialogForm = ({
+export const GiftCardCreateDialogForm = ({
   onSubmit,
   opts,
   onClose,
@@ -151,9 +153,7 @@ const GiftCardCreateDialogForm = ({
           onChange={change}
           rows={3}
           width="100%"
-          label={`${intl.formatMessage(
-            messages.noteLabel,
-          )} *${intl.formatMessage(commonMessages.optionalField)}`}
+          label={`${intl.formatMessage(messages.noteLabel)}`}
         />
 
         <Label text={intl.formatMessage(messages.noteSubtitle)} />
@@ -175,5 +175,3 @@ const GiftCardCreateDialogForm = ({
     </>
   );
 };
-
-export default GiftCardCreateDialogForm;

@@ -4,11 +4,11 @@ import {
   handleUploadMultipleFiles,
   prepareAttributesInput,
 } from "@dashboard/attributes/utils/handlers";
-import { AttributeInput } from "@dashboard/components/Attributes";
+import { type AttributeInput } from "@dashboard/components/Attributes";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { DEFAULT_INITIAL_SEARCH_DATA, VALUES_PAGINATE_BY } from "@dashboard/config";
 import {
-  PageErrorWithAttributesFragment,
+  type PageErrorWithAttributesFragment,
   useFileUploadMutation,
   usePageCreateMutation,
   usePageTypeQuery,
@@ -16,8 +16,9 @@ import {
   useUpdatePrivateMetadataMutation,
 } from "@dashboard/graphql";
 import { getSearchFetchMoreProps } from "@dashboard/hooks/makeTopLevelSearch/utils";
+import { useLastCreatedEntityTypeStorage } from "@dashboard/hooks/useLastCreatedEntityTypeStorage";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { getMutationErrors } from "@dashboard/misc";
 import useCategorySearch from "@dashboard/searches/useCategorySearch";
 import useCollectionSearch from "@dashboard/searches/useCollectionSearch";
@@ -31,22 +32,41 @@ import createMetadataCreateHandler from "@dashboard/utils/handlers/metadataCreat
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { getParsedDataForJsonStringField } from "@dashboard/utils/richText/misc";
 import { useIntl } from "react-intl";
+import { useLocation } from "react-router";
 
+import { useAssignAttributeValueDialogFilterChangeHandlers } from "../../components/AssignAttributeValueDialog/useAssignAttributeValueDialogFilterChangeHandlers";
 import PageDetailsPage from "../components/PageDetailsPage";
-import { PageSubmitData } from "../components/PageDetailsPage/form";
-import { pageCreateUrl, PageCreateUrlQueryParams, pageUrl } from "../urls";
+import { type PageSubmitData } from "../components/PageDetailsPage/form";
+import { pageCreateUrl, type PageCreateUrlQueryParams, pageUrl } from "../urls";
 
 interface PageCreateProps {
   id: string;
   params: PageCreateUrlQueryParams;
 }
 
+// The list URL captured as prevLocation may still carry `?action=create-page`
+// from when the picker dialog was opened. Without this, navigating back to the
+// list would re-open the picker.
+const stripCreateActionParam = (search: string): string => {
+  const params = new URLSearchParams(search);
+
+  if (params.get("action") === "create-page") {
+    params.delete("action");
+  }
+
+  const result = params.toString();
+
+  return result ? `?${result}` : "";
+};
+
 const PageCreate = ({ params }: PageCreateProps) => {
   const navigate = useNavigator();
+  const location = useLocation<{ prevLocation?: { pathname: string; search: string } }>();
   const notify = useNotifier();
   const intl = useIntl();
   const [updateMetadata] = useUpdateMetadataMutation({});
   const [updatePrivateMetadata] = useUpdatePrivateMetadataMutation({});
+  const [, setLastCreatedModelTypeId] = useLastCreatedEntityTypeStorage("MODEL");
   const selectedPageTypeId = params["page-type-id"];
 
   const handleSelectPageTypeId = (pageTypeId: string) =>
@@ -75,7 +95,11 @@ const PageCreate = ({ params }: PageCreateProps) => {
     search: searchCategories,
     result: searchCategoriesOpts,
   } = useCategorySearch({
-    variables: DEFAULT_INITIAL_SEARCH_DATA,
+    variables: {
+      after: DEFAULT_INITIAL_SEARCH_DATA.after,
+      first: DEFAULT_INITIAL_SEARCH_DATA.first,
+      filter: undefined,
+    },
   });
   const {
     loadMore: loadMoreAttributeValues,
@@ -93,16 +117,33 @@ const PageCreate = ({ params }: PageCreateProps) => {
   const attributeValues = mapEdgesToItems(searchAttributeValuesOpts?.data?.attribute.choices) || [];
   const [uploadFile, uploadFileOpts] = useFileUploadMutation({});
   const [pageCreate, pageCreateOpts] = usePageCreateMutation({
+    disableErrorHandling: true,
     onCompleted: data => {
       if (data.pageCreate.errors.length === 0) {
         notify({
           status: "success",
           text: intl.formatMessage({
-            id: "JMbFNo",
-            defaultMessage: "Successfully created new page",
+            id: "ZwtDkP",
+            defaultMessage: "Page created",
           }),
         });
-        navigate(pageUrl(data.pageCreate.page.id));
+
+        const prevLocation = location.state?.prevLocation;
+
+        navigate(pageUrl(data.pageCreate.page.id), {
+          // Pass-through state, to preserve where view was opened from
+          // So "back" button can properly redirect to model list with type of this model.
+          // Strip `action=create-page` from the captured search so the model-type
+          // picker dialog doesn't re-open when the user navigates back to the list.
+          state: prevLocation
+            ? {
+                prevLocation: {
+                  ...prevLocation,
+                  search: stripCreateActionParam(prevLocation.search),
+                },
+              }
+            : undefined,
+        });
       }
     },
   });
@@ -137,9 +178,15 @@ const PageCreate = ({ params }: PageCreateProps) => {
       },
     });
 
+    const mutationErrors = getMutationErrors(result);
+
+    if (mutationErrors.length === 0 && formData.pageType?.id) {
+      setLastCreatedModelTypeId(formData.pageType.id);
+    }
+
     return {
       id: result.data.pageCreate.page?.id || null,
-      errors: getMutationErrors(result),
+      errors: mutationErrors,
     };
   };
   const handleSubmit = createMetadataCreateHandler(
@@ -175,6 +222,14 @@ const PageCreate = ({ params }: PageCreateProps) => {
     search: searchPages,
     result: searchPagesOpts,
   } = useReferencePageSearch(refAttr);
+
+  const onFilterChange = useAssignAttributeValueDialogFilterChangeHandlers({
+    refetchProducts: searchProductsOpts.refetch,
+    refetchPages: searchPagesOpts.refetch,
+    refetchCategories: searchCategoriesOpts.refetch,
+    refetchCollections: searchCollectionsOpts.refetch,
+  });
+
   const fetchMoreReferenceCategories = {
     hasMore: searchCategoriesOpts.data?.search?.pageInfo?.hasNextPage,
     loading: searchCategoriesOpts.loading,
@@ -234,6 +289,7 @@ const PageCreate = ({ params }: PageCreateProps) => {
         selectedPageType={selectedPageType?.pageType}
         onSelectPageType={handleSelectPageTypeId}
         onAttributeSelectBlur={searchAttributeReset}
+        onFilterChange={onFilterChange}
       />
     </>
   );

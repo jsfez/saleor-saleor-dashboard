@@ -1,5 +1,5 @@
-import { PageErrorCode, PageErrorFragment } from "@dashboard/graphql";
-import { defineMessages, IntlShape } from "react-intl";
+import { PageErrorCode, type PageErrorFragment } from "@dashboard/graphql";
+import { defineMessages, type IntlShape } from "react-intl";
 
 import { getCommonFormFieldErrorMessage } from "./common";
 
@@ -19,6 +19,11 @@ const messages = defineMessages({
     defaultMessage: "This name is already taken. Please provide another.",
     description: "error message",
   },
+  slugAlreadyTaken: {
+    id: "e/f4WI",
+    defaultMessage: "Model with this slug already exists. Please provide another.",
+    description: "error message when model slug is not unique",
+  },
   notFound: {
     id: "PCoO4D",
     defaultMessage: "Page not found.",
@@ -33,6 +38,10 @@ function getPageErrorMessage(
   if (err) {
     switch (err.code) {
       case PageErrorCode.UNIQUE:
+        if (err.field === "slug") {
+          return intl.formatMessage(messages.slugAlreadyTaken);
+        }
+
         return intl.formatMessage(messages.nameAlreadyTaken);
       case PageErrorCode.ATTRIBUTE_ALREADY_ASSIGNED:
         return intl.formatMessage(messages.attributeAlreadyAssigned);

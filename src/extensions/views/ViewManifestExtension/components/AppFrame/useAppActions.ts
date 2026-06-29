@@ -1,4 +1,5 @@
-import { Actions, DispatchResponseEvent } from "@saleor/app-sdk/app-bridge";
+import { type Actions, type DispatchResponseEvent } from "@saleor/app-sdk/app-bridge";
+import { captureMessage } from "@sentry/react";
 import { useEffect, useState } from "react";
 
 import { AppActionsHandler } from "./appActionsHandler";
@@ -28,11 +29,15 @@ export const useAppActions = (
     versions,
   );
   const { handle: handlePermissionRequest } = AppActionsHandler.useHandlePermissionRequest(appId);
+  const { handle: handleAppFormUpdate } = AppActionsHandler.useHandleAppFormUpdate();
+  const { handle: handlePopupClose } = AppActionsHandler.useHandlePopupCloseAction();
+  const { handle: handleWidgetResize } = AppActionsHandler.useHandleWidgetResizeAction(frameEl);
+  const { handle: handleRefreshEntity } = AppActionsHandler.useHandleRefreshEntityAction();
   /**
    * Store if app has performed a handshake with Dashboard, to avoid sending events before that
    */
   const [handshakeDone, setHandshakeDone] = useState(false);
-  const handleAction = (action: Actions | undefined): DispatchResponseEvent => {
+  const handleAction = (action: Actions | undefined): DispatchResponseEvent | void => {
     switch (action?.type) {
       case "notification": {
         return handleNotification(action);
@@ -56,17 +61,56 @@ export const useAppActions = (
       case "requestPermissions": {
         return handlePermissionRequest(action);
       }
+      case "formPayloadUpdate": {
+        return handleAppFormUpdate(action);
+      }
+      case "popupClose": {
+        return handlePopupClose(action);
+      }
+      case "widgetResize": {
+        return handleWidgetResize(action);
+      }
+      case "refreshEntity": {
+        return handleRefreshEntity(action);
+      }
       default: {
-        throw new Error("Unknown action type");
+        const actionType = (action as unknown as { type?: string })?.type;
+
+        captureMessage("Unknown action type requested by the App", scope => {
+          scope.setLevel("warning");
+
+          scope.setContext("action", {
+            actionType,
+            appId,
+          });
+
+          return scope;
+        });
+
+        console.warn(
+          `${actionType} action is invalid. Check docs: https://docs.saleor.io/developer/extending/apps/developing-apps/app-sdk/app-bridge#actions`,
+        );
+        console.warn(`Dashboard received action from app:`, { action, appId });
       }
     }
   };
 
   useEffect(() => {
     const handler = (event: MessageEvent<Actions>) => {
-      if (event.origin === appOrigin) {
-        const response = handleAction(event.data);
+      if (event.origin !== appOrigin) {
+        return;
+      }
 
+      // Ignore messages that don't look like app-bridge actions
+      // (e.g., from browser extensions like React DevTools).
+      // Valid app-bridge actions always have `type` and `payload.actionId`.
+      if (!event.data?.type || !event.data?.payload?.actionId) {
+        return;
+      }
+
+      const response = handleAction(event.data);
+
+      if (response) {
         postToExtension(response);
       }
     };

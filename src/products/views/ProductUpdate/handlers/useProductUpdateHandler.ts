@@ -8,14 +8,13 @@ import {
   handleUploadMultipleFiles,
 } from "@dashboard/attributes/utils/handlers";
 import {
-  AttributeErrorFragment,
+  type AttributeErrorFragment,
   ErrorPolicyEnum,
-  MetadataErrorFragment,
-  ProductChannelListingErrorFragment,
-  ProductErrorFragment,
-  ProductErrorWithAttributesFragment,
-  ProductFragment,
-  UploadErrorFragment,
+  type ProductChannelListingErrorFragment,
+  type ProductErrorFragment,
+  type ProductErrorWithAttributesFragment,
+  type ProductFragment,
+  type UploadErrorFragment,
   useAttributeValueDeleteMutation,
   useFileUploadMutation,
   useProductChannelListingUpdateMutation,
@@ -23,22 +22,18 @@ import {
   useProductVariantBulkCreateMutation,
   useProductVariantBulkDeleteMutation,
   useProductVariantBulkUpdateMutation,
-  useUpdateMetadataMutation,
-  useUpdatePrivateMetadataMutation,
 } from "@dashboard/graphql";
-import useNotifier from "@dashboard/hooks/useNotifier";
-import { commonMessages } from "@dashboard/intl";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { getMutationErrors } from "@dashboard/misc";
-import { ProductUpdateSubmitData } from "@dashboard/products/components/ProductUpdatePage/types";
+import { type ProductUpdateSubmitData } from "@dashboard/products/components/ProductUpdatePage/types";
 import { getProductErrorMessage } from "@dashboard/utils/errors";
-import createMetadataUpdateHandler from "@dashboard/utils/handlers/metadataUpdateHandler";
 import { useState } from "react";
 import { useIntl } from "react-intl";
 
 import {
   getCreateVariantMutationError,
   getVariantUpdateMutationErrors,
-  ProductVariantListError,
+  type ProductVariantListError,
 } from "./errors";
 import {
   getBulkVariantUpdateInputs,
@@ -58,7 +53,7 @@ export type UseProductUpdateHandlerError =
 
 type UseProductUpdateHandler = (
   data: ProductUpdateSubmitData,
-) => Promise<Array<UseProductUpdateHandlerError | MetadataErrorFragment>>;
+) => Promise<Array<UseProductUpdateHandlerError>>;
 
 interface UseProductUpdateHandlerOpts {
   called: boolean;
@@ -69,15 +64,13 @@ interface UseProductUpdateHandlerOpts {
 }
 
 export function useProductUpdateHandler(
-  product: ProductFragment,
+  product: ProductFragment | undefined,
 ): [UseProductUpdateHandler, UseProductUpdateHandlerOpts] {
   const intl = useIntl();
   const notify = useNotifier();
   const [variantListErrors, setVariantListErrors] = useState<ProductVariantListError[]>([]);
   const [called, setCalled] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [updateMetadata] = useUpdateMetadataMutation({});
-  const [updatePrivateMetadata] = useUpdatePrivateMetadataMutation({});
   const [updateVariants] = useProductVariantBulkUpdateMutation();
   const [createVariants] = useProductVariantBulkCreateMutation();
   const [deleteVariants] = useProductVariantBulkDeleteMutation();
@@ -99,6 +92,10 @@ export function useProductUpdateHandler(
   const sendMutations = async (
     data: ProductUpdateSubmitData,
   ): Promise<UseProductUpdateHandlerError[]> => {
+    if (!product) {
+      return [];
+    }
+
     let errors: UseProductUpdateHandlerError[] = [];
     const variantErrors: ProductVariantListError[] = [];
     const uploadFilesResult = await handleUploadMultipleFiles(
@@ -191,22 +188,24 @@ export function useProductUpdateHandler(
     return errors;
   };
   const submit = async (data: ProductUpdateSubmitData) => {
+    if (!product) {
+      return [];
+    }
+
     setCalled(true);
     setLoading(true);
 
-    const errors = await createMetadataUpdateHandler(
-      product,
-      sendMutations,
-      variables => updateMetadata({ variables }),
-      variables => updatePrivateMetadata({ variables }),
-    )(data);
+    const errors = await sendMutations(data);
 
     setLoading(false);
 
     if (errors.length === 0) {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({
+          id: "Ad9EZ1",
+          defaultMessage: "Product updated",
+        }),
       });
     }
 

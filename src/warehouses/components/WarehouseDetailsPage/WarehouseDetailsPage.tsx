@@ -3,25 +3,28 @@ import { createCountryHandler } from "@dashboard/components/AddressEdit/createCo
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import CardSpacer from "@dashboard/components/CardSpacer";
 import CompanyAddressInput from "@dashboard/components/CompanyAddressInput";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import Form from "@dashboard/components/Form";
+import { iconSize, iconStrokeWidth } from "@dashboard/components/icons";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Savebar } from "@dashboard/components/Savebar";
-import { AddressTypeInput } from "@dashboard/customers/types";
+import { type AddressTypeInput } from "@dashboard/customers/types";
 import {
-  CountryWithCodeFragment,
+  type CountryWithCodeFragment,
   WarehouseClickAndCollectOptionEnum,
-  WarehouseDetailsFragment,
-  WarehouseErrorFragment,
+  type WarehouseDetailsFragment,
+  type WarehouseErrorFragment,
 } from "@dashboard/graphql";
 import useAddressValidation from "@dashboard/hooks/useAddressValidation";
 import { useBackLinkWithState } from "@dashboard/hooks/useBackLinkWithState";
-import { SubmitPromise } from "@dashboard/hooks/useForm";
+import { type SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import useStateFromProps from "@dashboard/hooks/useStateFromProps";
 import createSingleAutocompleteSelectHandler from "@dashboard/utils/handlers/singleAutocompleteSelectChangeHandler";
 import { mapCountriesToChoices, mapEdgesToItems } from "@dashboard/utils/maps";
 import { warehouseListPath } from "@dashboard/warehouses/urls";
+import { Button } from "@saleor/macaw-ui-next";
+import { Code } from "lucide-react";
 import { useIntl } from "react-intl";
 
 import WarehouseInfo from "../WarehouseInfo";
@@ -29,6 +32,7 @@ import WarehouseSettings from "../WarehouseSettings";
 
 export interface WarehouseDetailsPageFormData extends AddressTypeInput {
   name: string;
+  email: string;
   isPrivate: boolean;
   clickAndCollectOption: WarehouseClickAndCollectOptionEnum;
 }
@@ -39,6 +43,7 @@ interface WarehouseDetailsPageProps {
   saveButtonBarState: ConfirmButtonTransitionState;
   warehouse: WarehouseDetailsFragment | undefined;
   onDelete: () => void;
+  onShowMetadata: () => void;
   onSubmit: (data: WarehouseDetailsPageFormData) => SubmitPromise;
 }
 
@@ -49,6 +54,7 @@ const WarehouseDetailsPage = ({
   saveButtonBarState,
   warehouse,
   onDelete,
+  onShowMetadata,
   onSubmit,
 }: WarehouseDetailsPageProps) => {
   const intl = useIntl();
@@ -66,6 +72,7 @@ const WarehouseDetailsPage = ({
       warehouse?.clickAndCollectOption || WarehouseClickAndCollectOptionEnum.DISABLED,
     countryArea: warehouse?.address.countryArea ?? "",
     name: warehouse?.name ?? "",
+    email: warehouse?.email ?? "",
     phone: warehouse?.address.phone ?? "",
     postalCode: warehouse?.address.postalCode ?? "",
     streetAddress1: warehouse?.address.streetAddress1 ?? "",
@@ -89,7 +96,15 @@ const WarehouseDetailsPage = ({
 
         return (
           <DetailPageLayout>
-            <TopNav href={warehouseListBackLink} title={warehouse?.name} />
+            <TopNav href={warehouseListBackLink} title={warehouse?.name}>
+              <Button
+                variant="secondary"
+                icon={<Code size={iconSize.medium} strokeWidth={iconStrokeWidth} />}
+                onClick={onShowMetadata}
+                data-test-id="show-warehouse-metadata"
+                title="Edit warehouse metadata"
+              />
+            </TopNav>
             <DetailPageLayout.Content>
               <WarehouseInfo data={data} disabled={disabled} errors={errors} onChange={change} />
               <CardSpacer />

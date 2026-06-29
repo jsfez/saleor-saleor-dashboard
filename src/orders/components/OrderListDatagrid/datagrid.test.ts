@@ -1,16 +1,17 @@
-import { PillCell } from "@dashboard/components/Datagrid/customCells/PillCell";
-import { GetCellContentOpts } from "@dashboard/components/Datagrid/Datagrid";
-import { AvailableColumn } from "@dashboard/components/Datagrid/types";
+import { type PillCell } from "@dashboard/components/Datagrid/customCells/PillCell";
+import { type GetCellContentOpts } from "@dashboard/components/Datagrid/Datagrid";
+import { type AvailableColumn } from "@dashboard/components/Datagrid/types";
 import {
-  OrderChargeStatusEnum,
-  OrderListQuery,
-  OrderStatus,
-  PaymentChargeStatusEnum,
+  type OrderChargeStatusEnum,
+  type OrderListQuery,
+  type OrderStatus,
+  type PaymentChargeStatusEnum,
 } from "@dashboard/graphql";
-import { RelayToFlat } from "@dashboard/types";
-import { TextCell } from "@glideapps/glide-data-grid";
+import { getStatusColor } from "@dashboard/misc";
+import { type RelayToFlat } from "@dashboard/types";
+import { type TextCell } from "@glideapps/glide-data-grid";
 import { testIntlInstance } from "@test/intl";
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react";
 
 import { getCustomerCellContent, getPaymentCellContent, useGetCellContent } from "./datagrid";
 
@@ -137,11 +138,7 @@ describe("useGetCellContent", () => {
       copyData: "PAID",
       cursor: "pointer",
       data: {
-        color: {
-          base: "#ffdeea",
-          border: "#eec4cf",
-          text: "#6a4751",
-        },
+        color: getStatusColor({ status: "error", currentTheme: "defaultLight" }),
         kind: "auto-tags-cell",
         value: "PAID",
       },
@@ -153,11 +150,7 @@ describe("useGetCellContent", () => {
       copyData: "Fulfilled",
       cursor: "pointer",
       data: {
-        color: {
-          base: "#d7f5d7",
-          border: "#bddabd",
-          text: "#415a41",
-        },
+        color: getStatusColor({ status: "success", currentTheme: "defaultLight" }),
         kind: "auto-tags-cell",
         value: "Fulfilled",
       },

@@ -1,19 +1,25 @@
 import { DashboardCard } from "@dashboard/components/Card";
-import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import {
+  ConfirmButton,
+  type ConfirmButtonTransitionState,
+} from "@dashboard/components/ConfirmButton";
+import { iconSize, iconStrokeWidth } from "@dashboard/components/icons";
 import PriceField from "@dashboard/components/PriceField";
 import {
-  OrderDetailsFragment,
-  OrderGrantRefundCreateErrorFragment,
-  TransactionRequestRefundForGrantedRefundErrorFragment,
+  type OrderDetailsFragment,
+  type OrderGrantRefundCreateErrorFragment,
+  type TransactionRequestRefundForGrantedRefundErrorFragment,
 } from "@dashboard/graphql";
-import { FormChange } from "@dashboard/hooks/useForm";
-import { PaymentSubmitCardValuesProps } from "@dashboard/orders/components/OrderReturnPage/components/PaymentSubmitCard/PaymentSubmitCardValues";
-import { IMoney } from "@dashboard/utils/intl";
-import { Box, InfoIcon, Text } from "@saleor/macaw-ui-next";
+import { type FormChange } from "@dashboard/hooks/useForm";
+import { type PaymentSubmitCardValuesProps } from "@dashboard/orders/components/OrderReturnPage/components/PaymentSubmitCard/PaymentSubmitCardValues";
+import { type IMoney } from "@dashboard/utils/intl";
+import { Box, Text } from "@saleor/macaw-ui-next";
+import { Info } from "lucide-react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { canSendRefundDuringReturn, getReturnRefundValue } from "../../utils";
 import { GrantRefundCheckbox } from "./GrantRefundCheckbox";
+import { GrantRefundReasonFields } from "./GrantRefundReasonFields";
 import { submitCardMessages } from "./messages";
 import RefundShipmentCheckbox from "./RefundShipmentCheckbox";
 import { SendRefundCheckbox } from "./SendRefundCheckbox";
@@ -37,6 +43,11 @@ interface TransactionSubmitCardProps {
   isAmountDirty: boolean;
   transactionId?: string;
   onAmountChange: (value: number) => void;
+  refundReason: string;
+  refundReasonReference: string;
+  refundReasonReferenceTypeId: string;
+  refundReasonError?: boolean;
+  onClearRefundReasonError?: () => void;
 }
 
 export const TransactionSubmitCard = ({
@@ -56,6 +67,11 @@ export const TransactionSubmitCard = ({
   isAmountDirty,
   transactionId,
   onAmountChange,
+  refundReason,
+  refundReasonReference,
+  refundReasonReferenceTypeId,
+  refundReasonError,
+  onClearRefundReasonError,
 }: TransactionSubmitCardProps) => {
   const intl = useIntl();
   const canSendRefund = canSendRefundDuringReturn({
@@ -75,7 +91,7 @@ export const TransactionSubmitCard = ({
         </DashboardCard.Header>
         <DashboardCard.Content display="flex" flexDirection="column" gap={2} alignItems="start">
           <Box display="flex" gap={1} alignItems="center" marginBottom={4}>
-            <InfoIcon color="default2" size="small" />
+            <Info size={iconSize.small} strokeWidth={iconStrokeWidth} />
             <Text color="default2">
               <FormattedMessage {...submitCardMessages.descrption} />
             </Text>
@@ -119,6 +135,17 @@ export const TransactionSubmitCard = ({
             disabled={!autoGrantRefund}
             width="100%"
           />
+          {autoGrantRefund && (
+            <GrantRefundReasonFields
+              refundReason={refundReason}
+              refundReasonReference={refundReasonReference}
+              refundReasonReferenceTypeId={refundReasonReferenceTypeId}
+              disabled={disabled}
+              error={refundReasonError}
+              onChange={onChange}
+              onClearError={onClearRefundReasonError}
+            />
+          )}
           <ConfirmButton
             data-test-id="return-submit-button"
             transitionState={submitStatus}

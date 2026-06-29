@@ -1,15 +1,15 @@
 import useDebounce from "@dashboard/hooks/useDebounce";
 
-import { FilterAPIProvider } from "./API/FilterAPIProvider";
+import { type FilterAPIProvider } from "./API/FilterAPIProvider";
 import { useConditionalFilterContext } from "./context";
 import { FilterElement } from "./FilterElement";
 import { Condition } from "./FilterElement/Condition";
 import { ConditionOptions } from "./FilterElement/ConditionOptions";
 import { ConditionSelected } from "./FilterElement/ConditionSelected";
-import { ConditionValue, ItemOption } from "./FilterElement/ConditionValue";
+import { type ConditionValue, type ItemOption } from "./FilterElement/ConditionValue";
 import { Constraint } from "./FilterElement/Constraint";
 import { hasEmptyRows } from "./FilterElement/FilterElement";
-import { LeftOperand } from "./LeftOperandsProvider";
+import { type LeftOperand } from "./LeftOperandsProvider";
 
 export const useFilterContainer = (apiProvider: FilterAPIProvider) => {
   const {
@@ -22,9 +22,24 @@ export const useFilterContainer = (apiProvider: FilterAPIProvider) => {
     const current = getAt(position);
     const dependency = Constraint.getDependency(leftOperator.value);
     const currentDependency =
-      FilterElement.isCompatible(current) && Constraint.getDependency(current.value.value);
+      FilterElement.isFilterElement(current) && Constraint.getDependency(current.value.value);
+
+    const selfConstraint = Constraint.fromSlug(leftOperator.value);
+    const hasDependentFilters =
+      !!selfConstraint &&
+      value.some(row => {
+        if (!FilterElement.isFilterElement(row)) return false;
+
+        if (FilterElement.isFilterElement(current) && row.equals(current)) return false;
+
+        return selfConstraint.dependsOn.includes(row.value.value);
+      });
 
     updateAt(position, el => el.updateLeftOperator(leftOperator));
+
+    if (selfConstraint && !hasDependentFilters) {
+      updateAt(position, el => el.clearConstraint());
+    }
 
     if (currentDependency && !dependency) {
       updateBySlug(currentDependency, el => {

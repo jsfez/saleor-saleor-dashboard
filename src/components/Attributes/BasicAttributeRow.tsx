@@ -1,9 +1,12 @@
-import { Box, InfoIcon, sprinkles, Text, Tooltip } from "@saleor/macaw-ui-next";
-import * as React from "react";
+import { AttributeInputTypeTooltip } from "@dashboard/components/AttributeInputTypeIcon/AttributeInputTypeTooltip";
+import { type AttributeInputTypeEnum, type MeasurementUnitsEnum } from "@dashboard/graphql";
+import { Box, Text } from "@saleor/macaw-ui-next";
+import type * as React from "react";
 
 interface BasicAttributeRowProps {
   label: string | React.ReactNode;
-  description?: string | React.ReactNode;
+  inputType?: AttributeInputTypeEnum;
+  unit?: MeasurementUnitsEnum | null;
   id?: string;
   clickableLabel?: boolean;
   children?: React.ReactNode;
@@ -14,7 +17,8 @@ const capitalize = (str: BasicAttributeRowProps["label"]) =>
 
 export const BasicAttributeRow = ({
   label,
-  description,
+  inputType,
+  unit = null,
   children,
   id,
   clickableLabel = false,
@@ -35,27 +39,12 @@ export const BasicAttributeRow = ({
       htmlFor={id}
       display="flex"
       gap={1}
+      alignItems="center"
       cursor={clickableLabel ? "pointer" : "auto"}
+      __alignSelf={"baseline"}
     >
       <Text>{capitalize(label)}</Text>
-      {description && (
-        <Tooltip>
-          <Tooltip.Trigger>
-            <Box>
-              <InfoIcon
-                size="small"
-                className={sprinkles({
-                  display: "block",
-                })}
-              />
-            </Box>
-          </Tooltip.Trigger>
-          <Tooltip.Content side="top">
-            <Tooltip.Arrow />
-            {description}
-          </Tooltip.Content>
-        </Tooltip>
-      )}
+      {inputType && <AttributeInputTypeTooltip inputType={inputType} size="xsmall" unit={unit} />}
     </Box>
     <Box data-test-id="attribute-value">{children}</Box>
   </Box>

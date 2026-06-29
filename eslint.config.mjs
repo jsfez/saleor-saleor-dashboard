@@ -1,5 +1,5 @@
 // @ts-check
-
+import storybook from "eslint-plugin-storybook";
 import eslint from "@eslint/js";
 import prettierConfig from "eslint-config-prettier";
 import formatjs from "eslint-plugin-formatjs";
@@ -16,6 +16,7 @@ import unusedImports from "eslint-plugin-unused-imports";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
 import eslintGraphql from "@graphql-eslint/eslint-plugin";
 import reactYouMightNotNeedAnEffect from "eslint-plugin-react-you-might-not-need-an-effect";
+import depend from "eslint-plugin-depend";
 
 export default tseslint.config(
   globalIgnores([
@@ -31,24 +32,36 @@ export default tseslint.config(
     ".github/**/*.js",
     ".featureFlags/",
   ]),
-
   eslint.configs.recommended,
-  tseslint.configs.recommended, // Note: we can migrate to rules using TypeScript types
+  tseslint.configs.recommended,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: {
+          allowDefaultProject: [".storybook/*.tsx", ".storybook/*.ts"],
+        },
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
   react.configs.flat.recommended,
   react.configs.flat["jsx-runtime"],
-  reactHooks.configs["recommended-latest"],
+  reactHooks.configs.flat["recommended-latest"],
   reactRefresh.configs.vite,
   reactYouMightNotNeedAnEffect.configs.recommended,
-
+  {
+    plugins: { depend },
+    rules: {
+      "depend/ban-dependencies": "warn",
+    },
+  },
   {
     settings: {
       react: {
         version: "detect",
       },
     },
-  },
-
-  // Disable global rules:
+  }, // Disable global rules:
   {
     rules: {
       "sort-imports": "off", // imports are handled by simple-import-sort/sort
@@ -58,12 +71,28 @@ export default tseslint.config(
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-floating-promises": "off",
       "@typescript-eslint/no-misused-promises": "off",
-      "@typescript-eslint/consistent-type-imports": "off",
       "@typescript-eslint/no-confusing-void-expression": "off",
       "react/prop-types": "off",
       "react-hooks/exhaustive-deps": "warn",
       // Allow constant exports is thanks to Vite (see recommended config)
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+
+      // Override React Compiler rules to warnings (for gradual adoption)
+      // The recommended config sets these as errors, we downgrade to warn
+      "react-hooks/purity": "warn", // Side effects during render
+      "react-hooks/refs": "warn", // Reading/writing refs during render
+      "react-hooks/set-state-in-render": "warn", // setState during render
+      "react-hooks/set-state-in-effect": "warn", // Synchronous setState in effects
+      "react-hooks/immutability": "warn", // Mutation of props/state
+      "react-hooks/static-components": "warn", // Dynamic component creation
+      "react-hooks/use-memo": "warn", // useMemo violations
+      "react-hooks/void-use-memo": "warn", // useMemo returning void
+      "react-hooks/component-hook-factories": "warn", // Component/hook factory violations
+      "react-hooks/preserve-manual-memoization": "warn", // Manual memoization issues
+      "react-hooks/globals": "warn", // Global variable usage
+      "react-hooks/error-boundaries": "warn", // Error boundary violations
+      "react-hooks/config": "warn", // Config violations
+      "react-hooks/gating": "warn", // Conditional rendering violations
 
       // Migration in progress:
       // Tracked in https://github.com/saleor/saleor-dashboard/issues/3813
@@ -87,9 +116,7 @@ export default tseslint.config(
       "no-case-declarations": "off",
       "prefer-const": "off",
     },
-  },
-
-  // Properly resolve Node.js globals in .cjs files
+  }, // Properly resolve Node.js globals in .cjs files
   {
     files: ["**/*.cjs"],
     languageOptions: {
@@ -97,9 +124,7 @@ export default tseslint.config(
         ...globals.node, // Use all Node.js globals
       },
     },
-  },
-
-  // Configure custom plugins and rules for React files
+  }, // Configure custom plugins and rules for React files
   {
     files: ["src/**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
@@ -185,15 +210,14 @@ export default tseslint.config(
         },
       ],
       "formatjs/enforce-id": ["error", { idInterpolationPattern: "[sha512:contenthash:base64:6]" }],
+      "local-rules/named-effects": "warn",
       "local-rules/named-styles": "error",
       "local-rules/no-deprecated-icons": "warn",
       "no-console": ["error", { allow: ["warn", "error"] }],
     },
-  },
-
-  // Disable rules for specific dfiles
+  }, // Disable rules for specific files
   {
-    files: ["vite.config.js"],
+    files: ["vite.config.js", ".storybook/vite.storybook.config.js"],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -203,14 +227,12 @@ export default tseslint.config(
       "no-console": "off",
     },
   },
-
   {
     files: ["playwright/**/*.ts"],
     rules: {
       "no-console": "off",
     },
   },
-
   {
     files: ["src/**/*.stories.@(ts|tsx)"],
     rules: {
@@ -223,9 +245,20 @@ export default tseslint.config(
       "react-refresh/only-export-components": "off",
     },
   },
-
+  {
+    files: ["scripts/**.cjs"],
+    rules: {
+      // cjs doesn't work with ES Import
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
   {
     rules: {
+      /**
+       * Reasoning: This allows to understand what function does without reading it's implementation.
+       * It also protects it's input and output - chanigng function internal will show error in it's body, not in other files that consuming
+       */
+      "@typescript-eslint/explicit-function-return-type": "warn",
       "no-restricted-imports": [
         "warn",
         {
@@ -273,9 +306,24 @@ export default tseslint.config(
         },
       ],
     },
-  },
-
-  // Graphql plugin
+  }, // Type-checked rules (only for TypeScript files, not .graphql virtual files)
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    rules: {
+      "@typescript-eslint/consistent-type-imports": [
+        "warn",
+        {
+          prefer: "type-imports",
+          fixStyle: "inline-type-imports",
+          disallowTypeAnnotations: true,
+        },
+      ],
+    },
+  }, // Disable type-checked linting for non-TypeScript files (no type information available)
+  {
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+    ...tseslint.configs.disableTypeChecked,
+  }, // Graphql plugin
   {
     /**
      * Plugin first converts all ts(x) files to
@@ -293,14 +341,22 @@ export default tseslint.config(
       "@graphql-eslint": eslintGraphql,
     },
     rules: {
-      // TODO Enable recommended ruleset incrementally
-      // ...eslintGraphql.configs["flat/operations-recommended"].rules,
-      "@graphql-eslint/no-anonymous-operations": "error",
-      "@graphql-eslint/no-duplicate-fields": "error",
+      ...eslintGraphql.configs["flat/operations-recommended"].rules,
       "@graphql-eslint/no-deprecated": "warn",
+      "@graphql-eslint/naming-convention": "off",
+      // TODO: These rules should be enabled later on
+      "@graphql-eslint/selection-set-depth": ["warn", { maxDepth: 7 }], // some queries use hacks to do recursive fragments
+      "@graphql-eslint/require-selections": "warn", // this is useful for Apollo caching
     },
   },
-
-  // Disable any rules that conflict with Prettier
+  {
+    // Legacy SDK uses Apollo Client local-only fields (@client directive) not in the schema
+    files: ["src/legacy-sdk/**/*.graphql"],
+    rules: {
+      "@graphql-eslint/fields-on-correct-type": "off",
+      "@graphql-eslint/known-directives": "off",
+    },
+  }, // Disable any rules that conflict with Prettier
   prettierConfig,
+  storybook.configs["flat/recommended"],
 );

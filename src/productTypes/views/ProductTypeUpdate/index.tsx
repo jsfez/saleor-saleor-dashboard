@@ -8,11 +8,11 @@ import TypeDeleteWarningDialog from "@dashboard/components/TypeDeleteWarningDial
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { DEFAULT_INITIAL_SEARCH_DATA } from "@dashboard/config";
 import {
-  AssignProductAttributeMutation,
+  type AssignProductAttributeMutation,
   ProductAttributeType,
-  ProductTypeAttributeReorderMutation,
-  ProductTypeDeleteMutation,
-  UnassignProductAttributeMutation,
+  type ProductTypeAttributeReorderMutation,
+  type ProductTypeDeleteMutation,
+  type UnassignProductAttributeMutation,
   useProductAttributeAssignmentUpdateMutation,
   useProductTypeDetailsQuery,
   useProductTypeUpdateMutation,
@@ -22,21 +22,22 @@ import {
 import useBulkActions from "@dashboard/hooks/useBulkActions";
 import { useListSelectedItems } from "@dashboard/hooks/useListSelectedItems";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
-import { commonMessages } from "@dashboard/intl";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { getStringOrPlaceholder, maybe } from "@dashboard/misc";
 import useProductTypeDelete from "@dashboard/productTypes/hooks/useProductTypeDelete";
 import useProductTypeOperations from "@dashboard/productTypes/hooks/useProductTypeOperations";
 import useAvailableProductAttributeSearch from "@dashboard/searches/useAvailableProductAttributeSearch";
 import { useTaxClassFetchMore } from "@dashboard/taxes/utils/useTaxClassFetchMore";
-import { ReorderEvent } from "@dashboard/types";
+import { type ReorderEvent } from "@dashboard/types";
 import createMetadataUpdateHandler from "@dashboard/utils/handlers/metadataUpdateHandler";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import ProductTypeDetailsPage, { ProductTypeForm } from "../../components/ProductTypeDetailsPage";
-import { productTypeListUrl, productTypeUrl, ProductTypeUrlQueryParams } from "../../urls";
+import ProductTypeDetailsPage, {
+  type ProductTypeForm,
+} from "../../components/ProductTypeDetailsPage";
+import { productTypeListUrl, productTypeUrl, type ProductTypeUrlQueryParams } from "../../urls";
 
 interface ProductTypeUpdateProps {
   id: string;
@@ -69,7 +70,7 @@ const ProductTypeUpdate = ({ id, params }: ProductTypeUpdateProps) => {
       ) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "6j4TUi", defaultMessage: "Product type updated" }),
         });
       } else if (
         updateData.productTypeUpdate.errors !== null &&
@@ -148,7 +149,7 @@ const ProductTypeUpdate = ({ id, params }: ProductTypeUpdateProps) => {
     if (data.productAttributeAssign.errors.length === 0) {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "6j4TUi", defaultMessage: "Product type updated" }),
       });
       closeModal();
     } else if (
@@ -165,7 +166,7 @@ const ProductTypeUpdate = ({ id, params }: ProductTypeUpdateProps) => {
     if (data.productAttributeUnassign.errors.length === 0) {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "6j4TUi", defaultMessage: "Product type updated" }),
       });
       closeModal();
       productAttributeListActions.reset();
@@ -188,7 +189,7 @@ const ProductTypeUpdate = ({ id, params }: ProductTypeUpdateProps) => {
     if (data.productTypeReorderAttributes.errors.length === 0) {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "6j4TUi", defaultMessage: "Product type updated" }),
       });
     }
   };

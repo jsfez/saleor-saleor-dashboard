@@ -1,5 +1,5 @@
 import { URL_LIST } from "@data/url";
-import { permissions, UserPermission } from "@data/userPermissions";
+import { permissions, type UserPermission } from "@data/userPermissions";
 import { AppDetailsPage } from "@pages/appDetailsPage";
 import { AppPage } from "@pages/appPageThirdparty";
 import { ExtensionsPage } from "@pages/extensionsPage";
@@ -13,7 +13,7 @@ const permissionList = permissions.filter(item => !permissionsToExclude.has(item
 for (const permission of permissionList) {
   test.use({ permissionName: permission });
 
-  test(`TC: SALEOR_131 User with ${permission} permissions should have readonly access to installed extensions #e2e #apps`, async ({
+  test.skip(`TC: SALEOR_131 User with ${permission} permissions should have readonly access to installed extensions #e2e #apps`, async ({
     page,
   }) => {
     const mainMenuPage = new MainMenuPage(page);

@@ -2,26 +2,19 @@ import { stringifyQs } from "@dashboard/utils/urls";
 import urlJoin from "url-join";
 
 import {
-  ActiveTab,
-  BulkAction,
-  Dialog,
-  Filters,
-  FiltersWithMultipleValues,
-  Pagination,
-  SingleAction,
-  Sort,
-  TabActionDialog,
+  type BulkAction,
+  type Dialog,
+  type Filters,
+  type FiltersWithMultipleValues,
+  type Pagination,
+  type SingleAction,
+  type Sort,
 } from "../types";
 
 export const modelingSection = "/models/";
 
 export const pageListPath = modelingSection;
-export type PageListUrlDialog =
-  | "publish"
-  | "unpublish"
-  | "remove"
-  | "create-page"
-  | TabActionDialog;
+export type PageListUrlDialog = "publish" | "unpublish" | "remove" | "create-page";
 export enum PageListUrlSortField {
   title = "title",
   slug = "slug",
@@ -44,13 +37,23 @@ export type PageListUrlQueryParams = BulkAction &
   PageListUrlFilters &
   Dialog<PageListUrlDialog> &
   PageListUrlSort &
-  Pagination &
-  ActiveTab;
+  Pagination;
 export const pageListUrl = (params?: PageListUrlQueryParams) =>
   pageListPath + "?" + stringifyQs(params);
 
+/**
+ * Builds the model list URL pre-filtered by a single model type.
+ */
+export const pageListUrlWithPageType = (pageType?: { id: string }) => {
+  if (!pageType?.id) {
+    return pageListPath;
+  }
+
+  return pageListUrl({ pageTypes: [pageType.id] });
+};
+
 export const pagePath = (id: string) => urlJoin(modelingSection, id);
-type PageUrlDialog = "remove" | "assign-attribute-value";
+type PageUrlDialog = "remove" | "assign-attribute-value" | "view-metadata";
 interface PageCreateUrlPageType {
   "page-type-id"?: string;
 }

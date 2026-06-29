@@ -5,7 +5,7 @@ import { ThemeProvider as LegacyThemeProvider } from "@saleor/macaw-ui";
 import { ThemeProvider } from "@saleor/macaw-ui-next";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 
 import { Sidebar } from "./Sidebar";
@@ -65,7 +65,7 @@ const Wrapper = ({ children }: { children: ReactNode }) => {
 };
 
 describe("Sidebar", () => {
-  it('should render "Saleor Cloud" link when is cloud instance', () => {
+  it("should render cloud environment link when is cloud instance", () => {
     // Arrange
     (useCloud as jest.Mock).mockImplementation(() => ({
       isAuthenticatedViaCloud: true,
@@ -73,9 +73,9 @@ describe("Sidebar", () => {
     // Act
     render(<Sidebar />, { wrapper: Wrapper });
     // Assert
-    expect(screen.getByText("Saleor Cloud")).toBeInTheDocument();
+    expect(screen.getByTestId("cloud-environment-link")).toBeInTheDocument();
   });
-  it('should not render "Saleor Cloud" link when is not cloud instance', () => {
+  it("should not render cloud environment link when is not cloud instance", () => {
     // Arrange
     (useCloud as jest.Mock).mockImplementation(() => ({
       isAuthenticatedViaCloud: false,
@@ -83,7 +83,7 @@ describe("Sidebar", () => {
     // Act
     render(<Sidebar />, { wrapper: Wrapper });
     // Assert
-    expect(screen.queryByText("Saleor Cloud")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("cloud-environment-link")).not.toBeInTheDocument();
   });
   it("should render keyboard shortcuts", () => {
     // Arrange & Act

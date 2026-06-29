@@ -1,12 +1,12 @@
 // @ts-strict-ignore
 import InlineAlert from "@dashboard/components/Alert/InlineAlert";
-import errorTracker from "@dashboard/services/errorTracking";
+import { errorTracker } from "@dashboard/services/errorTracking";
 import { alpha, makeStyles } from "@material-ui/core/styles";
 import { Text } from "@saleor/macaw-ui-next";
 import { useIntl } from "react-intl";
 
 import { validationMessages } from "../messages";
-import { FilterElement, FilterErrorMessages, FilterErrors } from "../types";
+import { type FilterElement, type FilterErrorMessages, type FilterErrors } from "../types";
 
 const useStyles = makeStyles(
   theme => ({

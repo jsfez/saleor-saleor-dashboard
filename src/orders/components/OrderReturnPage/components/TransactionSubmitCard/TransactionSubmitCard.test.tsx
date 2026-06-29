@@ -1,8 +1,9 @@
+import { MockedProvider } from "@apollo/client/testing";
 import { ThemeProvider as LegacyThemeProvider } from "@saleor/macaw-ui";
 import { ThemeProvider } from "@saleor/macaw-ui-next";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import { singleRefundableTransaction } from "./fixtures";
 import { TransactionSubmitCard } from "./TransactionSubmitCard";
@@ -11,7 +12,9 @@ const Wrapper = ({ children }: { children: ReactNode }) => {
   return (
     // @ts-expect-error - legacy types
     <LegacyThemeProvider>
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        <MockedProvider>{children}</MockedProvider>
+      </ThemeProvider>
     </LegacyThemeProvider>
   );
 };
@@ -53,6 +56,9 @@ const transactionSubmitCardProps = {
   onAmountChange: () => undefined,
   isAmountDirty: false,
   transactionId: "VHJhbnNhY3Rpb25JdGVtOmZjNzhhZDkwLWQ3NDgtNDdlNi04YWM4LWE0YjdiNjRlMmE1MQ==",
+  refundReason: "",
+  refundReasonReference: "",
+  refundReasonReferenceTypeId: "",
 };
 
 describe("TransactionSubmitCard", () => {

@@ -1,7 +1,7 @@
 import ActionDialog from "@dashboard/components/ActionDialog";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import FormSpacer from "@dashboard/components/FormSpacer";
-import { OrderErrorFragment } from "@dashboard/graphql";
+import { type OrderErrorFragment } from "@dashboard/graphql";
 import useModalDialogErrors from "@dashboard/hooks/useModalDialogErrors";
 import getOrderErrorMessage from "@dashboard/utils/errors/order";
 import { Text } from "@saleor/macaw-ui-next";
@@ -34,8 +34,8 @@ const OrderDraftCancelDialog = ({
       onConfirm={onConfirm}
       open={open}
       title={intl.formatMessage({
-        id: "APcoSA",
-        defaultMessage: "Delete Daft Order",
+        id: "Yk0avO",
+        defaultMessage: "Delete Draft Order",
         description: "dialog header",
       })}
       variant="delete"

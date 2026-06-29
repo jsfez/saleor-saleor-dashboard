@@ -1,11 +1,13 @@
-import { DarkModeIcon, DefaultTheme, LightModeIcon, Text } from "@saleor/macaw-ui-next";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
+import { type DefaultTheme, Text } from "@saleor/macaw-ui-next";
+import { Moon, Sun } from "lucide-react";
 import { FormattedMessage } from "react-intl";
 
-export const ThemeSwitcher = ({ theme }: { theme: DefaultTheme }) => {
+export const ThemeSwitcher = ({ theme }: { theme: DefaultTheme }): JSX.Element => {
   if (theme === "defaultLight") {
     return (
       <>
-        <DarkModeIcon color="default2" />
+        <Moon size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />
         <Text>
           <FormattedMessage id="5ObBlW" defaultMessage="Dark Mode" />
         </Text>
@@ -15,7 +17,7 @@ export const ThemeSwitcher = ({ theme }: { theme: DefaultTheme }) => {
 
   return (
     <>
-      <LightModeIcon color="default2" />
+      <Sun size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />
       <Text>
         <FormattedMessage id="hVPucN" defaultMessage="Light Mode" />
       </Text>

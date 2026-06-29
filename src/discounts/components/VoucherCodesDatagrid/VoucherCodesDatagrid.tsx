@@ -1,18 +1,18 @@
 import { useColumns } from "@dashboard/components/Datagrid/ColumnPicker/useColumns";
-import Datagrid from "@dashboard/components/Datagrid/Datagrid";
+import { Datagrid } from "@dashboard/components/Datagrid/Datagrid";
 import {
   DatagridChangeStateContext,
   useDatagridChangeState,
 } from "@dashboard/components/Datagrid/hooks/useDatagridChange";
-import { TablePaginationWithContext } from "@dashboard/components/TablePagination";
-import { UseListSettings } from "@dashboard/hooks/useListSettings";
-import { Box, useTheme } from "@saleor/macaw-ui-next";
+import { DatagridPagination } from "@dashboard/components/TablePagination";
+import { type UseListSettings } from "@dashboard/hooks/useListSettings";
+import { useTheme } from "@saleor/macaw-ui-next";
 import { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import { createGetCellContent, voucherCodesStaticColumnsAdapter } from "./datagrid";
 import { messages } from "./messages";
-import { VoucherCode } from "./types";
+import { type VoucherCode } from "./types";
 
 export interface VoucherCodesDatagridProps {
   codes: VoucherCode[];
@@ -65,14 +65,12 @@ export const VoucherCodesDatagrid = ({
         menuItems={() => []}
       />
 
-      <Box paddingX={6}>
-        <TablePaginationWithContext
-          component="div"
-          settings={settings}
-          disabled={disabled}
-          onUpdateListSettings={onSettingsChange}
-        />
-      </Box>
+      <DatagridPagination
+        component="div"
+        settings={settings}
+        disabled={disabled}
+        onUpdateListSettings={onSettingsChange}
+      />
     </DatagridChangeStateContext.Provider>
   );
 };

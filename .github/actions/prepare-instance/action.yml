@@ -29,6 +29,11 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      with:
+        node-version-file: "package.json"
+        cache: "pnpm"
     - name: Saleor login
       uses: ./.github/actions/cli-login
       with:
@@ -42,7 +47,7 @@ runs:
         INSTANCE_NAME: ${{ inputs.POOL_NAME }}
       run: |
         set +o pipefail
-        INSTANCE_KEY=$(npx saleor env show "$INSTANCE_NAME" --json | jq .key)
+        INSTANCE_KEY=$(pnpx saleor env show "$INSTANCE_NAME" --json | jq .key)
         echo "INSTANCE_KEY=$INSTANCE_KEY" >> $GITHUB_OUTPUT
 
     - name: Reload snapshot
@@ -53,7 +58,7 @@ runs:
         BACKUP_ID: ${{ inputs.BACKUP_ID }}
         INSTANCE_NAME: ${{ inputs.POOL_NAME }}
       run: |
-        npx saleor backup restore "$BACKUP_ID" \
+        pnpx saleor backup restore "$BACKUP_ID" \
           --environment="$INSTANCE_NAME" \
           --skip-webhooks-update
 
@@ -65,7 +70,7 @@ runs:
         INSTANCE_NAME: ${{ inputs.POOL_NAME }}
         SALEOR_CLOUD_SERVICE: ${{ inputs.SALEOR_CLOUD_SERVICE }}
       run: |
-        npx saleor env create "$INSTANCE_NAME" \
+        pnpx saleor env create "$INSTANCE_NAME" \
          --project=project-for-pr-testing \
          --database=snapshot \
          --restore-from="$BACKUP_ID" \
@@ -82,4 +87,4 @@ runs:
         POOL_NAME: ${{ inputs.POOL_NAME }}
         BASE_URL: ${{ inputs.BASE_URL }}
       run: |
-        npx saleor env origins "$POOL_NAME" --origins="$BASE_URL"
+        pnpx saleor env origins "$POOL_NAME" --origins="$BASE_URL"

@@ -1,17 +1,22 @@
 // @ts-strict-ignore
+import { AttributeNameWithTypeIcon } from "@dashboard/components/AttributeInputTypeIcon/AttributeNameWithTypeIcon";
 import Checkbox from "@dashboard/components/Checkbox";
-import { ConfirmButton, ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import {
+  ConfirmButton,
+  type ConfirmButtonTransitionState,
+} from "@dashboard/components/ConfirmButton";
 import { InfiniteScroll } from "@dashboard/components/InfiniteScroll";
 import { DashboardModal } from "@dashboard/components/Modal";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import TableRowLink from "@dashboard/components/TableRowLink";
-import { AvailableAttributeFragment } from "@dashboard/graphql";
+import { SaleorThrobber } from "@dashboard/components/Throbber";
+import { type AvailableAttributeFragment } from "@dashboard/graphql";
 import useModalDialogErrors from "@dashboard/hooks/useModalDialogErrors";
 import useModalDialogOpen from "@dashboard/hooks/useModalDialogOpen";
 import useSearchQuery from "@dashboard/hooks/useSearchQuery";
 import { maybe, renderCollection } from "@dashboard/misc";
-import { FetchMoreProps } from "@dashboard/types";
-import { CircularProgress, TableBody, TableCell, TextField } from "@material-ui/core";
+import { type FetchMoreProps } from "@dashboard/types";
+import { TableBody, TableCell, TextField } from "@material-ui/core";
 import { makeStyles } from "@saleor/macaw-ui";
 import { Box, Text } from "@saleor/macaw-ui-next";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -94,7 +99,7 @@ const AssignAttributeDialog = ({
           fullWidth
           InputProps={{
             autoComplete: "off",
-            endAdornment: loading && <CircularProgress size={16} />,
+            endAdornment: loading && <SaleorThrobber size={16} />,
           }}
         />
 
@@ -125,7 +130,10 @@ const AssignAttributeDialog = ({
                         <Checkbox checked={isChecked} onChange={() => onToggle(attribute.id)} />
                       </TableCell>
                       <TableCell className={classes.wideCell}>
-                        {attribute.name}
+                        <AttributeNameWithTypeIcon
+                          name={attribute.name}
+                          inputType={attribute.inputType}
+                        />
                         <Text size={2} fontWeight="light" display="block">
                           {attribute.slug}
                         </Text>

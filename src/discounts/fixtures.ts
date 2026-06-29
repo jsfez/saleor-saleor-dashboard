@@ -2,16 +2,16 @@ import placeholderImage from "@assets/images/placeholder60x60.png";
 import { channelsList } from "@dashboard/channels/fixtures";
 import {
   DiscountValueTypeEnum,
-  PromotionDetailsFragment,
-  PromotionFragment,
+  type PromotionDetailsFragment,
+  type PromotionFragment,
   PromotionTypeEnum,
   RewardTypeEnum,
   RewardValueTypeEnum,
-  SaleDetailsFragment,
-  SaleFragment,
-  SaleType,
-  VoucherDetailsFragment,
-  VoucherFragment,
+  type SaleDetailsFragment,
+  type SaleFragment,
+  type SaleType,
+  type VoucherDetailsFragment,
+  type VoucherFragment,
   VoucherTypeEnum,
 } from "@dashboard/graphql";
 
@@ -315,6 +315,7 @@ export const sale: SaleDetailsFragment = {
                 currencyCode: "USD",
                 id: "123",
                 name: "Channel1",
+                slug: "channel1",
               },
               isAvailableForPurchase: false,
               isPublished: true,
@@ -349,6 +350,7 @@ export const sale: SaleDetailsFragment = {
                 currencyCode: "USD",
                 id: "123",
                 name: "Channel1",
+                slug: "channel1",
               },
               isAvailableForPurchase: false,
               isPublished: true,
@@ -383,6 +385,7 @@ export const sale: SaleDetailsFragment = {
                 currencyCode: "USD",
                 id: "123",
                 name: "Channel1",
+                slug: "channel1",
               },
               isAvailableForPurchase: false,
               isPublished: true,
@@ -417,6 +420,7 @@ export const sale: SaleDetailsFragment = {
                 currencyCode: "USD",
                 id: "123",
                 name: "Channel1",
+                slug: "channel1",
               },
               isAvailableForPurchase: false,
               isPublished: true,
@@ -475,6 +479,7 @@ export const sale: SaleDetailsFragment = {
                 channel: {
                   id: "Q2hhbm5lbDox",
                   name: "Channel-USD",
+                  slug: "channel-usd",
                   currencyCode: "USD",
                   __typename: "Channel",
                 },
@@ -514,6 +519,7 @@ export const sale: SaleDetailsFragment = {
                 channel: {
                   id: "Q2hhbm5lbDox",
                   name: "Channel-USD",
+                  slug: "channel-usd",
                   currencyCode: "USD",
                   __typename: "Channel",
                 },
@@ -553,6 +559,7 @@ export const sale: SaleDetailsFragment = {
                 channel: {
                   id: "Q2hhbm5lbDox",
                   name: "Channel-USD",
+                  slug: "channel-usd",
                   currencyCode: "USD",
                   __typename: "Channel",
                 },
@@ -568,6 +575,7 @@ export const sale: SaleDetailsFragment = {
                 channel: {
                   id: "Q2hhbm5lbDoy",
                   name: "Channel-PLN",
+                  slug: "channel-pln",
                   currencyCode: "PLN",
                   __typename: "Channel",
                 },

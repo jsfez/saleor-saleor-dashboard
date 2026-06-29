@@ -1,61 +1,59 @@
 // @ts-strict-ignore
-import { FetchResult } from "@apollo/client";
+import { type FetchResult } from "@apollo/client";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import {
-  CreateManualTransactionCaptureMutation,
-  CreateManualTransactionCaptureMutationVariables,
-  FulfillmentFragment,
+  type CreateManualTransactionCaptureMutation,
+  type CreateManualTransactionCaptureMutationVariables,
+  type FulfillmentFragment,
   FulfillmentStatus,
-  OrderDetailsWithMetadataQueryResult,
-  OrderFulfillmentApproveMutation,
-  OrderFulfillmentApproveMutationVariables,
-  OrderNoteUpdateMutation,
-  OrderNoteUpdateMutationVariables,
-  OrderTransactionRequestActionMutation,
-  OrderTransactionRequestActionMutationVariables,
-  OrderUpdateMutation,
-  OrderUpdateMutationVariables,
+  type OrderDetailsQueryResult,
+  type OrderFulfillmentApproveMutation,
+  type OrderFulfillmentApproveMutationVariables,
+  type OrderNoteUpdateMutation,
+  type OrderNoteUpdateMutationVariables,
+  type OrderTransactionRequestActionMutation,
+  type OrderTransactionRequestActionMutationVariables,
+  type OrderUpdateMutation,
+  type OrderUpdateMutationVariables,
+  TransactionActionEnum,
   useCustomerAddressesQuery,
   useWarehouseListQuery,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import {
-  extractMutationErrors,
-  getById,
-  getMutationState,
-  getStringOrPlaceholder,
-} from "@dashboard/misc";
+import { extractMutationErrors, getById, getStringOrPlaceholder } from "@dashboard/misc";
 import OrderCannotCancelOrderDialog from "@dashboard/orders/components/OrderCannotCancelOrderDialog";
-import { OrderCustomerAddressesEditDialogOutput } from "@dashboard/orders/components/OrderCustomerAddressesEditDialog/types";
+import { type OrderCustomerAddressesEditDialogOutput } from "@dashboard/orders/components/OrderCustomerAddressesEditDialog/types";
 import OrderFulfillmentApproveDialog from "@dashboard/orders/components/OrderFulfillmentApproveDialog";
+import { OrderFulfillmentMetadataDialog } from "@dashboard/orders/components/OrderFulfillmentMetadataDialog/OrderFulfillmentMetadataDialog";
 import OrderFulfillStockExceededDialog from "@dashboard/orders/components/OrderFulfillStockExceededDialog";
 import OrderInvoiceEmailSendDialog from "@dashboard/orders/components/OrderInvoiceEmailSendDialog";
+import { OrderLineMetadataDialog } from "@dashboard/orders/components/OrderLineMetadataDialog/OrderLineMetadataDialog";
 import { OrderManualTransactionDialog } from "@dashboard/orders/components/OrderManualTransactionDialog";
-import { OrderMetadataDialog } from "@dashboard/orders/components/OrderMetadataDialog";
+import { OrderMetadataDialog } from "@dashboard/orders/components/OrderMetadataDialog/OrderMetadataDialog";
 import { OrderRefundDialog } from "@dashboard/orders/components/OrderRefundDialog/OrderRefundDialog";
 import { OrderTransactionActionDialog } from "@dashboard/orders/components/OrderTransactionActionDialog/OrderTransactionActionDialog";
 import {
   isAnyAddressEditModalOpen,
   transformFuflillmentLinesToStockFormsetData,
 } from "@dashboard/orders/utils/data";
-import { PartialMutationProviderOutput } from "@dashboard/types";
+import { type PartialMutationProviderOutput } from "@dashboard/types";
 import {
-  CloseModalFunction,
-  OpenModalFunction,
+  type CloseModalFunction,
+  type OpenModalFunction,
 } from "@dashboard/utils/handlers/dialogActionHandlers";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 
 import { customerUrl } from "../../../../customers/urls";
 import { productUrl } from "../../../../products/urls";
 import OrderAddressFields from "../../../components/OrderAddressFields/OrderAddressFields";
 import OrderCancelDialog from "../../../components/OrderCancelDialog";
-import OrderDetailsPage from "../../../components/OrderDetailsPage";
+import { OrderCaptureDialog } from "../../../components/OrderCaptureDialog/OrderCaptureDialog";
+import OrderDetailsPage from "../../../components/OrderDetailsPage/OrderDetailsPage";
 import OrderFulfillmentCancelDialog from "../../../components/OrderFulfillmentCancelDialog";
 import OrderFulfillmentTrackingDialog from "../../../components/OrderFulfillmentTrackingDialog";
 import OrderMarkAsPaidDialog from "../../../components/OrderMarkAsPaidDialog/OrderMarkAsPaidDialog";
-import OrderPaymentDialog from "../../../components/OrderPaymentDialog";
 import OrderPaymentVoidDialog from "../../../components/OrderPaymentVoidDialog";
 import {
   orderFulfillUrl,
@@ -64,14 +62,14 @@ import {
   orderReturnUrl,
   orderTransactionRefundUrl,
   orderUrl,
-  OrderUrlDialog,
-  OrderUrlQueryParams,
+  type OrderUrlDialog,
+  type OrderUrlQueryParams,
 } from "../../../urls";
 
 interface OrderNormalDetailsProps {
   id: string;
   params: OrderUrlQueryParams;
-  data: OrderDetailsWithMetadataQueryResult["data"];
+  data: OrderDetailsQueryResult["data"];
   loading: boolean;
   orderAddNote: any;
   orderUpdateNote: PartialMutationProviderOutput<
@@ -79,7 +77,6 @@ interface OrderNormalDetailsProps {
     OrderNoteUpdateMutationVariables
   >;
   orderInvoiceRequest: any;
-  handleSubmit: any;
   orderUpdate: PartialMutationProviderOutput<OrderUpdateMutation, OrderUpdateMutationVariables>;
   orderCancel: any;
   orderPaymentMarkAsPaid: any;
@@ -100,8 +97,6 @@ interface OrderNormalDetailsProps {
     CreateManualTransactionCaptureMutation,
     CreateManualTransactionCaptureMutationVariables
   >;
-  updateMetadataOpts: any;
-  updatePrivateMetadataOpts: any;
   openModal: OpenModalFunction<OrderUrlDialog, OrderUrlQueryParams>;
   closeModal: CloseModalFunction;
 }
@@ -118,7 +113,6 @@ export const OrderNormalDetails = ({
   orderAddNote,
   orderUpdateNote,
   orderInvoiceRequest,
-  handleSubmit,
   orderUpdate,
   orderCancel,
   orderPaymentMarkAsPaid,
@@ -130,8 +124,6 @@ export const OrderNormalDetails = ({
   orderInvoiceSend,
   orderTransactionAction,
   orderAddManualTransaction,
-  updateMetadataOpts,
-  updatePrivateMetadataOpts,
   openModal,
   closeModal,
 }: OrderNormalDetailsProps) => {
@@ -172,6 +164,11 @@ export const OrderNormalDetails = ({
 
   const errors = orderUpdate.opts.data?.orderUpdate.errors || [];
 
+  const selectedTransaction = useMemo(
+    () => order?.transactions?.find(t => t.id === params.id),
+    [order?.transactions, params.id],
+  );
+
   const hasOrderFulfillmentsFulfilled = order?.fulfillments.some(
     fulfillment => fulfillment.status === FulfillmentStatus.FULFILLED,
   );
@@ -192,7 +189,7 @@ export const OrderNormalDetails = ({
       />
       <OrderDetailsPage
         onOrderReturn={() => navigate(orderReturnUrl(id))}
-        loading={loading || updateMetadataOpts.loading || updatePrivateMetadataOpts.loading}
+        loading={loading}
         errors={errors}
         onNoteUpdateLoading={orderUpdateNote.opts.loading}
         onNoteUpdate={(id, message) =>
@@ -213,25 +210,25 @@ export const OrderNormalDetails = ({
         }
         order={order}
         shop={shop}
-        saveButtonBarState={getMutationState(
-          updateMetadataOpts.called || updatePrivateMetadataOpts.called,
-          updateMetadataOpts.loading || updatePrivateMetadataOpts.loading,
-          [
-            ...(updateMetadataOpts.data?.deleteMetadata.errors || []),
-            ...(updateMetadataOpts.data?.updateMetadata.errors || []),
-            ...(updatePrivateMetadataOpts.data?.deletePrivateMetadata.errors || []),
-            ...(updatePrivateMetadataOpts.data?.updatePrivateMetadata.errors || []),
-          ],
-        )}
         shippingMethods={data?.order?.shippingMethods || []}
         onOrderCancel={() => openModal("cancel")}
-        onShowMetadata={id => openModal("view-metadata", { id })}
+        onOrderLineShowMetadata={id => openModal("view-order-line-metadata", { id })}
+        onOrderShowMetadata={() => openModal("view-order-metadata")}
+        onFulfillmentShowMetadata={id => openModal("view-fulfillment-metadata", { id })}
         onTransactionAction={(id, action) =>
-          openModal("transaction-action", {
-            type: action,
-            id,
-            action: "transaction-action",
-          })
+          openModal(
+            action === TransactionActionEnum.CHARGE
+              ? "transaction-charge-action"
+              : "transaction-action",
+            {
+              type: action,
+              id,
+              action:
+                action === TransactionActionEnum.CHARGE
+                  ? "transaction-charge-action"
+                  : "transaction-action",
+            },
+          )
         }
         onOrderFulfill={() => navigate(orderFulfillUrl(id))}
         onFulfillmentApprove={fulfillmentId =>
@@ -281,7 +278,6 @@ export const OrderNormalDetails = ({
         }
         onInvoiceSend={id => openModal("invoice-send", { id })}
         onRefundAdd={() => openModal("add-refund")}
-        onSubmit={handleSubmit}
       />
       <OrderCannotCancelOrderDialog
         onClose={closeModal}
@@ -299,6 +295,29 @@ export const OrderNormalDetails = ({
           })
         }
       />
+      {/* Transaction Capture Dialog - for CHARGE action */}
+      {params.action === "transaction-charge-action" && order && selectedTransaction && (
+        <OrderCaptureDialog
+          key={params.id}
+          confirmButtonState={orderTransactionAction.opts.status}
+          errors={orderTransactionAction.opts.data?.transactionRequestAction?.errors ?? []}
+          orderTotal={order.total.gross}
+          authorizedAmount={selectedTransaction.authorizedAmount}
+          chargedAmount={selectedTransaction.chargedAmount}
+          orderBalance={order.totalBalance}
+          onClose={closeModal}
+          onSubmit={amount =>
+            orderTransactionAction
+              .mutate({
+                action: params.type,
+                transactionId: params.id,
+                amount,
+              })
+              .finally(() => closeModal())
+          }
+        />
+      )}
+      {/* Transaction Action Dialog - for other actions like CANCEL */}
       <OrderTransactionActionDialog
         confirmButtonState={orderTransactionAction.opts.status}
         onClose={closeModal}
@@ -313,11 +332,22 @@ export const OrderNormalDetails = ({
             .finally(() => closeModal())
         }
       />
-      <OrderMetadataDialog
-        open={params.action === "view-metadata"}
+      <OrderLineMetadataDialog
+        open={params.action === "view-order-line-metadata"}
         onClose={closeModal}
         lineId={params.id}
         orderId={id}
+      />
+      <OrderMetadataDialog
+        open={params.action === "view-order-metadata"}
+        onClose={closeModal}
+        orderId={id}
+      />
+      <OrderFulfillmentMetadataDialog
+        open={params.action === "view-fulfillment-metadata"}
+        onClose={closeModal}
+        orderId={id}
+        fulfillmentId={params.id}
       />
       <OrderMarkAsPaidDialog
         confirmButtonState={orderPaymentMarkAsPaid.opts.status}
@@ -340,19 +370,21 @@ export const OrderNormalDetails = ({
         onClose={closeModal}
         onConfirm={() => orderVoid.mutate({ id })}
       />
-      <OrderPaymentDialog
-        confirmButtonState={orderPaymentCapture.opts.status}
-        errors={orderPaymentCapture.opts.data?.orderCapture.errors || []}
-        initial={order?.total.gross.amount}
-        open={params.action === "capture"}
-        onClose={closeModal}
-        onSubmit={variables =>
-          orderPaymentCapture.mutate({
-            ...variables,
-            id,
-          })
-        }
-      />
+      {params.action === "capture" && order && (
+        <OrderCaptureDialog
+          confirmButtonState={orderPaymentCapture.opts.status}
+          errors={orderPaymentCapture.opts.data?.orderCapture?.errors ?? []}
+          orderTotal={order.total.gross}
+          authorizedAmount={order.totalAuthorized}
+          onClose={closeModal}
+          onSubmit={amount =>
+            orderPaymentCapture.mutate({
+              amount,
+              id,
+            })
+          }
+        />
+      )}
       <OrderFulfillmentApproveDialog
         confirmButtonState={orderFulfillmentApprove.opts.status}
         errors={orderFulfillmentApprove.opts.data?.orderFulfillmentApprove.errors || []}

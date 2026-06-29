@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 
 type UseLocalStorage<T> = [T, Dispatch<SetStateAction<T>>];
 export default function useLocalStorage<T>(
@@ -40,13 +40,7 @@ export default function useLocalStorage<T>(
     }
 
     try {
-      const parsed = JSON.parse(item);
-
-      if (!parsed) {
-        throw new Error("Empty value");
-      }
-
-      result = parsed;
+      result = JSON.parse(item);
     } catch {
       // Casting to T (which should resolve to string) because JSON.parse would
       // throw an error if "foo" was passed, but properly casting "true" or "1"

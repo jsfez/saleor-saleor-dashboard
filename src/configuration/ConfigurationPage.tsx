@@ -1,18 +1,19 @@
 // @ts-strict-ignore
+
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
-import { UserFragment } from "@dashboard/graphql";
+import { type UserFragment } from "@dashboard/graphql";
 import { sectionNames } from "@dashboard/intl";
 import { useTheme } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
-import { NavigationCard } from "@saleor/macaw-ui";
-import { Box, Text } from "@saleor/macaw-ui-next";
+import { Box, Paragraph, Text } from "@saleor/macaw-ui-next";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 
 import VersionInfo from "../components/VersionInfo";
+import navigationCardStyles from "./navigation-card.module.css";
 import { useStyles } from "./styles";
-import { MenuSection } from "./types";
+import { type MenuSection } from "./types";
 import { hasUserMenuItemPermissions } from "./utils";
 
 interface VersionInfo {
@@ -67,16 +68,30 @@ export const ConfigurationPage = (props: ConfigurationPageProps) => {
                         to={item.url}
                         key={`${item.title}-${itemIndex}`}
                       >
-                        <NavigationCard
-                          className={classes.navigationCard}
+                        <Box
+                          gap={2}
+                          padding={6}
+                          className={navigationCardStyles.navigationCard}
+                          borderStyle="solid"
+                          borderColor="defaultDisabled"
+                          borderRadius={4}
                           key={itemIndex}
-                          icon={item.icon}
-                          title={item.title}
-                          description={item.description}
+                          borderWidth={1}
                           data-test-id={
                             item.testId + "-settings-subsection-" + item.title.toLowerCase()
                           }
-                        />
+                          display="flex"
+                        >
+                          <Box>{item.icon}</Box>
+                          <Box>
+                            <Text fontSize={3} fontWeight="medium">
+                              {item.title}
+                            </Text>
+                            <Paragraph fontSize={3} color="default2" marginTop={1}>
+                              {item.description}
+                            </Paragraph>
+                          </Box>
+                        </Box>
                       </Link>
                     ))}
                 </div>

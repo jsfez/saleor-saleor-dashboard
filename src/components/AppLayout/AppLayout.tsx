@@ -1,13 +1,14 @@
 import useAppState from "@dashboard/hooks/useAppState";
 import { LinearProgress } from "@material-ui/core";
 import { Box } from "@saleor/macaw-ui-next";
-import * as React from "react";
+import type * as React from "react";
 
 import { DevModePanel } from "../DevModePanel/DevModePanel";
 import NavigatorSearch from "../NavigatorSearch";
 import { useSavebarRef } from "../Savebar/SavebarRefContext";
 import { Sidebar } from "../Sidebar";
 import { SidebarProvider } from "../Sidebar/SidebarContext";
+import { savebarHeight } from "./consts";
 import { useStyles } from "./styles";
 
 interface AppLayoutProps {
@@ -17,7 +18,7 @@ interface AppLayoutProps {
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const classes = useStyles();
-  const { setAnchor } = useSavebarRef();
+  const { isSavebarMounted, setAnchor } = useSavebarRef();
   const [appState] = useAppState();
 
   return (
@@ -52,10 +53,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             left={0}
             right={0}
             backgroundColor="default1"
-            borderTopWidth={1}
+            borderTopWidth={isSavebarMounted ? 1 : 0}
             borderTopStyle="solid"
             borderColor="default1"
             zIndex="2"
+            __height={isSavebarMounted ? savebarHeight : "0"}
+            overflow="hidden"
           />
         </Box>
       </Box>

@@ -1,9 +1,12 @@
-import { OrderDetailsGrantRefundFragment } from "@dashboard/graphql";
-import { renderHook } from "@testing-library/react-hooks";
+import { type OrderDetailsGrantRefundFragment } from "@dashboard/graphql";
+import { renderHook } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 
 import { getRefundEditOrderLinesToRefund } from "./formDefaults";
-import { LineToRefund, OrderTransactionRefundPageFormData } from "./OrderTransactionRefundPage";
+import {
+  type LineToRefund,
+  type OrderTransactionRefundPageFormData,
+} from "./OrderTransactionRefundPage";
 import { canRefundShipping, getMaxQtyToRefund, useRecalculateTotalAmount } from "./utils";
 
 describe("getMaxQtyToRefund", () => {
@@ -113,6 +116,7 @@ describe("useRecalculateTotalAmount", () => {
           row: 0,
           quantity: 2,
           reason: "",
+          reasonReference: "",
         },
       ],
       isFormDirty: true,
@@ -150,6 +154,7 @@ describe("useRecalculateTotalAmount", () => {
           row: 0,
           quantity: 2,
           reason: "",
+          reasonReference: "",
         },
       ],
       isFormDirty: true,
@@ -186,6 +191,7 @@ describe("useRecalculateTotalAmount", () => {
           row: 0,
           quantity: 2,
           reason: "",
+          reasonReference: "",
         },
       ],
       isFormDirty: true,
@@ -323,10 +329,12 @@ describe("getRefundEditOrderLinesToRefund", () => {
       {
         quantity: 2,
         reason: "",
+        reasonReference: "",
       },
       {
         quantity: 3,
         reason: "",
+        reasonReference: "",
       },
     ]);
   });

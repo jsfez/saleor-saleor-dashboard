@@ -1,10 +1,12 @@
-import { KeyValue } from "@dashboard/types";
+import { iconSize, iconStrokeWidthBySize } from "@dashboard/components/icons";
+import { type KeyValue } from "@dashboard/types";
 import { TextField } from "@material-ui/core";
-import { Button, DeleteIcon, IconButton, makeStyles } from "@saleor/macaw-ui";
+import { Button, IconButton, makeStyles } from "@saleor/macaw-ui";
+import { Trash2 } from "lucide-react";
 import { useIntl } from "react-intl";
 
 import { keyValueMessages } from "./messages";
-import { FieldType, FilterFieldBaseProps } from "./types";
+import { type FieldType, type FilterFieldBaseProps } from "./types";
 
 const useStyles = makeStyles(
   theme => ({
@@ -112,7 +114,7 @@ export const FilterKeyValueField = <K extends string = string>({
                 });
               }}
             >
-              <DeleteIcon onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} />
+              <Trash2 size={iconSize.small} strokeWidth={iconStrokeWidthBySize.small} />
             </IconButton>
           </div>
         ))}

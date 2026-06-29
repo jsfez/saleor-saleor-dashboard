@@ -3,13 +3,15 @@ import {
   getReferenceAttributeEntityTypeFromAttribute,
   handleContainerReferenceAssignment,
 } from "@dashboard/attributes/utils/data";
-import { useUser } from "@dashboard/auth";
 import { hasPermission } from "@dashboard/auth/misc";
+import { useUser } from "@dashboard/auth/useUser";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
-import AssignAttributeValueDialog from "@dashboard/components/AssignAttributeValueDialog";
-import { AttributeInput, Attributes } from "@dashboard/components/Attributes";
+import AssignAttributeValueDialog, {
+  type AssignAttributeValueDialogFilterChangeMap,
+} from "@dashboard/components/AssignAttributeValueDialog";
+import { type AttributeInput, Attributes } from "@dashboard/components/Attributes";
 import CardSpacer from "@dashboard/components/CardSpacer";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Metadata } from "@dashboard/components/Metadata";
 import { Savebar } from "@dashboard/components/Savebar";
@@ -19,38 +21,41 @@ import { extensionMountPoints } from "@dashboard/extensions/extensionMountPoints
 import { getExtensionsItemForPageDetails } from "@dashboard/extensions/getExtensionsItems";
 import { useExtensions } from "@dashboard/extensions/hooks/useExtensions";
 import {
-  PageDetailsFragment,
-  PageErrorWithAttributesFragment,
+  type PageDetailsFragment,
+  type PageErrorWithAttributesFragment,
   PermissionEnum,
-  SearchAttributeValuesQuery,
-  SearchCategoriesQuery,
-  SearchCollectionsQuery,
-  SearchPagesQuery,
-  SearchPageTypesQuery,
-  SearchProductsQuery,
+  type SearchAttributeValuesQuery,
+  type SearchCategoriesQuery,
+  type SearchCollectionsQuery,
+  type SearchPagesQuery,
+  type SearchPageTypesQuery,
+  type SearchProductsQuery,
 } from "@dashboard/graphql";
 import { useBackLinkWithState } from "@dashboard/hooks/useBackLinkWithState";
 import useDateLocalize from "@dashboard/hooks/useDateLocalize";
-import { SubmitPromise } from "@dashboard/hooks/useForm";
+import { type SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
+import { rippleModelMetadata } from "@dashboard/modeling/ripples/modelMetadata";
 import { modelingSection } from "@dashboard/modeling/urls";
+import { pageTypeUrl } from "@dashboard/modelTypes/urls";
 import { TranslationsButton } from "@dashboard/translations/components/TranslationsButton/TranslationsButton";
 import { languageEntityUrl, TranslatableEntities } from "@dashboard/translations/urls";
 import { useCachedLocales } from "@dashboard/translations/useCachedLocales";
-import { Container, FetchMoreProps, RelayToFlat } from "@dashboard/types";
+import { type Container, type FetchMoreProps, type RelayToFlat } from "@dashboard/types";
 import { mapNodeToChoice } from "@dashboard/utils/maps";
-import { Box } from "@saleor/macaw-ui-next";
+import { useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import PageInfo from "../PageInfo";
-import PageOrganizeContent from "../PageOrganizeContent";
-import PageForm, { PageData, PageUpdateHandlers } from "./form";
+import { PageOrganizeContent } from "../PageOrganizeContent/PageOrganizeContent";
+import PageForm, { type PageData, type PageSubmitData, type PageUpdateHandlers } from "./form";
 import { messages } from "./messages";
+import { PageDetailsTitle } from "./Title";
 
 interface PageDetailsPageProps {
   loading: boolean;
   errors: PageErrorWithAttributesFragment[];
-  page: PageDetailsFragment;
+  page: PageDetailsFragment | null | undefined;
   pageTypes?: RelayToFlat<SearchPageTypesQuery["search"]>;
   referencePages?: RelayToFlat<SearchPagesQuery["search"]>;
   referenceProducts?: RelayToFlat<SearchProductsQuery["search"]>;
@@ -61,7 +66,8 @@ interface PageDetailsPageProps {
   selectedPageType?: PageDetailsFragment["pageType"];
   attributeValues: RelayToFlat<SearchAttributeValuesQuery["attribute"]["choices"]>;
   onRemove: () => void;
-  onSubmit: (data: PageData) => SubmitPromise;
+  onShowMetadata?: () => void;
+  onSubmit: (data: PageSubmitData) => SubmitPromise;
   fetchPageTypes?: (data: string) => void;
   fetchMorePageTypes?: FetchMoreProps;
   assignReferencesAttributeId?: string;
@@ -79,6 +85,7 @@ interface PageDetailsPageProps {
   onCloseDialog: () => void;
   onSelectPageType?: (pageTypeId: string) => void;
   onAttributeSelectBlur: () => void;
+  onFilterChange?: AssignAttributeValueDialogFilterChangeMap;
 }
 
 const PageDetailsPage = ({
@@ -94,6 +101,7 @@ const PageDetailsPage = ({
   selectedPageType,
   attributeValues,
   onRemove,
+  onShowMetadata,
   onSubmit,
   fetchPageTypes,
   fetchMorePageTypes,
@@ -112,11 +120,14 @@ const PageDetailsPage = ({
   onCloseDialog,
   onSelectPageType,
   onAttributeSelectBlur,
+  onFilterChange,
 }: PageDetailsPageProps) => {
   const intl = useIntl();
   const { lastUsedLocaleOrFallback } = useCachedLocales();
   const { user } = useUser();
   const canTranslate = user && hasPermission(PermissionEnum.MANAGE_TRANSLATIONS, user);
+  const canManageModelTypes =
+    user && hasPermission(PermissionEnum.MANAGE_PAGE_TYPES_AND_ATTRIBUTES, user);
   const localizeDate = useDateLocalize();
   const navigate = useNavigator();
   const pageExists = page !== null;
@@ -144,6 +155,20 @@ const PageDetailsPage = ({
 
   const { PAGE_DETAILS_MORE_ACTIONS } = useExtensions(extensionMountPoints.PAGE_DETAILS);
   const extensionMenuItems = getExtensionsItemForPageDetails(PAGE_DETAILS_MORE_ACTIONS, page?.id);
+  const builtInMenuItems = useMemo(() => {
+    const items = [];
+
+    if (canManageModelTypes && page?.pageType?.id) {
+      items.push({
+        label: intl.formatMessage(messages.openModelTypeSettings),
+        onSelect: () => navigate(pageTypeUrl(page.pageType.id)),
+        testId: "open-model-type-settings",
+      });
+    }
+
+    return items;
+  }, [canManageModelTypes, intl, navigate, page?.pageType?.id]);
+  const menuItems = [...extensionMenuItems, ...builtInMenuItems];
 
   return (
     <PageForm
@@ -174,8 +199,24 @@ const PageDetailsPage = ({
           <DetailPageLayout>
             <TopNav
               href={pageListBackLink}
-              title={!pageExists ? intl.formatMessage(messages.title) : page?.title}
+              title={
+                !pageExists ? (
+                  intl.formatMessage(messages.title)
+                ) : (
+                  <PageDetailsTitle page={page} loading={loading} />
+                )
+              }
+              actionsGap={3}
             >
+              {pageExists && onShowMetadata && (
+                <TopNav.MetadataButton
+                  onClick={onShowMetadata}
+                  disabled={!page}
+                  data-test-id="show-page-metadata"
+                  title={intl.formatMessage(messages.editPageMetadata)}
+                  ripple={rippleModelMetadata}
+                />
+              )}
               {canTranslate && (
                 <TranslationsButton
                   onClick={() =>
@@ -190,11 +231,7 @@ const PageDetailsPage = ({
                 />
               )}
 
-              {extensionMenuItems.length > 0 && (
-                <Box marginLeft={3}>
-                  <TopNav.Menu items={[...extensionMenuItems]} dataTestId="menu" />
-                </Box>
-              )}
+              {menuItems.length > 0 && <TopNav.Menu items={menuItems} dataTestId="menu" />}
             </TopNav>
             <DetailPageLayout.Content>
               <PageInfo data={data} disabled={loading} errors={errors} onChange={change} />
@@ -232,8 +269,12 @@ const PageDetailsPage = ({
                   richTextGetters={attributeRichTextGetters}
                 />
               )}
-              <CardSpacer />
-              <Metadata data={data} onChange={handlers.changeMetadata} />
+              {!pageExists && (
+                <>
+                  <CardSpacer />
+                  <Metadata data={data} onChange={handlers.changeMetadata} />
+                </>
+              )}
             </DetailPageLayout.Content>
             <DetailPageLayout.RightSidebar>
               <VisibilityCard
@@ -250,19 +291,23 @@ const PageDetailsPage = ({
                 }}
                 onChange={change}
               />
-              <CardSpacer />
-              <PageOrganizeContent
-                data={data}
-                errors={errors}
-                disabled={loading}
-                pageTypes={pageTypes}
-                pageType={data.pageType}
-                pageTypeInputDisplayValue={data.pageType?.name || ""}
-                onPageTypeChange={handlers.selectPageType}
-                fetchPageTypes={fetchPageTypes}
-                fetchMorePageTypes={fetchMorePageTypes}
-                canChangeType={!page?.pageType}
-              />
+              {!pageExists && (
+                <>
+                  <CardSpacer />
+                  <PageOrganizeContent
+                    data={data}
+                    errors={errors}
+                    disabled={loading}
+                    pageTypes={pageTypes}
+                    pageType={data.pageType}
+                    pageTypeInputDisplayValue={data.pageType?.name || ""}
+                    onPageTypeChange={handlers.selectPageType}
+                    fetchPageTypes={fetchPageTypes}
+                    fetchMorePageTypes={fetchMorePageTypes}
+                    canChangeType={!page?.pageType}
+                  />
+                </>
+              )}
             </DetailPageLayout.RightSidebar>
             <Savebar>
               {page !== null && <Savebar.DeleteButton onClick={onRemove} />}
@@ -292,6 +337,7 @@ const PageDetailsPage = ({
                 onFetchMore={handlers.fetchMoreReferences?.onFetchMore}
                 loading={handlers.fetchMoreReferences?.loading}
                 onClose={onCloseDialog}
+                onFilterChange={onFilterChange}
                 onSubmit={attributeValues =>
                   handleAssignReferenceAttribute(attributeValues, data, handlers)
                 }

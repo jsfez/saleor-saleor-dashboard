@@ -1,12 +1,17 @@
-import { render, screen } from "@testing-library/react";
+import { ThemeProvider } from "@saleor/macaw-ui-next";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import * as React from "react";
+import type * as React from "react";
 
 import { AddCustomExtension } from "./AddCustomExtension";
 import { useHandleCreateAppSubmit } from "./hooks/useHandleCreateAppSubmit";
 import { usePermissions } from "./hooks/usePermissions";
 import { useUserAppCreationPermissions } from "./hooks/useUserAppCreationPermissions";
 import { useUserPermissionSet } from "./hooks/useUserPermissionMap";
+
+const Wrapper = ({ children }: React.PropsWithChildren<{}>) => (
+  <ThemeProvider>{children}</ThemeProvider>
+);
 
 // Mock ResizeObserver used by Radix checkbox
 class ResizeObserverMock {
@@ -24,6 +29,11 @@ class ResizeObserverMock {
 }
 
 global.ResizeObserver = ResizeObserverMock;
+
+jest.mock("@saleor/macaw-ui-next", () => ({
+  ...(jest.requireActual("@saleor/macaw-ui-next") as object),
+  useTheme: () => ({ theme: "default" }),
+}));
 
 jest.mock("react-router-dom", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
@@ -61,7 +71,7 @@ describe("AddCustomExtension", () => {
 
   it("renders the component with all required elements", () => {
     // Arrange
-    render(<AddCustomExtension setToken={mockSetToken} />);
+    render(<AddCustomExtension setToken={mockSetToken} />, { wrapper: Wrapper });
 
     // Assert
     expect(screen.getByPlaceholderText("Extension Name")).toBeInTheDocument();
@@ -73,18 +83,20 @@ describe("AddCustomExtension", () => {
 
   it("displays validation error when submitting empty form", async () => {
     // Arrange
-    render(<AddCustomExtension setToken={mockSetToken} />);
+    render(<AddCustomExtension setToken={mockSetToken} />, { wrapper: Wrapper });
 
     // Act
     await userEvent.click(screen.getByText("save"));
 
     // Assert
-    expect(screen.getByText("Extension name is required")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Extension name is required")).toBeInTheDocument();
+    });
   });
 
   it("creates app without permissions", async () => {
     // Arrange
-    render(<AddCustomExtension setToken={mockSetToken} />);
+    render(<AddCustomExtension setToken={mockSetToken} />, { wrapper: Wrapper });
 
     const appNameInput = screen.getByPlaceholderText("Extension Name");
 
@@ -93,21 +105,23 @@ describe("AddCustomExtension", () => {
     await userEvent.click(screen.getByText("save"));
 
     // Assert
-    expect(mockSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        appName: "Test App",
-        permissions: {
-          MANAGE_ORDERS: false,
-          MANAGE_PRODUCTS: false,
-        },
-      }),
-      expect.anything(),
-    );
+    await waitFor(() => {
+      expect(mockSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          appName: "Test App",
+          permissions: {
+            MANAGE_ORDERS: false,
+            MANAGE_PRODUCTS: false,
+          },
+        }),
+        expect.anything(),
+      );
+    });
   });
 
   it("creates app with some permissions when checked by user", async () => {
     // Arrange
-    render(<AddCustomExtension setToken={mockSetToken} />);
+    render(<AddCustomExtension setToken={mockSetToken} />, { wrapper: Wrapper });
 
     const appNameInput = screen.getByPlaceholderText("Extension Name");
     const ordersCheckbox = screen.getByLabelText(/Manage Orders/i);
@@ -121,21 +135,23 @@ describe("AddCustomExtension", () => {
     // Assert
     expect(ordersCheckbox).toBeChecked();
     expect(productsCheckbox).not.toBeChecked();
-    expect(mockSubmit).toHaveBeenCalledWith(
-      {
-        appName,
-        permissions: {
-          MANAGE_ORDERS: true,
-          MANAGE_PRODUCTS: false,
+    await waitFor(() => {
+      expect(mockSubmit).toHaveBeenCalledWith(
+        {
+          appName,
+          permissions: {
+            MANAGE_ORDERS: true,
+            MANAGE_PRODUCTS: false,
+          },
         },
-      },
-      expect.anything(), // Submit event
-    );
+        expect.anything(), // Submit event
+      );
+    });
   });
 
   it("creates app with all permissions when toggled 'Grant full access'", async () => {
     // Arrange
-    render(<AddCustomExtension setToken={mockSetToken} />);
+    render(<AddCustomExtension setToken={mockSetToken} />, { wrapper: Wrapper });
 
     const appNameInput = screen.getByPlaceholderText("Extension Name");
     const fullAccessCheckbox = screen.getByRole("checkbox", {
@@ -152,21 +168,23 @@ describe("AddCustomExtension", () => {
     // Assert
     expect(ordersCheckbox).toBeChecked();
     expect(productsCheckbox).toBeChecked();
-    expect(mockSubmit).toHaveBeenCalledWith(
-      {
-        appName,
-        permissions: {
-          MANAGE_ORDERS: true,
-          MANAGE_PRODUCTS: true,
+    await waitFor(() => {
+      expect(mockSubmit).toHaveBeenCalledWith(
+        {
+          appName,
+          permissions: {
+            MANAGE_ORDERS: true,
+            MANAGE_PRODUCTS: true,
+          },
         },
-      },
-      expect.anything(), // Submit event
-    );
+        expect.anything(), // Submit event
+      );
+    });
   });
 
   it("creates app with no permissions when toggling between 'Grant full access'", async () => {
     // Arrange
-    render(<AddCustomExtension setToken={mockSetToken} />);
+    render(<AddCustomExtension setToken={mockSetToken} />, { wrapper: Wrapper });
 
     const appNameInput = screen.getByPlaceholderText("Extension Name");
     const fullAccessCheckbox = screen.getByRole("checkbox", {
@@ -194,16 +212,18 @@ describe("AddCustomExtension", () => {
     await userEvent.click(screen.getByText("save"));
 
     // Assert
-    expect(mockSubmit).toHaveBeenCalledWith(
-      {
-        appName,
-        permissions: {
-          MANAGE_ORDERS: false,
-          MANAGE_PRODUCTS: false,
+    await waitFor(() => {
+      expect(mockSubmit).toHaveBeenCalledWith(
+        {
+          appName,
+          permissions: {
+            MANAGE_ORDERS: false,
+            MANAGE_PRODUCTS: false,
+          },
         },
-      },
-      expect.anything(), // Submit event
-    );
+        expect.anything(), // Submit event
+      );
+    });
   });
 
   it("displays warning when permissions are exceeded", () => {
@@ -211,7 +231,7 @@ describe("AddCustomExtension", () => {
     (useUserAppCreationPermissions as jest.Mock).mockReturnValue(true);
 
     // Act
-    render(<AddCustomExtension setToken={mockSetToken} />);
+    render(<AddCustomExtension setToken={mockSetToken} />, { wrapper: Wrapper });
 
     // Assert
     expect(screen.getByText(/warning/i)).toBeInTheDocument();
@@ -225,7 +245,7 @@ describe("AddCustomExtension", () => {
     const availablePermissions = new Set(["MANAGE_ORDERS"]);
 
     (useUserPermissionSet as jest.Mock).mockReturnValue(availablePermissions);
-    render(<AddCustomExtension setToken={mockSetToken} />);
+    render(<AddCustomExtension setToken={mockSetToken} />, { wrapper: Wrapper });
 
     const appNameInput = screen.getByPlaceholderText("Extension Name");
     const ordersCheckbox = screen.getByLabelText(/Manage Orders/i);
@@ -248,15 +268,17 @@ describe("AddCustomExtension", () => {
     await userEvent.click(screen.getByText("save"));
 
     // Assert
-    expect(mockSubmit).toHaveBeenCalledWith(
-      {
-        appName,
-        permissions: {
-          MANAGE_ORDERS: true,
-          MANAGE_PRODUCTS: false,
+    await waitFor(() => {
+      expect(mockSubmit).toHaveBeenCalledWith(
+        {
+          appName,
+          permissions: {
+            MANAGE_ORDERS: true,
+            MANAGE_PRODUCTS: false,
+          },
         },
-      },
-      expect.anything(), // Submit event
-    );
+        expect.anything(), // Submit event
+      );
+    });
   });
 });

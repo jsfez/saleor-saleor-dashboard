@@ -1,13 +1,13 @@
 import { DashboardCard } from "@dashboard/components/Card";
 import CardSpacer from "@dashboard/components/CardSpacer";
-import Date from "@dashboard/components/Date";
+import { Date } from "@dashboard/components/Date/Date";
 import FormSpacer from "@dashboard/components/FormSpacer";
 import Hr from "@dashboard/components/Hr";
 import Money from "@dashboard/components/Money";
 import Percent from "@dashboard/components/Percent";
-import { DiscountValueTypeEnum, VoucherDetailsFragment } from "@dashboard/graphql";
+import { DiscountValueTypeEnum, type VoucherDetailsFragment } from "@dashboard/graphql";
 import { commonMessages } from "@dashboard/intl";
-import { ChannelProps } from "@dashboard/types";
+import { type ChannelProps } from "@dashboard/types";
 import { Skeleton, Text } from "@saleor/macaw-ui-next";
 import { FormattedMessage, useIntl } from "react-intl";
 

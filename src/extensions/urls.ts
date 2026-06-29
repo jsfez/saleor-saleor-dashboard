@@ -1,10 +1,18 @@
-import { AppPaths } from "@dashboard/apps/urls";
 import { getAbsoluteApiUrl } from "@dashboard/config";
-import { FlagList } from "@dashboard/featureFlags";
-import { Dialog, SingleAction } from "@dashboard/types";
+import { type FlagList } from "@dashboard/featureFlags";
+import { type Dialog, type SingleAction } from "@dashboard/types";
 import { stringifyQs } from "@dashboard/utils/urls";
-import { ThemeType } from "@saleor/app-sdk/app-bridge";
+import { type ThemeType } from "@saleor/app-sdk/app-bridge";
 import urlJoin from "url-join";
+
+export const LegacyAppSections = {
+  appsSection: "/apps/",
+};
+
+export const LegacyAppPaths = {
+  appListPath: LegacyAppSections.appsSection,
+  resolveAppPath: (id: string) => urlJoin(LegacyAppSections.appsSection, id, "app"),
+};
 
 export const extensionsSection = "/extensions";
 export const extensionsCustomSection = `${extensionsSection}/custom`;
@@ -36,12 +44,26 @@ export const ExtensionsPaths = {
   resolveEditPluginExtension: (id: string) => urlJoin(extensionsPluginSection, id),
 };
 
+type TranslationContext =
+  | "product"
+  | "variant"
+  | "category"
+  | "collection"
+  | "sale"
+  | "voucher"
+  | "model"
+  | "attribute"
+  | "shipping-method"
+  | "structure";
+
 export const MANIFEST_ATTR = "manifestUrl";
 export type ExtensionInstallQueryParams = { [MANIFEST_ATTR]?: string };
 export type ExtensionsListUrlDialog = "app-installation-remove";
 export type ExtensionsListUrlQueryParams = Dialog<ExtensionsListUrlDialog> & SingleAction;
 export type AppDetailsUrlDialog = "app-activate" | "app-deactivate" | "app-delete";
 export interface AppDetailsUrlMountQueryParams {
+  attributeId?: string;
+  attributeIds?: string[];
   productId?: string;
   productIds?: string[];
   productSlug?: string;
@@ -65,6 +87,14 @@ export interface AppDetailsUrlMountQueryParams {
   pageTypeIds?: string[];
   menuId?: string;
   menuIds?: string[];
+  translationContext?: TranslationContext;
+  saleId?: string;
+  saleIds?: string[];
+  structureId?: string;
+  structureIds?: string[];
+  shippingMethodId?: string;
+  shippingMethodIds?: string[];
+  translationLanguage?: string;
 }
 interface FeatureFlagsQueryParams {
   featureFlags?: FlagList;
@@ -133,7 +163,7 @@ export const ExtensionsUrls = {
     ).replace("?", "");
 
     // Handle legacy app navigation made to /apps/XYZ/app
-    const legacyAppCompletePath = AppPaths.resolveAppPath(appId);
+    const legacyAppCompletePath = LegacyAppPaths.resolveAppPath(appId);
 
     return (
       (to.startsWith(appCompletePath) || to.startsWith(legacyAppCompletePath)) &&
@@ -184,13 +214,9 @@ export const ExtensionsUrls = {
   // (these are navigation items app can install in dashboard)
   resolveDashboardUrlFromAppCompleteUrl: (
     appCompleteUrl: string,
-    appUrl?: string,
-    appId?: string,
+    appUrl: string,
+    appId: string,
   ) => {
-    if (!appUrl || !appId) {
-      return appUrl;
-    }
-
     const deepSubPath = appCompleteUrl.replace(appUrl, "");
     const dashboardUrl = urlJoin(
       ExtensionsPaths.resolveViewManifestExtension(encodeURIComponent(appId)),
@@ -201,15 +227,7 @@ export const ExtensionsUrls = {
   },
 
   // Used to resolve app url in iframe
-  resolveAppCompleteUrlFromDashboardUrl: (
-    dashboardUrl: string,
-    appUrl?: string,
-    appId?: string,
-  ) => {
-    if (!appUrl || !appId) {
-      return appUrl;
-    }
-
+  resolveAppCompleteUrlFromDashboardUrl: (dashboardUrl: string, appUrl: string, appId: string) => {
     const deepSubPath = dashboardUrl.replace(
       ExtensionsPaths.resolveViewManifestExtension(encodeURIComponent(appId)),
       "",

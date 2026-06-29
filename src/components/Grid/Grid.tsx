@@ -1,6 +1,6 @@
 import { makeStyles } from "@saleor/macaw-ui";
 import clsx from "clsx";
-import * as React from "react";
+import type * as React from "react";
 
 type GridVariant = "default" | "inverted" | "uniform";
 interface GridProps {
@@ -17,6 +17,11 @@ const useStyles = makeStyles(
     },
     inverted: {
       gridTemplateColumns: "4fr 9fr",
+      "& > div:first-child": {
+        position: "sticky",
+        top: 0,
+        alignSelf: "start",
+      },
     },
     root: {
       "& > div": {

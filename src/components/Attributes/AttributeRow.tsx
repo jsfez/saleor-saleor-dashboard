@@ -4,14 +4,13 @@ import { BasicAttributeRow } from "@dashboard/components/Attributes/BasicAttribu
 import { SwatchRow } from "@dashboard/components/Attributes/SwatchRow";
 import {
   booleanAttrValueToValue,
+  getAttributeRowLabelProps,
   getBooleanDropdownOptions,
   getErrorMessage,
   getFileChoice,
   getMultiChoices,
   getMultiDisplayValue,
   getReferenceDisplayValue,
-  getSingleChoices,
-  getSingleDisplayValue,
   getTruncatedTextValue,
 } from "@dashboard/components/Attributes/utils";
 import FileUploadField from "@dashboard/components/FileUploadField";
@@ -21,10 +20,11 @@ import { AttributeInputTypeEnum } from "@dashboard/graphql";
 import { Box, Input, Select, Text } from "@saleor/macaw-ui-next";
 import { useIntl } from "react-intl";
 
-import { Combobox, Multiselect } from "../Combobox";
+import { Multiselect } from "../Combobox";
 import { DateTimeField } from "../DateTimeField";
+import { DropdownRow } from "./DropdownRow";
 import { SingleReferenceField } from "./SingleReferenceField";
-import { AttributeRowProps } from "./types";
+import { type AttributeRowProps } from "./types";
 
 const AttributeRow = ({
   attribute,
@@ -42,8 +42,9 @@ const AttributeRow = ({
   fetchMoreAttributeValues,
   onAttributeSelectBlur,
   richTextGetters,
-}: AttributeRowProps) => {
+}: AttributeRowProps): JSX.Element => {
   const intl = useIntl();
+  const labelProps = getAttributeRowLabelProps(attribute);
 
   switch (attribute.data.inputType) {
     case AttributeInputTypeEnum.SINGLE_REFERENCE:
@@ -59,7 +60,7 @@ const AttributeRow = ({
       );
     case AttributeInputTypeEnum.REFERENCE:
       return (
-        <BasicAttributeRow label={attribute.label}>
+        <BasicAttributeRow label={attribute.label} {...labelProps}>
           <SortableChipsField
             values={getReferenceDisplayValue(attribute)}
             onValueDelete={value =>
@@ -79,7 +80,7 @@ const AttributeRow = ({
       );
     case AttributeInputTypeEnum.FILE:
       return (
-        <BasicAttributeRow label={attribute.label}>
+        <BasicAttributeRow label={attribute.label} {...labelProps}>
           <FileUploadField
             disabled={disabled}
             loading={loading}
@@ -96,34 +97,16 @@ const AttributeRow = ({
       );
     case AttributeInputTypeEnum.DROPDOWN:
       return (
-        <BasicAttributeRow label={attribute.label}>
-          <Combobox
-            allowCustomValues
-            alwaysFetchOnFocus
-            size="small"
-            disabled={disabled}
-            options={getSingleChoices(attributeValues)}
-            value={
-              attribute.value[0]
-                ? {
-                    value: attribute.value[0],
-                    label: getSingleDisplayValue(attribute, attributeValues),
-                  }
-                : null
-            }
-            error={!!error}
-            helperText={getErrorMessage(error, intl)}
-            name={`attribute:${attribute.label}`}
-            id={`attribute:${attribute.label}`}
-            label=""
-            onChange={e => onChange(attribute.id, e.target.value)}
-            fetchOptions={query => {
-              fetchAttributeValues(query, attribute.id);
-            }}
-            onBlur={onAttributeSelectBlur}
-            fetchMore={fetchMoreAttributeValues}
-          />
-        </BasicAttributeRow>
+        <DropdownRow
+          attribute={attribute}
+          attributeValues={attributeValues}
+          disabled={disabled}
+          error={error}
+          onChange={onChange}
+          fetchAttributeValues={fetchAttributeValues}
+          fetchMoreAttributeValues={fetchMoreAttributeValues}
+          onAttributeSelectBlur={onAttributeSelectBlur}
+        />
       );
     case AttributeInputTypeEnum.SWATCH:
       return (
@@ -146,10 +129,7 @@ const AttributeRow = ({
       const value = isTooLong ? getTruncatedTextValue(attributeValue, MAX_LENGTH) : attributeValue;
 
       return (
-        <BasicAttributeRow
-          label={attribute.label}
-          description={intl.formatMessage(inputTypeMessages.plainText)}
-        >
+        <BasicAttributeRow label={attribute.label} {...labelProps}>
           <Input
             disabled={isTooLong || disabled}
             error={!!error}
@@ -176,10 +156,7 @@ const AttributeRow = ({
       const defaultValue = getDefaultValue(attribute.id);
 
       return (
-        <BasicAttributeRow
-          label={attribute.label}
-          description={intl.formatMessage(inputTypeMessages.richText)}
-        >
+        <BasicAttributeRow label={attribute.label} {...labelProps}>
           {getShouldMount(attribute.id) && (
             <Box __minWidth={210}>
               <RichTextEditor
@@ -200,7 +177,7 @@ const AttributeRow = ({
     }
     case AttributeInputTypeEnum.NUMERIC:
       return (
-        <BasicAttributeRow label={attribute.label}>
+        <BasicAttributeRow label={attribute.label} {...labelProps}>
           <Input
             disabled={disabled}
             error={!!error}
@@ -217,7 +194,7 @@ const AttributeRow = ({
       );
     case AttributeInputTypeEnum.BOOLEAN:
       return (
-        <BasicAttributeRow label={attribute.label}>
+        <BasicAttributeRow label={attribute.label} {...labelProps}>
           <Box
             as="li"
             display="flex"
@@ -248,7 +225,7 @@ const AttributeRow = ({
       );
     case AttributeInputTypeEnum.DATE:
       return (
-        <BasicAttributeRow label={attribute.label}>
+        <BasicAttributeRow label={attribute.label} {...labelProps}>
           <Input
             width="100%"
             disabled={disabled}
@@ -264,7 +241,7 @@ const AttributeRow = ({
       );
     case AttributeInputTypeEnum.DATE_TIME:
       return (
-        <BasicAttributeRow label={attribute.label}>
+        <BasicAttributeRow label={attribute.label} {...labelProps}>
           <DateTimeField
             name={`attribute:${attribute.label}`}
             disabled={disabled}
@@ -276,7 +253,8 @@ const AttributeRow = ({
       );
     default:
       return (
-        <BasicAttributeRow label={attribute.label}>
+        <BasicAttributeRow label={attribute.label} {...labelProps}>
+          {/* TODO It works, but replace it with Macaw Multiselect */}
           <Multiselect
             allowCustomValues
             alwaysFetchOnFocus

@@ -1,22 +1,28 @@
 // @ts-strict-ignore
 import ActionDialog from "@dashboard/components/ActionDialog";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
-import { ExtensionsUrls, PluginUrlDialog, PluginUrlQueryParams } from "@dashboard/extensions/urls";
 import {
-  ConfigurationItemFragment,
-  ConfigurationItemInput,
+  ExtensionsUrls,
+  type PluginUrlDialog,
+  type PluginUrlQueryParams,
+} from "@dashboard/extensions/urls";
+import {
+  type ConfigurationItemFragment,
+  type ConfigurationItemInput,
   usePluginQuery,
   usePluginUpdateMutation,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import useStateFromProps from "@dashboard/hooks/useStateFromProps";
-import { commonMessages } from "@dashboard/intl";
 import { extractMutationErrors } from "@dashboard/misc";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { PluginDetailsPageFormData, PluginsDetailsPage } from "./components/PluginsDetailsPage";
+import {
+  type PluginDetailsPageFormData,
+  PluginsDetailsPage,
+} from "./components/PluginsDetailsPage";
 import { PluginSecretFieldDialog } from "./components/PluginSecretFieldDialog";
 import { getConfigByChannelId, isPluginGlobal, isSecretField } from "./utils";
 
@@ -69,7 +75,7 @@ export const EditPluginExtension = ({ id, params }: PluginsDetailsProps) => {
       if (data.pluginUpdate.errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "m9Q2yf", defaultMessage: "Plugin settings updated" }),
         });
         closeModal();
       }

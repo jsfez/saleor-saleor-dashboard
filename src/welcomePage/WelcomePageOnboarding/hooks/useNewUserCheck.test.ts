@@ -1,9 +1,9 @@
-import { useUser } from "@dashboard/auth";
-import { renderHook } from "@testing-library/react-hooks";
+import { useUser } from "@dashboard/auth/useUser";
+import { renderHook } from "@testing-library/react";
 
 import { useNewUserCheck } from "./useNewUserCheck";
 
-jest.mock("@dashboard/auth");
+jest.mock("@dashboard/auth/useUser");
 
 describe("useNewUserCheck", () => {
   const originalEnv = process.env;

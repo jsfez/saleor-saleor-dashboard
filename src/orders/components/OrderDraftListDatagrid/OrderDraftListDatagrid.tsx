@@ -1,18 +1,17 @@
 import { ColumnPicker } from "@dashboard/components/Datagrid/ColumnPicker/ColumnPicker";
 import { useColumns } from "@dashboard/components/Datagrid/ColumnPicker/useColumns";
-import Datagrid from "@dashboard/components/Datagrid/Datagrid";
+import { Datagrid } from "@dashboard/components/Datagrid/Datagrid";
 import {
   DatagridChangeStateContext,
   useDatagridChangeState,
 } from "@dashboard/components/Datagrid/hooks/useDatagridChange";
-import { TablePaginationWithContext } from "@dashboard/components/TablePagination";
+import { DatagridPagination } from "@dashboard/components/TablePagination";
 import { getPrevLocationState } from "@dashboard/hooks/useBackLinkWithState";
 import useLocale from "@dashboard/hooks/useLocale";
-import { OrderDraft } from "@dashboard/orders/types";
-import { OrderDraftListUrlSortField, orderUrl } from "@dashboard/orders/urls";
-import { ListProps, SortPage } from "@dashboard/types";
-import { Item } from "@glideapps/glide-data-grid";
-import { Box } from "@saleor/macaw-ui-next";
+import { type OrderDraft } from "@dashboard/orders/types";
+import { type OrderDraftListUrlSortField, orderDraftUrl } from "@dashboard/orders/urls";
+import { type ListProps, type SortPage } from "@dashboard/types";
+import { type Item } from "@glideapps/glide-data-grid";
 import { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useLocation } from "react-router";
@@ -91,7 +90,7 @@ export const OrderDraftListDatagrid = ({
     ([, row]: Item) => {
       const rowData = orders[row];
 
-      return orderUrl(rowData.id);
+      return orderDraftUrl(rowData.id);
     },
     [orders],
   );
@@ -129,15 +128,13 @@ export const OrderDraftListDatagrid = ({
         navigatorOpts={{ state: getPrevLocationState(location) }}
       />
 
-      <Box paddingX={6}>
-        <TablePaginationWithContext
-          component="div"
-          colSpan={1}
-          settings={settings}
-          disabled={disabled}
-          onUpdateListSettings={onUpdateListSettings}
-        />
-      </Box>
+      <DatagridPagination
+        component="div"
+        colSpan={1}
+        settings={settings}
+        disabled={disabled}
+        onUpdateListSettings={onUpdateListSettings}
+      />
     </DatagridChangeStateContext.Provider>
   );
 };

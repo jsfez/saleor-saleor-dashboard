@@ -1,8 +1,8 @@
 import { useIntl } from "react-intl";
 
-import { FilterContainer, FilterElement } from "./FilterElement";
+import { type FilterContainer, FilterElement } from "./FilterElement";
 import { leftOperatorsMessages } from "./intl";
-import { LeftOperand } from "./LeftOperandsProvider";
+import { type LeftOperand } from "./LeftOperandsProvider";
 
 type TranslationKeys = keyof typeof leftOperatorsMessages;
 
@@ -24,7 +24,7 @@ export const useTranslate = () => {
       })),
     translateSelectedOperands: (container: FilterContainer) =>
       container.map(el => {
-        if (FilterElement.isCompatible(el)) {
+        if (FilterElement.isFilterElement(el)) {
           el.value.setLabel(formatLeftOperand(el.value.label as TranslationKeys));
         }
 

@@ -9,13 +9,12 @@ import { useStaffListQuery, useStaffMemberAddMutation } from "@dashboard/graphql
 import { useFilterPresets } from "@dashboard/hooks/useFilterPresets";
 import useListSettings from "@dashboard/hooks/useListSettings";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { usePaginationReset } from "@dashboard/hooks/usePaginationReset";
 import usePaginator, {
   createPaginationState,
   PaginatorContext,
 } from "@dashboard/hooks/usePaginator";
-import { commonMessages } from "@dashboard/intl";
 import usePermissionGroupSearch from "@dashboard/searches/usePermissionGroupSearch";
 import { ListViews } from "@dashboard/types";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
@@ -25,18 +24,25 @@ import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { getSortParams } from "@dashboard/utils/sort";
 import { getAppMountUriForRedirect } from "@dashboard/utils/urls";
 import { useOnboarding } from "@dashboard/welcomePage/WelcomePageOnboarding/onboardingContext";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useIntl } from "react-intl";
 import urlJoin from "url-join";
 
-import StaffAddMemberDialog, { AddMemberFormData } from "../../components/StaffAddMemberDialog";
+import StaffAddMemberDialog, {
+  type AddMemberFormData,
+} from "../../components/StaffAddMemberDialog";
 import StaffListPage from "../../components/StaffListPage";
 import {
   staffListUrl,
-  StaffListUrlDialog,
-  StaffListUrlQueryParams,
+  type StaffListUrlDialog,
+  type StaffListUrlQueryParams,
   staffMemberDetailsUrl,
 } from "../../urls";
+import {
+  getStaffListColumns,
+  shouldMigrateStaffListColumns,
+  staffListColumnsWithCustomer,
+} from "./columns";
 import { getFilterOpts, getFilterQueryParam, storageUtils } from "./filters";
 import { getSortQueryVariables } from "./sort";
 
@@ -52,8 +58,21 @@ const StaffList = ({ params }: StaffListProps) => {
   const { markOnboardingStepAsCompleted } = useOnboarding();
   const { valueProvider } = useConditionalFilterContext();
   const filters = createStaffMembersQueryVariables(valueProvider.value);
+  const effectiveColumns = getStaffListColumns(settings.columns);
+  const staffListSettings = useMemo(
+    () => ({
+      ...settings,
+      columns: effectiveColumns,
+    }),
+    [effectiveColumns, settings],
+  );
 
   usePaginationReset(staffListUrl, params, settings.rowNumber);
+  useEffect(() => {
+    if (shouldMigrateStaffListColumns(settings.columns)) {
+      updateListSettings("columns", staffListColumnsWithCustomer);
+    }
+  }, [settings.columns, updateListSettings]);
 
   const paginationState = createPaginationState(settings.rowNumber, params);
 
@@ -64,9 +83,10 @@ const StaffList = ({ params }: StaffListProps) => {
         ...filters,
         search: params.query,
       },
+      includeCustomerData: effectiveColumns?.includes("customer") ?? false,
       sort: getSortQueryVariables(params),
     }),
-    [params, settings.rowNumber, valueProvider.value],
+    [effectiveColumns, params, settings.rowNumber, valueProvider.value],
   );
   const { data: staffQueryData, loading } = useStaffListQuery({
     displayLoader: true,
@@ -83,7 +103,7 @@ const StaffList = ({ params }: StaffListProps) => {
         markOnboardingStepAsCompleted("invite-staff");
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "8a7vg2", defaultMessage: "Staff member invited" }),
         });
         navigate(staffMemberDetailsUrl(data?.staffCreate?.user?.id ?? ""));
       }
@@ -165,7 +185,7 @@ const StaffList = ({ params }: StaffListProps) => {
         filterPresets={presets.map(preset => preset.name)}
         disabled={loading || addStaffMemberData.loading || limitOpts.loading}
         limits={limitOpts.data?.shop?.limits}
-        settings={settings}
+        settings={staffListSettings}
         sort={getSortParams(params)}
         staffMembers={mapEdgesToItems(staffQueryData?.staffUsers) ?? []}
         onAdd={() => openModal("add")}

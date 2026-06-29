@@ -1,13 +1,13 @@
 // @ts-strict-ignore
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import CardSpacer from "@dashboard/components/CardSpacer";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
-import CountryList from "@dashboard/components/CountryList";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { CountryList } from "@dashboard/components/CountryList";
 import Form from "@dashboard/components/Form";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Savebar } from "@dashboard/components/Savebar";
-import { CountryFragment, ShippingErrorFragment } from "@dashboard/graphql";
-import { SubmitPromise } from "@dashboard/hooks/useForm";
+import { type CountryFragment, type ShippingErrorFragment } from "@dashboard/graphql";
+import { type SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { shippingZonesListUrl } from "@dashboard/shipping/urls";
 import { useState } from "react";
@@ -81,6 +81,7 @@ const ShippingZoneCreatePage = ({
                 )}
                 disabled={disabled}
                 emptyText={intl.formatMessage(messages.noCountriesAssigned)}
+                summaryContext="shipping-zone"
                 onCountryAssign={toggleModal}
                 onCountryUnassign={countryCode =>
                   change({

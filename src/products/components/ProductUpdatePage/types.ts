@@ -1,41 +1,39 @@
 // @ts-strict-ignore
-import { RichTextProps } from "@dashboard/attributes/utils/data";
-import { AttributeInput } from "@dashboard/components/Attributes";
-import { ChannelOpts } from "@dashboard/components/ChannelsAvailabilityCard/types";
+import { type RichTextProps } from "@dashboard/attributes/utils/data";
+import { type AttributeInput } from "@dashboard/components/Attributes";
+import { type ChannelOpts } from "@dashboard/components/ChannelsAvailabilityCard/types";
 import {
-  DatagridChangeOpts,
-  UseDatagridChangeState,
+  type DatagridChangeOpts,
+  type UseDatagridChangeState,
 } from "@dashboard/components/Datagrid/hooks/useDatagridChange";
-import { MetadataFormData } from "@dashboard/components/Metadata";
 import {
-  MetadataErrorFragment,
-  ProductChannelListingUpdateInput,
-  ProductFragment,
-  SearchCategoriesQuery,
-  SearchCollectionsQuery,
-  SearchPagesQuery,
-  SearchProductsQuery,
+  type ProductChannelListingUpdateInput,
+  type ProductFragment,
+  type SearchCategoriesQuery,
+  type SearchCollectionsQuery,
+  type SearchPagesQuery,
+  type SearchProductsQuery,
 } from "@dashboard/graphql";
 import {
-  CommonUseFormResultWithHandlers,
-  FormChange,
-  FormErrors,
-  SubmitPromise,
+  type CommonUseFormResultWithHandlers,
+  type FormChange,
+  type FormErrors,
+  type SubmitPromise,
 } from "@dashboard/hooks/useForm";
 import {
-  FormsetAdditionalDataChange,
-  FormsetChange,
-  FormsetData,
+  type FormsetAdditionalDataChange,
+  type FormsetChange,
+  type FormsetData,
 } from "@dashboard/hooks/useFormset";
-import { AttributeValuesMetadata } from "@dashboard/products/utils/data";
-import { UseProductUpdateHandlerError } from "@dashboard/products/views/ProductUpdate/handlers/useProductUpdateHandler";
-import { FetchMoreProps, RelayToFlat, ReorderEvent } from "@dashboard/types";
-import { OutputData } from "@editorjs/editorjs";
-import { Option } from "@saleor/macaw-ui-next";
+import { type AttributeValuesMetadata } from "@dashboard/products/utils/data";
+import { type UseProductUpdateHandlerError } from "@dashboard/products/views/ProductUpdate/handlers/useProductUpdateHandler";
+import { type FetchMoreProps, type RelayToFlat, type ReorderEvent } from "@dashboard/types";
+import { type OutputData } from "@editorjs/editorjs";
+import { type Option } from "@saleor/macaw-ui-next";
 
-import { ProductChannelsListingDialogSubmit } from "./ProductChannelsListingsDialog";
+import { type ProductChannelsListingDialogSubmit } from "./ProductChannelsListingsDialog";
 
-export interface ProductUpdateFormData extends MetadataFormData {
+export interface ProductUpdateFormData {
   category: string | null;
   taxClassId: string;
   collections: Option[];
@@ -69,10 +67,7 @@ export interface ProductUpdateSubmitData extends ProductUpdateFormData {
 }
 
 export interface ProductUpdateHandlers
-  extends Record<
-      "changeMetadata" | "selectCategory" | "selectCollection" | "selectTaxClass",
-      FormChange
-    >,
+  extends Record<"selectCategory" | "selectCollection" | "selectTaxClass", FormChange>,
     Record<"selectAttribute" | "selectAttributeMultiple", FormsetChange<string>> {
   changeChannels: (id: string, data: ChannelOpts) => void;
   selectAttributeReference: FormsetChange<string[]>;
@@ -90,9 +85,10 @@ export interface UseProductUpdateFormOutput
     RichTextProps {
   datagrid: UseDatagridChangeState;
   formErrors: FormErrors<ProductUpdateSubmitData>;
+  touchedChannels: string[];
 }
 
-type UseProductUpdateFormRenderProps = Omit<UseProductUpdateFormOutput, "datagrid" | "richText">;
+type UseProductUpdateFormRenderProps = Omit<UseProductUpdateFormOutput, "datagrid">;
 
 export interface UseProductUpdateFormOpts
   extends Record<"categories" | "collections" | "taxClasses", Option[]> {
@@ -117,9 +113,7 @@ export interface UseProductUpdateFormOpts
   isSimpleProduct: boolean;
 }
 
-export type SubmitResult = SubmitPromise<
-  Array<UseProductUpdateHandlerError | MetadataErrorFragment>
->;
+export type SubmitResult = SubmitPromise<Array<UseProductUpdateHandlerError>>;
 
 export interface ProductUpdateFormProps extends UseProductUpdateFormOpts {
   children: (props: UseProductUpdateFormRenderProps) => React.ReactNode;

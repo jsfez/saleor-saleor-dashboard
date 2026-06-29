@@ -1,5 +1,5 @@
 import { useFileUploadMutation } from "@dashboard/graphql";
-import { act, renderHook } from "@testing-library/react-hooks";
+import { act, renderHook } from "@testing-library/react";
 
 import { useFileProcessing } from "./useFileProcessing";
 
@@ -14,7 +14,9 @@ jest.mock("@dashboard/intl", () => ({
   },
 }));
 
-jest.mock("@dashboard/hooks/useNotifier", () => () => jest.fn());
+jest.mock("@dashboard/hooks/useNotifier", () => ({
+  useNotifier: () => jest.fn(),
+}));
 
 describe("useFileProcessing", () => {
   const mockUploadFile = jest.fn();

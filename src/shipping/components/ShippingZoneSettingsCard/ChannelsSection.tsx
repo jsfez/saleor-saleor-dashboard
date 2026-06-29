@@ -1,10 +1,11 @@
+import { DashboardCard } from "@dashboard/components/Card";
 import CardSpacer from "@dashboard/components/CardSpacer";
 import { Multiselect } from "@dashboard/components/Combobox";
-import { ChannelFragment } from "@dashboard/graphql";
+import { type ChannelFragment } from "@dashboard/graphql";
 import { useChannelsSearch } from "@dashboard/hooks/useChannelsSearch";
-import { FormChange } from "@dashboard/hooks/useForm";
+import { type FormChange } from "@dashboard/hooks/useForm";
 import { mapNodeToChoice } from "@dashboard/utils/maps";
-import { Option } from "@saleor/macaw-ui-next";
+import { type Option } from "@saleor/macaw-ui-next";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 
 const messages = defineMessages({
@@ -42,7 +43,9 @@ const ChannelsSection = ({
 
   return (
     <>
-      <FormattedMessage {...messages.subtitle} />
+      <DashboardCard.Subtitle fontSize={3} color="default2">
+        <FormattedMessage {...messages.subtitle} />
+      </DashboardCard.Subtitle>
       <CardSpacer />
 
       <Multiselect

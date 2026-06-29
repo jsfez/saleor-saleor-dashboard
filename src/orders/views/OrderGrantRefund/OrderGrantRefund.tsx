@@ -4,10 +4,10 @@ import {
   useOrderGrantRefundAddMutation,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { extractMutationErrors } from "@dashboard/misc";
 import OrderGrantRefundPage from "@dashboard/orders/components/OrderGrantRefundPage";
-import { OrderGrantRefundFormData } from "@dashboard/orders/components/OrderGrantRefundPage/form";
+import { type OrderGrantRefundFormData } from "@dashboard/orders/components/OrderGrantRefundPage/form";
 import { orderUrl } from "@dashboard/orders/urls";
 import { useIntl } from "react-intl";
 
@@ -44,6 +44,7 @@ const OrderGrantRefund = ({ orderId }: OrderGrantRefundProps) => {
   const handleSubmit = async ({
     amount,
     reason,
+    reasonReference,
     lines,
     grantRefundForShipping,
     transactionId,
@@ -60,6 +61,7 @@ const OrderGrantRefund = ({ orderId }: OrderGrantRefundProps) => {
           orderId,
           amount,
           reason,
+          reasonReferenceId: reasonReference || undefined,
           lines: squashLines(lines),
           grantRefundForShipping,
           transactionId,

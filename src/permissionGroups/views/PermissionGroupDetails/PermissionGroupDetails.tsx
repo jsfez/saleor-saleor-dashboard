@@ -1,20 +1,19 @@
-import { useUser } from "@dashboard/auth";
+import { useUser } from "@dashboard/auth/useUser";
 import useAppChannel from "@dashboard/components/AppLayout/AppChannelContext";
 import { Button } from "@dashboard/components/Button";
 import { DEFAULT_INITIAL_SEARCH_DATA } from "@dashboard/config";
 import {
-  PermissionGroupDetailsQuery,
-  PermissionGroupErrorFragment,
+  type PermissionGroupDetailsQuery,
+  type PermissionGroupErrorFragment,
   usePermissionGroupDeleteMutation,
   usePermissionGroupDetailsQuery,
   usePermissionGroupUpdateMutation,
 } from "@dashboard/graphql";
 import useBulkActions from "@dashboard/hooks/useBulkActions";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import useShop from "@dashboard/hooks/useShop";
 import useStateFromProps from "@dashboard/hooks/useStateFromProps";
-import { commonMessages } from "@dashboard/intl";
 import { extractMutationErrors, getStringOrPlaceholder } from "@dashboard/misc";
 import MembersErrorDialog from "@dashboard/permissionGroups/components/MembersErrorDialog";
 import PermissionGroupDeleteDialog from "@dashboard/permissionGroups/components/PermissionGroupDeleteDialog";
@@ -29,13 +28,13 @@ import { useIntl } from "react-intl";
 import AssignMembersDialog from "../../components/AssignMembersDialog";
 import {
   PermissionGroupDetailsPage,
-  PermissionGroupDetailsPageFormData,
+  type PermissionGroupDetailsPageFormData,
 } from "../../components/PermissionGroupDetailsPage";
 import UnassignMembersDialog from "../../components/UnassignMembersDialog";
 import {
   permissionGroupDetailsUrl,
-  PermissionGroupDetailsUrlDialog,
-  PermissionGroupDetailsUrlQueryParams,
+  type PermissionGroupDetailsUrlDialog,
+  type PermissionGroupDetailsUrlQueryParams,
   permissionGroupListUrl,
 } from "../../urls";
 import {
@@ -80,7 +79,7 @@ export const PermissionGroupDetails = ({ id, params }: PermissionGroupDetailsPro
       if (updatedData?.permissionGroupUpdate?.errors?.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "IXCA8O", defaultMessage: "Permission group updated" }),
         });
 
         // When user belong to editedd permission group refetch user details

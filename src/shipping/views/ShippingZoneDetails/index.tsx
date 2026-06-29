@@ -4,49 +4,39 @@ import useAppChannel from "@dashboard/components/AppLayout/AppChannelContext";
 import NotFoundPage from "@dashboard/components/NotFoundPage";
 import { DEFAULT_INITIAL_SEARCH_DATA, PAGINATE_BY } from "@dashboard/config";
 import {
-  CountryCode,
   ShippingMethodTypeEnum,
-  ShippingZoneUpdateInput,
+  type ShippingZoneUpdateInput,
   useDeleteShippingRateMutation,
   useDeleteShippingZoneMutation,
   useShippingZoneQuery,
   useShopCountriesQuery,
-  useUpdateMetadataMutation,
-  useUpdatePrivateMetadataMutation,
   useUpdateShippingZoneMutation,
-  useWarehouseCreateMutation,
 } from "@dashboard/graphql";
 import { useLocalPaginationState } from "@dashboard/hooks/useLocalPaginator";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import useShop from "@dashboard/hooks/useShop";
-import { commonMessages } from "@dashboard/intl";
-import {
-  extractMutationErrors,
-  findValueInEnum,
-  getById,
-  getStringOrPlaceholder,
-} from "@dashboard/misc";
+import { extractMutationErrors, getById, getStringOrPlaceholder } from "@dashboard/misc";
 import useWarehouseSearch from "@dashboard/searches/useWarehouseSearch";
 import DeleteShippingRateDialog from "@dashboard/shipping/components/DeleteShippingRateDialog";
-import ShippingZoneAddWarehouseDialog from "@dashboard/shipping/components/ShippingZoneAddWarehouseDialog";
 import ShippingZoneCountriesAssignDialog from "@dashboard/shipping/components/ShippingZoneCountriesAssignDialog";
+import { ShippingZoneMetadataDialog } from "@dashboard/shipping/components/ShippingZoneMetadataDialog/ShippingZoneMetadataDialog";
 import { arrayDiff } from "@dashboard/utils/arrays";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
-import createMetadataUpdateHandler from "@dashboard/utils/handlers/metadataUpdateHandler";
 import { mapCountriesToCountriesCodes, mapEdgesToItems } from "@dashboard/utils/maps";
 import { diff } from "fast-array-diff";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import ShippingZoneDetailsPage from "../../components/ShippingZoneDetailsPage";
-import { ShippingZoneUpdateFormData } from "../../components/ShippingZoneDetailsPage/types";
+import { ShippingZoneDetailsPage } from "../../components/ShippingZoneDetailsPage/ShippingZoneDetailsPage";
+import { type ShippingZoneUpdateFormData } from "../../components/ShippingZoneDetailsPage/types";
 import {
+  shippingRateChannelSetupUrl,
   shippingRateCreateUrl,
   shippingRateEditUrl,
   shippingZonesListUrl,
   shippingZoneUrl,
-  ShippingZoneUrlDialog,
-  ShippingZoneUrlQueryParams,
+  type ShippingZoneUrlDialog,
+  type ShippingZoneUrlQueryParams,
 } from "../../urls";
 
 interface ShippingZoneDetailsProps {
@@ -78,7 +68,7 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
     displayLoader: true,
     variables: { id, ...paginationState },
   });
-  const { availableChannels, channel } = useAppChannel();
+  const { availableChannels } = useAppChannel(false);
   const [openModal, closeModal] = createDialogActionHandlers<
     ShippingZoneUrlDialog,
     ShippingZoneUrlQueryParams
@@ -89,7 +79,10 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
       if (data.shippingPriceDelete.errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({
+            id: "KYMCYg",
+            defaultMessage: "Shipping rate deleted",
+          }),
         });
         closeModal();
       }
@@ -100,7 +93,10 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
       if (data.shippingZoneDelete.errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({
+            id: "ltSmln",
+            defaultMessage: "Shipping zone deleted",
+          }),
         });
         navigate(shippingZonesListUrl(), { replace: true });
       }
@@ -111,26 +107,20 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
       if (data.shippingZoneUpdate.errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({
+            id: "YjrPCx",
+            defaultMessage: "Shipping zone updated",
+          }),
         });
-        closeModal();
+
+        if (params.action === "assign-country" || params.action === "unassign-country") {
+          closeModal();
+        }
+
         refetchRestWorldCountries();
       }
     },
   });
-  const [createWarehouse, createWarehouseOpts] = useWarehouseCreateMutation({
-    onCompleted: data => {
-      if (data.createWarehouse.errors.length === 0) {
-        notify({
-          status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
-        });
-        closeModal();
-      }
-    },
-  });
-  const [updateMetadata] = useUpdateMetadataMutation({});
-  const [updatePrivateMetadata] = useUpdatePrivateMetadataMutation({});
   const getParsedUpdateInput = (
     submitData: ShippingZoneUpdateFormData,
   ): ShippingZoneUpdateInput => {
@@ -161,12 +151,7 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
         },
       }),
     );
-  const handleSubmit = createMetadataUpdateHandler(
-    data?.shippingZone,
-    updateData,
-    variables => updateMetadata({ variables }),
-    variables => updatePrivateMetadata({ variables }),
-  );
+  const handleSubmit = updateData;
 
   if (data?.shippingZone === null) {
     return <NotFoundPage onBack={() => navigate(shippingZonesListUrl())} />;
@@ -175,6 +160,7 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
   return (
     <>
       <ShippingZoneDetailsPage
+        zoneLoading={loading}
         disabled={loading}
         errors={updateShippingZoneOpts.data?.shippingZoneUpdate.errors || []}
         onCountryAdd={() => openModal("assign-country")}
@@ -184,10 +170,14 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
           })
         }
         onDelete={() => openModal("remove")}
+        onShowMetadata={() => openModal("view-metadata")}
         onPriceRateAdd={() =>
           navigate(shippingRateCreateUrl(id, { type: ShippingMethodTypeEnum.PRICE }))
         }
         getPriceRateEditHref={rateId => shippingRateEditUrl(id, rateId)}
+        getRateChannelSetupHref={(rateId, channelId) =>
+          shippingRateChannelSetupUrl(id, rateId, channelId)
+        }
         onRateRemove={rateId =>
           openModal("remove-rate", {
             id: rateId,
@@ -195,7 +185,6 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
         }
         onSubmit={handleSubmit}
         allChannels={availableChannels}
-        onWarehouseAdd={() => openModal("add-warehouse")}
         onWeightRateAdd={() =>
           navigate(shippingRateCreateUrl(id, { type: ShippingMethodTypeEnum.WEIGHT }))
         }
@@ -207,7 +196,11 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
         loading={searchWarehousesOpts.loading}
         onFetchMore={loadMore}
         onSearchChange={search}
-        selectedChannelId={channel?.id}
+      />
+      <ShippingZoneMetadataDialog
+        open={params.action === "view-metadata" && !!data?.shippingZone}
+        onClose={closeModal}
+        shippingZone={data?.shippingZone}
       />
       <DeleteShippingRateDialog
         confirmButtonState={deleteShippingRateOpts.status}
@@ -311,34 +304,6 @@ const ShippingZoneDetails = ({ id, params }: ShippingZoneDetailsProps) => {
           }}
         />
       </ActionDialog>
-      <ShippingZoneAddWarehouseDialog
-        countries={shop?.countries || []}
-        disabled={createWarehouseOpts.loading}
-        open={params.action === "add-warehouse"}
-        confirmButtonState={createWarehouseOpts.status}
-        errors={createWarehouseOpts.data?.createWarehouse.errors || []}
-        onClose={closeModal}
-        onSubmit={data =>
-          createWarehouse({
-            variables: {
-              input: {
-                address: {
-                  companyName: data.companyName,
-                  city: data.city,
-                  cityArea: data.cityArea,
-                  country: findValueInEnum(data.country, CountryCode),
-                  countryArea: data.countryArea,
-                  phone: data.phone,
-                  postalCode: data.postalCode,
-                  streetAddress1: data.streetAddress1,
-                  streetAddress2: data.streetAddress2,
-                },
-                name: data.name,
-              },
-            },
-          })
-        }
-      />
     </>
   );
 };

@@ -1,8 +1,8 @@
 // @ts-strict-ignore
 import { getGiftCardErrorMessage } from "@dashboard/giftCards/GiftCardUpdate/messages";
-import { DeleteGiftCardMutation, useDeleteGiftCardMutation } from "@dashboard/graphql";
-import { MutationResultWithOpts } from "@dashboard/hooks/makeMutation";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { type DeleteGiftCardMutation, useDeleteGiftCardMutation } from "@dashboard/graphql";
+import { type MutationResultWithOpts } from "@dashboard/hooks/makeMutation";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { useIntl } from "react-intl";
 
 import { giftCardDeleteDialogMessages as messages } from "./messages";

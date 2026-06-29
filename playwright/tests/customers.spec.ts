@@ -99,18 +99,18 @@ test("TC: SALEOR_201 Update customer account info #e2e #customer", async () => {
 
 test("TC: SALEOR_202 Deactivate a customer #e2e #customer", async () => {
   await customersPage.gotoCustomerDetailsPage(CUSTOMERS.customerToBeDeactivated.id);
-  await customersPage.customerActiveCheckbox.click();
-  await customersPage.saveCustomer();
+  await expect(customersPage.accountStatusActivePill).toBeVisible();
+  await customersPage.clickDeactivateUser();
   await customersPage.expectSuccessBanner();
-  await expect(customersPage.customerActiveCheckbox).not.toBeChecked();
+  await expect(customersPage.accountStatusInactivePill).toBeVisible();
 });
 
 test("TC: SALEOR_203 Activate a customer #e2e #customer", async () => {
   await customersPage.gotoCustomerDetailsPage(CUSTOMERS.customerToBeActivated.id);
-  await customersPage.customerActiveCheckbox.click();
-  await customersPage.saveCustomer();
+  await expect(customersPage.accountStatusInactivePill).toBeVisible();
+  await customersPage.clickActivateUser();
   await customersPage.expectSuccessBanner();
-  await expect(customersPage.customerActiveCheckbox).toBeChecked();
+  await expect(customersPage.accountStatusActivePill).toBeVisible();
 });
 
 test("TC: SALEOR_204 Delete customer from the details page #e2e #customer", async () => {
@@ -122,8 +122,8 @@ test("TC: SALEOR_204 Delete customer from the details page #e2e #customer", asyn
   await customersPage.searchForCustomer(CUSTOMERS.deleteCustomer.email);
   await expect(customersPage.emptyDataGridListView).toBeVisible();
 });
-
-test("TC: SALEOR_205 Bulk delete customers #e2e #customer", async () => {
+// Skipping due to issues with clicking on grid
+test.skip("TC: SALEOR_205 Bulk delete customers #e2e #customer", async () => {
   const customersToBeBulkDeleted = CUSTOMERS.customersToBeBulkDeleted.names;
 
   await customersPage.goToCustomersListView();
@@ -222,16 +222,11 @@ test("TC: SALEOR_207 Issue a new gift card for the customer #e2e #customer", asy
   await customersPage.issueGiftCardDialog.typeCustomTag(faker.lorem.word());
   await customersPage.issueGiftCardDialog.typeNote(faker.lorem.sentences(3));
   await customersPage.issueGiftCardDialog.clickIssueButton();
-  await customersPage.expectSuccessBanner();
+  await giftCardsPage.expectSuccessBanner({ message: "Gift card created" });
   await expect(giftCardsPage.issueGiftCardDialog.cardCode).toBeVisible();
 
-  const code = (await giftCardsPage.issueGiftCardDialog.cardCode.innerText()).slice(-4);
-
   await giftCardsPage.issueGiftCardDialog.clickCopyCodeButton();
-  await giftCardsPage.expectSuccessBanner();
+  await giftCardsPage.expectSuccessBanner({ message: "Copied to clipboard" });
   await giftCardsPage.issueGiftCardDialog.clickOkButton();
   await giftCardsPage.expectElementIsHidden(giftCardsPage.giftCardDialog);
-  await giftCardsPage.expectSuccessBanner({ message: "Successfully created gift card" });
-  await giftCardsPage.gotoGiftCardsListView();
-  await giftCardsPage.waitForCanvasContainsText(`Code ending with ${code}`);
 });

@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { useInstalledExtensionsFilter } from "./hooks/useInstalledExtensionsFilter";
 import { usePendingInstallation } from "./hooks/usePendingInstallation";
-import { InstalledExtensions, InstalledExtensionsProps } from "./InstalledExtensions";
+import { InstalledExtensions, type InstalledExtensionsProps } from "./InstalledExtensions";
 
 const mockMarkOnboardingStepAsCompleted = jest.fn();
 const mockHandleRemoveInProgress = jest.fn();
@@ -20,13 +20,6 @@ const mockPendingInstallations = [
   { id: "pending1", name: "Pending App 1", manifestUrl: "pendingUrl1" },
 ];
 
-jest.mock("@dashboard/welcomePage/WelcomePageOnboarding/onboardingContext", () => ({
-  useOnboarding: () => ({
-    markOnboardingStepAsCompleted: mockMarkOnboardingStepAsCompleted,
-    onboardingState: { stepsCompleted: [] },
-  }),
-}));
-
 jest.mock("@dashboard/utils/handlers/dialogActionHandlers", () => ({
   __esModule: true,
   default: () => [mockOpenModal, mockCloseModal],
@@ -37,6 +30,8 @@ jest.mock("./hooks/useInstalledExtensions", () => ({
     installedExtensions: mockInstalledExtensions,
     installedAppsLoading: false,
     refetchInstalledApps: jest.fn(),
+    errorCount: 0,
+    warningCount: 0,
   }),
 }));
 
@@ -44,6 +39,10 @@ jest.mock("./hooks/usePendingInstallation");
 jest.mock("./hooks/useInstalledExtensionsFilter");
 jest.mock("@dashboard/hooks/useHasManagedAppsPermission");
 jest.mock("@dashboard/hooks/useNavigator", () => jest.fn(() => jest.fn()));
+jest.mock("@dashboard/graphql", () => ({
+  ...(jest.requireActual("@dashboard/graphql") as object),
+  useAppProblemDismissMutation: jest.fn(() => [jest.fn(), {}]),
+}));
 jest.mock("@dashboard/components/AppLayout/ContextualLinks/useContextualLink", () => ({
   useContextualLink: () => "Extensions",
 }));
@@ -51,6 +50,12 @@ jest.mock("@dashboard/components/AppLayout/ContextualLinks/useContextualLink", (
 jest.mock("@dashboard/featureFlags", () => ({
   useFlag: () => true,
   useFlags: () => ({}),
+}));
+
+jest.mock("@dashboard/welcomePage/WelcomePageOnboarding/onboardingContext", () => ({
+  useOnboarding: () => ({
+    markOnboardingStepAsCompleted: mockMarkOnboardingStepAsCompleted,
+  }),
 }));
 
 const mockUsePendingInstallation = usePendingInstallation as jest.Mock;

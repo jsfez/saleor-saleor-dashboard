@@ -1,12 +1,11 @@
-import { useUser } from "@dashboard/auth";
+import { useUser } from "@dashboard/auth/useUser";
 import { useSaveOnBoardingStateMutation } from "@dashboard/graphql";
-import { act } from "@testing-library/react";
-import { renderHook } from "@testing-library/react-hooks";
+import { act, renderHook } from "@testing-library/react";
 
-import { OnboardingStepsIDs } from "./types";
+import { type OnboardingStepsIDs } from "./types";
 import { useOnboardingStorage } from "./useOnboardingStorage";
 
-jest.mock("@dashboard/auth", () => ({
+jest.mock("@dashboard/auth/useUser", () => ({
   __esModule: true,
   useUser: jest.fn(),
 }));

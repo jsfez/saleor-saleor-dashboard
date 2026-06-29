@@ -1,13 +1,13 @@
 import {
-  OrderDetailsFragment,
-  OrderGrantRefundCreateErrorFragment,
-  TransactionRequestRefundForGrantedRefundErrorFragment,
+  type OrderDetailsFragment,
+  type OrderGrantRefundCreateErrorFragment,
+  type TransactionRequestRefundForGrantedRefundErrorFragment,
   useOrderGrantRefundAddWithOrderMutation,
   useOrderSendRefundForGrantedRefundMutation,
 } from "@dashboard/graphql";
-import { SubmitPromise } from "@dashboard/hooks/useForm";
+import { type SubmitPromise } from "@dashboard/hooks/useForm";
 import { extractMutationErrors } from "@dashboard/misc";
-import { OrderReturnFormData } from "@dashboard/orders/components/OrderReturnPage/form";
+import { type OrderReturnFormData } from "@dashboard/orders/components/OrderReturnPage/form";
 
 interface UseReturnWithinReturnOpts {
   orderId: string;
@@ -23,6 +23,8 @@ interface UseReturnWithinReturnResult {
 export interface GrantRefundInputLine {
   id: string;
   quantity: number;
+  reason?: string | null;
+  reasonReference?: string | null;
 }
 
 export function useRefundWithinReturn({
@@ -38,17 +40,9 @@ export function useRefundWithinReturn({
             orderId,
             amount: formData.amount,
             transactionId: formData.transactionId,
-            reason: "",
-            lines: squashLines([
-              ...formData.fulfilledItemsQuantities.map(line => ({
-                id: line.data.orderLineId,
-                quantity: line.value,
-              })),
-              ...formData.unfulfilledItemsQuantities.map(({ id, value }) => ({
-                id,
-                quantity: value,
-              })),
-            ]),
+            reason: formData.refundReason,
+            reasonReferenceId: formData.refundReasonReference || undefined,
+            lines: prepareGrantRefundLines(formData),
             grantRefundForShipping: formData.refundShipmentCosts,
           },
         })
@@ -79,6 +73,29 @@ export function useRefundWithinReturn({
     grantRefundResponseOrderData,
   };
 }
+
+export const prepareGrantRefundLines = (
+  formData: Pick<
+    OrderReturnFormData,
+    "fulfilledItemsQuantities" | "waitingItemsQuantities" | "unfulfilledItemsQuantities"
+  >,
+): GrantRefundInputLine[] =>
+  squashLines([
+    // Fulfillment lines (fulfilled and waiting for approval) use formset ids pointing
+    // to fulfillment lines - map them to order line ids required by the grant refund mutation
+    ...formData.fulfilledItemsQuantities.map(line => ({
+      id: line.data.orderLineId,
+      quantity: line.value,
+    })),
+    ...formData.waitingItemsQuantities.map(line => ({
+      id: line.data.orderLineId,
+      quantity: line.value,
+    })),
+    ...formData.unfulfilledItemsQuantities.map(({ id, value }) => ({
+      id,
+      quantity: value,
+    })),
+  ]);
 
 export const squashLines = (items: GrantRefundInputLine[]): GrantRefundInputLine[] =>
   Object.values(

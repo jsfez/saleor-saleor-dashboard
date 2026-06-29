@@ -1,5 +1,19 @@
-import { UserContextError } from "@dashboard/auth/types";
-import { defineMessages, IntlShape } from "react-intl";
+import { type UserContextError } from "@dashboard/auth/types";
+import { defineMessages, type IntlShape } from "react-intl";
+
+export const loginPageMessages = defineMessages({
+  loadingLoginMethods: {
+    id: "tZ+8E3",
+    defaultMessage: "Loading login methods",
+    description: "spinner aria label on login page",
+  },
+  passwordLoginDisabled: {
+    id: "BtsJ+e",
+    defaultMessage:
+      "Password login is disabled. Contact your administrator to configure an external authentication method or enable password login.",
+    description: "empty state message when no login method is available",
+  },
+});
 
 const errorMessages = defineMessages({
   loginError: {

@@ -1,44 +1,44 @@
 // @ts-strict-ignore
 import ChannelAllocationStrategy from "@dashboard/channels/components/ChannelAllocationStrategy";
-import ShippingZones from "@dashboard/channels/components/ShippingZones";
+import { ShippingZones } from "@dashboard/channels/components/ShippingZones/ShippingZones";
 import Warehouses from "@dashboard/channels/components/Warehouses";
 import { channelsListUrl } from "@dashboard/channels/urls";
 import { validateChannelFormData } from "@dashboard/channels/validation";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import CardSpacer from "@dashboard/components/CardSpacer";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import Form from "@dashboard/components/Form";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import RequirePermissions from "@dashboard/components/RequirePermissions";
 import { Savebar } from "@dashboard/components/Savebar";
 import {
   AllocationStrategyEnum,
-  ChannelDetailsFragment,
-  ChannelErrorFragment,
-  CountryCode,
-  CountryFragment,
+  type ChannelDetailsFragment,
+  type ChannelErrorFragment,
+  type CountryCode,
+  type CountryFragment,
   PermissionEnum,
-  SearchShippingZonesQuery,
-  SearchWarehousesQuery,
-  StockSettingsInput,
+  type SearchShippingZonesQuery,
+  type SearchWarehousesQuery,
+  type StockSettingsInput,
 } from "@dashboard/graphql";
 import {
   MarkAsPaidStrategyEnum,
   TransactionFlowStrategyEnum,
 } from "@dashboard/graphql/types.generated";
-import { SearchData } from "@dashboard/hooks/makeTopLevelSearch";
+import { type SearchData } from "@dashboard/hooks/makeTopLevelSearch";
 import { getParsedSearchData } from "@dashboard/hooks/makeTopLevelSearch/utils";
-import { SubmitPromise } from "@dashboard/hooks/useForm";
+import { type SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import useStateFromProps from "@dashboard/hooks/useStateFromProps";
-import { FetchMoreProps, RelayToFlat } from "@dashboard/types";
+import { type FetchMoreProps, type RelayToFlat } from "@dashboard/types";
 import createSingleAutocompleteSelectHandler from "@dashboard/utils/handlers/singleAutocompleteSelectChangeHandler";
 import { mapCountriesToChoices } from "@dashboard/utils/maps";
-import { Option } from "@saleor/macaw-ui-next";
+import { type Option } from "@saleor/macaw-ui-next";
 import { useState } from "react";
 import { useIntl } from "react-intl";
 
-import { ChannelForm, FormData } from "../../components/ChannelForm";
+import { ChannelForm, type FormData } from "../../components/ChannelForm";
 import { ChannelStatus } from "../../components/ChannelStatus/ChannelStatus";
 import {
   createShippingZoneAddHandler,
@@ -47,7 +47,8 @@ import {
   createWarehouseRemoveHandler,
   createWarehouseReorderHandler,
 } from "./handlers";
-import { ChannelShippingZones, ChannelWarehouses } from "./types";
+import { type ChannelShippingZones, type ChannelWarehouses } from "./types";
+import { parseDateTimeToDateAndTime } from "./utils";
 
 interface ChannelDetailsPageProps<TErrors extends ChannelErrorFragment[]> {
   channel?: ChannelDetailsFragment;
@@ -114,6 +115,9 @@ const ChannelDetailsPage = function <TErrors extends ChannelErrorFragment[]>({
     allocationStrategy: AllocationStrategyEnum.PRIORITIZE_SORTING_ORDER,
     ...stockSettings,
   };
+  const cutOffDateTime = parseDateTimeToDateAndTime(
+    checkoutSettings?.automaticCompletionCutOffDate,
+  );
   const initialData: FormData = {
     currencyCode: "",
     name: "",
@@ -132,7 +136,12 @@ const ChannelDetailsPage = function <TErrors extends ChannelErrorFragment[]>({
     deleteExpiredOrdersAfter: orderSettings?.deleteExpiredOrdersAfter,
     allowUnpaidOrders: orderSettings?.allowUnpaidOrders,
     defaultTransactionFlowStrategy: paymentSettings?.defaultTransactionFlowStrategy,
-    automaticallyCompleteCheckouts: checkoutSettings?.automaticallyCompleteFullyPaidCheckouts,
+    allowLegacyGiftCardUse: checkoutSettings?.allowLegacyGiftCardUse,
+    automaticallyCompleteCheckouts:
+      checkoutSettings?.automaticallyCompleteFullyPaidCheckouts ?? false,
+    automaticCompletionDelay: checkoutSettings?.automaticCompletionDelay ?? null,
+    automaticCompletionCutOffDate: cutOffDateTime.date,
+    automaticCompletionCutOffTime: cutOffDateTime.time,
   };
   const getFilteredShippingZonesChoices = (
     shippingZonesToDisplay: ChannelShippingZones,
@@ -226,6 +235,12 @@ const ChannelDetailsPage = function <TErrors extends ChannelErrorFragment[]>({
           });
         };
 
+        const handleAllowLegacyGiftCardUseChange = () => {
+          set({
+            allowLegacyGiftCardUse: !data.allowLegacyGiftCardUse,
+          });
+        };
+
         const allErrors = [...errors, ...validationErrors];
 
         return (
@@ -249,12 +264,18 @@ const ChannelDetailsPage = function <TErrors extends ChannelErrorFragment[]>({
                 countries={countryChoices}
                 selectedCurrencyCode={selectedCurrencyCode}
                 selectedCountryDisplayName={selectedCountryDisplayName}
+                savedAutomaticallyCompleteCheckouts={
+                  checkoutSettings?.automaticallyCompleteFullyPaidCheckouts ?? false
+                }
+                savedAutomaticCompletionCutOffDate={cutOffDateTime.date}
+                savedAutomaticCompletionCutOffTime={cutOffDateTime.time}
                 onChange={change}
                 onCurrencyCodeChange={handleCurrencyCodeSelect}
                 onDefaultCountryChange={handleDefaultCountrySelect}
                 onMarkAsPaidStrategyChange={handleMarkAsPaidStrategyChange}
                 onTransactionFlowStrategyChange={handleTransactionFlowStrategyChange}
                 onAutomaticallyCompleteCheckoutsChange={handleAutomaticallyCompleteCheckoutsChange}
+                onAllowLegacyGiftCardUseChange={handleAllowLegacyGiftCardUseChange}
                 errors={allErrors}
               />
             </DetailPageLayout.Content>

@@ -1,13 +1,21 @@
 import { DashboardCard } from "@dashboard/components/Card";
 import Money from "@dashboard/components/Money";
-import { IMoney } from "@dashboard/utils/intl";
-import { Box, BoxProps, Checkbox, Input, Skeleton, Text, Tooltip } from "@saleor/macaw-ui-next";
-import { Control, FieldError, useController } from "react-hook-form";
+import { type IMoney } from "@dashboard/utils/intl";
+import {
+  Box,
+  type BoxProps,
+  Checkbox,
+  Input,
+  Skeleton,
+  Text,
+  Tooltip,
+} from "@saleor/macaw-ui-next";
+import { type Control, type FieldError, useController } from "react-hook-form";
 import { FormattedMessage } from "react-intl";
 
 import {
-  OrderTransactionRefundError,
-  OrderTransactionRefundPageFormData,
+  type OrderTransactionRefundError,
+  type OrderTransactionRefundPageFormData,
 } from "../../OrderTransactionRefundPage";
 import { orderTransactionRefundSummaryMessages as messages } from "./messages";
 
@@ -72,7 +80,15 @@ export const OrderTransactionSummary = ({
         <Text as="p">
           <FormattedMessage {...messages.amountDescription} />
         </Text>
-        <Box backgroundColor="default2" borderRadius={3} padding={4} paddingLeft={3}>
+        <Box
+          backgroundColor="default2"
+          borderRadius={3}
+          padding={4}
+          paddingLeft={3}
+          borderWidth={1}
+          borderStyle="solid"
+          borderColor="default1"
+        >
           <Box
             display="grid"
             columnGap={2}

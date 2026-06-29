@@ -1,17 +1,19 @@
-import { DiscoutFormData } from "@dashboard/discounts/types";
-import { CommonError } from "@dashboard/utils/errors/common";
-import { ChangeEvent } from "react";
+import { type DiscoutFormData } from "@dashboard/discounts/types";
+import { type CommonError } from "@dashboard/utils/errors/common";
+import { type ChangeEvent } from "react";
 import { useController, useFormContext } from "react-hook-form";
 
 import DiscountDates from "./DiscountDates";
 
 interface DiscountDatesWithControllerProps<ErrorCode> {
   disabled?: boolean;
+  stacked?: boolean;
   errors: Array<CommonError<ErrorCode>>;
 }
 
 export const DiscountDatesWithController = <ErrorCode,>({
   disabled,
+  stacked,
   errors,
 }: DiscountDatesWithControllerProps<ErrorCode>) => {
   const { formState } = useFormContext<DiscoutFormData>();
@@ -30,6 +32,7 @@ export const DiscountDatesWithController = <ErrorCode,>({
     <DiscountDates
       data={field.value}
       disabled={disabled || !!field.disabled}
+      stacked={stacked}
       errors={errors}
       formErrors={{
         startDate: startDateError,

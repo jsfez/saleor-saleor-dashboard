@@ -6,8 +6,8 @@ import { AppDeleteDialog } from "@dashboard/extensions/components/AppDeleteDialo
 import { appMessages } from "@dashboard/extensions/messages";
 import { EXTENSION_LIST_QUERY } from "@dashboard/extensions/queries";
 import {
-  AppDetailsUrlDialog,
-  AppDetailsUrlQueryParams,
+  type AppDetailsUrlDialog,
+  type AppDetailsUrlQueryParams,
   ExtensionsPaths,
   ExtensionsUrls,
 } from "@dashboard/extensions/urls";
@@ -19,7 +19,7 @@ import {
 } from "@dashboard/graphql";
 import { useHasManagedAppsPermission } from "@dashboard/hooks/useHasManagedAppsPermission";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import getAppErrorMessage from "@dashboard/utils/errors/app";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import { useIntl } from "react-intl";

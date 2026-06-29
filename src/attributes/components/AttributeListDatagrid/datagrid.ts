@@ -1,15 +1,21 @@
-import { AttributeListUrlSortField } from "@dashboard/attributes/urls";
+import { type AttributeListUrlSortField } from "@dashboard/attributes/urls";
+import { getAttributeInputTypeLabel } from "@dashboard/attributes/utils/getAttributeInputTypeLabel";
+import { getAttributeClassLabel } from "@dashboard/components/AttributeClass/getAttributeClassLabel";
 import { PLACEHOLDER } from "@dashboard/components/Datagrid/const";
+import { attributeInputTypeCell } from "@dashboard/components/Datagrid/customCells/AttributeInputTypeCell";
+import { attributeTypeCell } from "@dashboard/components/Datagrid/customCells/AttributeTypeCell";
 import { readonlyTextCell } from "@dashboard/components/Datagrid/customCells/cells";
-import { AvailableColumn } from "@dashboard/components/Datagrid/types";
-import { AttributeFragment } from "@dashboard/graphql";
+import { type AvailableColumn } from "@dashboard/components/Datagrid/types";
+import { type AttributeFragment } from "@dashboard/graphql";
 import { translateBoolean } from "@dashboard/intl";
-import { Sort } from "@dashboard/types";
+import { type Sort } from "@dashboard/types";
 import { getColumnSortDirectionIcon } from "@dashboard/utils/columns/getColumnSortDirectionIcon";
-import { GridCell, Item } from "@glideapps/glide-data-grid";
-import { IntlShape } from "react-intl";
+import { type GridCell, type Item } from "@glideapps/glide-data-grid";
+import { type IntlShape } from "react-intl";
 
 import { columnsMessages } from "./messages";
+
+const NON_SORTABLE_COLUMNS = ["input-type", "attribute-type"];
 
 export const attributesListStaticColumnsAdapter = (
   intl: IntlShape,
@@ -17,14 +23,24 @@ export const attributesListStaticColumnsAdapter = (
 ) =>
   [
     {
+      id: "name",
+      title: intl.formatMessage(columnsMessages.name),
+      width: 300,
+    },
+    {
       id: "slug",
       title: intl.formatMessage(columnsMessages.slug),
       width: 300,
     },
     {
-      id: "name",
-      title: intl.formatMessage(columnsMessages.name),
-      width: 300,
+      id: "input-type",
+      title: intl.formatMessage(columnsMessages.inputType),
+      width: 200,
+    },
+    {
+      id: "attribute-type",
+      title: intl.formatMessage(columnsMessages.attributeType),
+      width: 200,
     },
     {
       id: "visible",
@@ -38,7 +54,9 @@ export const attributesListStaticColumnsAdapter = (
     },
   ].map(column => ({
     ...column,
-    icon: getColumnSortDirectionIcon(sort, column.id),
+    icon: getColumnSortDirectionIcon(sort, column.id, {
+      nonSortableColumns: NON_SORTABLE_COLUMNS,
+    }),
   }));
 
 export const createGetCellContent =
@@ -64,6 +82,20 @@ export const createGetCellContent =
         return readonlyTextCell(rowData?.slug ?? PLACEHOLDER);
       case "name":
         return readonlyTextCell(rowData?.name ?? PLACEHOLDER);
+      case "input-type":
+        // attributeInputTypeCell is canvas-only; see AttributeInputTypeCell.tsx
+        return rowData?.inputType
+          ? attributeInputTypeCell(
+              rowData.inputType,
+              getAttributeInputTypeLabel(intl, rowData.inputType),
+              { hasUnit: rowData.unit != null },
+            )
+          : readonlyTextCell(PLACEHOLDER);
+      case "attribute-type":
+        // attributeTypeCell is canvas-only; see AttributeTypeCell.tsx
+        return rowData?.type
+          ? attributeTypeCell(rowData.type, getAttributeClassLabel(rowData.type, intl))
+          : readonlyTextCell(PLACEHOLDER);
       case "visible":
         return readonlyTextCell(translateBoolean(rowData?.visibleInStorefront, intl));
       case "use-in-faceted-search":

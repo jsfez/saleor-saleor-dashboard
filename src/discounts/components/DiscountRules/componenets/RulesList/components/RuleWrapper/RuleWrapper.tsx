@@ -1,5 +1,5 @@
-import { Box, Text } from "@saleor/macaw-ui-next";
-import { ReactNode } from "react";
+import { Box } from "@saleor/macaw-ui-next";
+import { type ReactNode } from "react";
 
 interface RuleWrapperProps {
   children: ReactNode;
@@ -17,9 +17,7 @@ export const RuleWrapper = ({ children, hasError }: RuleWrapperProps) => {
       padding={4}
       backgroundColor="default1"
     >
-      <Text size={5} fontWeight="bold">
-        {children}
-      </Text>
+      {children}
     </Box>
   );
 };

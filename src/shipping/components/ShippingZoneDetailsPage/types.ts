@@ -1,7 +1,6 @@
-import { MetadataFormData } from "@dashboard/components/Metadata";
-import { Option } from "@saleor/macaw-ui-next";
+import { type Option } from "@saleor/macaw-ui-next";
 
-export interface ShippingZoneUpdateFormData extends MetadataFormData {
+export interface ShippingZoneUpdateFormData {
   name: string;
   description: string;
   warehouses: Option[];

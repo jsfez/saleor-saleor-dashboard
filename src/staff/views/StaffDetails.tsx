@@ -1,10 +1,11 @@
 // @ts-strict-ignore
-import { useUser } from "@dashboard/auth";
+import { useUser } from "@dashboard/auth/useUser";
 import ActionDialog from "@dashboard/components/ActionDialog";
 import NotFoundPage from "@dashboard/components/NotFoundPage";
 import { hasPermissions } from "@dashboard/components/RequirePermissions";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { DEFAULT_INITIAL_SEARCH_DATA } from "@dashboard/config";
+import { customerUrl } from "@dashboard/customers/urls";
 import { PermissionEnum, useStaffMemberDetailsQuery } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { extractMutationErrors, getStringOrPlaceholder } from "@dashboard/misc";
@@ -13,12 +14,16 @@ import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import {
-  StaffDetailsFormData,
+  type StaffDetailsFormData,
   StaffDetailsPage,
 } from "../components/StaffDetailsPage/StaffDetailsPage";
 import { StaffPasswordResetDialog } from "../components/StaffPasswordResetDialog/StaffPasswordResetDialog";
 import { useProfileOperations, useStaffUserOperations } from "../hooks";
-import { staffListUrl, staffMemberDetailsUrl, StaffMemberDetailsUrlQueryParams } from "../urls";
+import {
+  staffListUrl,
+  staffMemberDetailsUrl,
+  type StaffMemberDetailsUrlQueryParams,
+} from "../urls";
 import { groupsDiff } from "../utils";
 
 interface OrderListProps {
@@ -38,10 +43,13 @@ export const StaffDetailsView: React.FC<OrderListProps> = ({ id, params }) => {
       }),
     );
   const isUserSameAsViewer = user.user?.id === id;
+  const hasManageStaffPermission = hasPermissions(user.user.userPermissions, [
+    PermissionEnum.MANAGE_STAFF,
+  ]);
   const { data, loading, refetch } = useStaffMemberDetailsQuery({
     displayLoader: true,
     variables: { id },
-    skip: isUserSameAsViewer,
+    skip: isUserSameAsViewer && !hasManageStaffPermission,
   });
   const { deleteResult, deleteStaffMember, updateStaffMember, updateStaffMemberOpts } =
     useStaffUserOperations();
@@ -53,9 +61,7 @@ export const StaffDetailsView: React.FC<OrderListProps> = ({ id, params }) => {
     updateUserAvatar,
   } = useProfileOperations({ closeModal, id, refetch });
   const staffMember = isUserSameAsViewer ? user.user : data?.user;
-  const hasManageStaffPermission = hasPermissions(user.user.userPermissions, [
-    PermissionEnum.MANAGE_STAFF,
-  ]);
+  const canViewCustomerProfile = (data?.user?.orders?.edges.length ?? 0) > 0;
   const {
     loadMore: loadMorePermissionGroups,
     search: searchPermissionGroups,
@@ -105,6 +111,7 @@ export const StaffDetailsView: React.FC<OrderListProps> = ({ id, params }) => {
         canEditPreferences={isUserSameAsViewer}
         canEditStatus={!isUserSameAsViewer}
         canRemove={!isUserSameAsViewer}
+        canViewCustomerProfile={canViewCustomerProfile}
         disabled={loading}
         initialSearch=""
         onResetPassword={() =>
@@ -136,6 +143,7 @@ export const StaffDetailsView: React.FC<OrderListProps> = ({ id, params }) => {
             }),
           )
         }
+        onViewCustomerProfile={() => navigate(customerUrl(id))}
         availablePermissionGroups={mapEdgesToItems(searchPermissionGroupsOpts?.data?.search)}
         staffMember={staffMember}
         saveButtonBarState={

@@ -1,28 +1,39 @@
 import { ConditionalAttributesFilterProvider } from "@dashboard/components/ConditionalFilter";
 import { Route } from "@dashboard/components/Router";
 import { sectionNames } from "@dashboard/intl";
+import { parseQs } from "@dashboard/url-utils";
 import { asSortParams } from "@dashboard/utils/sort";
-import { parse as parseQs } from "qs";
 import { useIntl } from "react-intl";
-import { RouteComponentProps, Switch } from "react-router-dom";
+import { type RouteComponentProps, Switch } from "react-router-dom";
 
 import { WindowTitle } from "../components/WindowTitle";
 import {
   attributeAddPath,
-  AttributeAddUrlQueryParams,
+  type AttributeAddUrlQueryParams,
   attributeListPath,
-  AttributeListUrlQueryParams,
+  type AttributeListUrlQueryParams,
   AttributeListUrlSortField,
   attributePath,
-  AttributeUrlQueryParams,
+  type AttributeUrlQueryParams,
 } from "./urls";
 import AttributeCreateComponent from "./views/AttributeCreate";
 import AttributeDetailsComponent from "./views/AttributeDetails";
 import AttributeListComponent from "./views/AttributeList";
 
 const AttributeList = ({ location }: RouteComponentProps<{}>) => {
-  const qs = parseQs(location.search.substr(1)) as any;
-  const params: AttributeListUrlQueryParams = asSortParams(qs, AttributeListUrlSortField);
+  const qs = parseQs(location.search.substr(1)) as Record<string, string | undefined>;
+
+  if (
+    qs.sort &&
+    !Object.values(AttributeListUrlSortField).includes(qs.sort as AttributeListUrlSortField)
+  ) {
+    delete qs.sort;
+  }
+
+  const params = asSortParams(
+    qs as Record<string, string>,
+    AttributeListUrlSortField,
+  ) as AttributeListUrlQueryParams;
 
   return (
     <ConditionalAttributesFilterProvider locationSearch={location.search}>

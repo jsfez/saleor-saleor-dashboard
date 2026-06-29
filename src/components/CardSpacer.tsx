@@ -1,5 +1,6 @@
 import { makeStyles } from "@saleor/macaw-ui";
-import * as React from "react";
+import { vars } from "@saleor/macaw-ui-next";
+import type * as React from "react";
 
 const useStyles = makeStyles(
   theme => ({
@@ -15,13 +16,22 @@ const useStyles = makeStyles(
 
 interface CardSpacerProps {
   children?: React.ReactNode;
+  backgroundColor?: keyof typeof vars.colors.background;
 }
 
-export const CardSpacer = (props: CardSpacerProps) => {
-  const { children } = props;
-  const classes = useStyles(props);
+export const CardSpacer = ({ children, backgroundColor = "default1" }: CardSpacerProps) => {
+  const classes = useStyles(children);
 
-  return <div className={classes.spacer}>{children}</div>;
+  return (
+    <div
+      className={classes.spacer}
+      style={{
+        backgroundColor: vars.colors.background[backgroundColor],
+      }}
+    >
+      {children}
+    </div>
+  );
 };
 CardSpacer.displayName = "CardSpacer";
 export default CardSpacer;

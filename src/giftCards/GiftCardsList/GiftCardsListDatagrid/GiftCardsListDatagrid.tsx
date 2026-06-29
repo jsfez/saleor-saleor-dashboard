@@ -1,18 +1,18 @@
 import { ColumnPicker } from "@dashboard/components/Datagrid/ColumnPicker/ColumnPicker";
 import { useColumns } from "@dashboard/components/Datagrid/ColumnPicker/useColumns";
-import Datagrid from "@dashboard/components/Datagrid/Datagrid";
+import { Datagrid } from "@dashboard/components/Datagrid/Datagrid";
 import {
   DatagridChangeStateContext,
   useDatagridChangeState,
 } from "@dashboard/components/Datagrid/hooks/useDatagridChange";
-import { TablePagination } from "@dashboard/components/TablePagination";
+import { DatagridPagination, TablePagination } from "@dashboard/components/TablePagination";
 import { commonTooltipMessages } from "@dashboard/components/TooltipTableCellHeader/messages";
 import { giftCardListUrl, giftCardUrl } from "@dashboard/giftCards/urls";
 import { getPrevLocationState } from "@dashboard/hooks/useBackLinkWithState";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import usePaginator from "@dashboard/hooks/usePaginator";
-import { Item } from "@glideapps/glide-data-grid";
-import { Box, useTheme } from "@saleor/macaw-ui-next";
+import { type Item } from "@glideapps/glide-data-grid";
+import { useTheme } from "@saleor/macaw-ui-next";
 import isEqual from "lodash/isEqual";
 import { useCallback, useEffect, useMemo } from "react";
 import { useIntl } from "react-intl";
@@ -21,7 +21,7 @@ import { useLocation } from "react-router";
 import { messages as filterLabels } from "../filters";
 import { useGiftCardList } from "../providers/GiftCardListProvider";
 import { canBeSorted } from "../sort";
-import { GiftCardListColummns, GiftCardUrlSortField } from "../types";
+import { type GiftCardListColummns, GiftCardUrlSortField } from "../types";
 import { createGetCellContent, getColumns } from "./datagrid";
 import { messages } from "./messages";
 
@@ -175,7 +175,7 @@ export const GiftCardsListDatagrid = () => {
         navigatorOpts={{ state: getPrevLocationState(location) }}
       />
 
-      <Box paddingX={6}>
+      <DatagridPagination>
         <TablePagination
           hasNextPage={paginationValues?.hasNextPage ?? false}
           nextHref={paginationValues.nextHref}
@@ -185,7 +185,7 @@ export const GiftCardsListDatagrid = () => {
           settings={settings}
           onUpdateListSettings={updateListSettings}
         />
-      </Box>
+      </DatagridPagination>
     </DatagridChangeStateContext.Provider>
   );
 };

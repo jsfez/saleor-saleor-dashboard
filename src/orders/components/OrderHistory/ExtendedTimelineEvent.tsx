@@ -1,127 +1,99 @@
 // @ts-strict-ignore
+import { CopyableText } from "@dashboard/components/CopyableText/CopyableText";
 import Money from "@dashboard/components/Money";
-import { TimelineEvent } from "@dashboard/components/Timeline";
-import { OrderEventFragment, OrderEventsEnum } from "@dashboard/graphql";
-import { makeStyles } from "@saleor/macaw-ui";
-import { Text } from "@saleor/macaw-ui-next";
-import camelCase from "lodash/camelCase";
-import { defineMessages, useIntl } from "react-intl";
+import { TimelineEvent } from "@dashboard/components/Timeline/TimelineEvent";
+import { type TitleElement } from "@dashboard/components/Timeline/TimelineEventHeader";
+import { toActor } from "@dashboard/components/Timeline/utils";
+import { type OrderEventFragment, OrderEventsEnum } from "@dashboard/graphql";
+import { Box, Text } from "@saleor/macaw-ui-next";
+import { CheckIcon } from "lucide-react";
+import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 
-import ExtendedDiscountTimelineEvent from "./ExtendedDiscountTimelineEvent";
-import Label from "./Label";
+import { ExtendedDiscountTimelineEvent } from "./ExtendedDiscountTimelineEvent/ExtendedDiscountTimelineEvent";
+import { OrderLineItem } from "./OrderLineItem";
 import {
-  getEmployeeNameLink,
   getOrderNumberLink,
   hasOrderLineDiscountWithNoPreviousValue,
   isTimelineEventOfDiscountType,
 } from "./utils";
 
-const useStyles = makeStyles(
-  theme => ({
-    eventSubtitle: {
-      marginBottom: theme.spacing(0.5),
-      marginTop: theme.spacing(1),
-    },
-    header: {
-      fontWeight: 500,
-      marginBottom: theme.spacing(1),
-    },
-    linesTableCell: {
-      paddingRight: theme.spacing(3),
-    },
-    root: { marginTop: theme.spacing(4) },
-    topSpacer: {
-      marginTop: theme.spacing(3),
-    },
-    user: {
-      marginBottom: theme.spacing(1),
-    },
-  }),
-  { name: "OrderHistory" },
-);
+interface LabelValueRowProps {
+  label: string;
+  children: React.ReactNode;
+}
 
-const productTitles = defineMessages({
-  draftCreatedFromReplace: {
-    id: "a1uffz",
-    defaultMessage: "Products replaced",
-    description: "draft created from replace products list title",
-  },
-  fulfillmentRefunded: {
-    id: "sHON47",
-    defaultMessage: "Products refunded",
-    description: "refunded products list title",
-  },
-  fulfillmentReplaced: {
-    id: "nki0o/",
-    defaultMessage: "Products replaced",
-    description: "replaced products list title",
-  },
-  fulfillmentReturned: {
-    id: "L5io1l",
-    defaultMessage: "Products returned",
-    description: "returned products list title",
-  },
-});
+const LabelValueRow = ({ label, children }: LabelValueRowProps) => (
+  <Box display="flex" justifyContent="space-between" alignItems="center">
+    <Text size={2} color="default2">
+      {label}
+    </Text>
+    {children}
+  </Box>
+);
 
 const titles = defineMessages({
   draftCreatedFromReplace: {
-    id: "5R4VMl",
-    defaultMessage: "Draft was reissued from order ",
+    id: "H6SfJd",
+    defaultMessage: "Draft was reissued from order",
     description: "draft created from replace event title",
   },
   fulfillmentRefunded: {
-    id: "VDwkEZ",
-    defaultMessage: "Products were refunded by ",
+    id: "werrDz",
+    defaultMessage: "Products were refunded",
     description: "refunded event title",
   },
   fulfillmentReplaced: {
-    id: "1GTU/3",
-    defaultMessage: "Products were replaced by ",
+    id: "AWGJnU",
+    defaultMessage: "Products were replaced",
     description: "replaced event title",
   },
   fulfillmentReturned: {
-    id: "nayZY0",
-    defaultMessage: "Products were returned by",
+    id: "VtlDMr",
+    defaultMessage: "Products were returned",
     description: "returned event title",
   },
   orderDiscountAdded: {
-    id: "Zptsep",
-    defaultMessage: "Order was discounted by",
+    id: "IUWJKt",
+    defaultMessage: "Order was discounted",
     description: "order was discounted event title",
   },
   orderDiscountAutomaticallyUpdated: {
-    id: "AQSmqG",
-    defaultMessage: "Order discount was updated automatically updated",
+    id: "8V1ozm",
+    defaultMessage: "Order discount was updated automatically",
     description: "order discount was updated automatically event title",
   },
   orderDiscountUpdated: {
-    id: "/KWNJW",
-    defaultMessage: "Order discount was updated by",
+    id: "JYfMRO",
+    defaultMessage: "Order discount was updated",
     description: "order discount was updated event title",
   },
   orderLineDiscountAdded: {
-    id: "9TAzb5",
-    defaultMessage: "{productName} discount was added by ",
+    id: "vV9xwl",
+    defaultMessage: "{productName} discount was added",
     description: "order line discount added title",
   },
   orderLineDiscountUpdated: {
-    id: "NgCb99",
-    defaultMessage: "{productName} discount was updated by ",
+    id: "bKCoN5",
+    defaultMessage: "{productName} discount was updated",
     description: "order line discount updated title",
-  },
-  orderMarkedAsPaid: {
-    id: "/0JckE",
-    defaultMessage: "Order was marked as paid by",
-    description: "order marked as paid event title",
   },
 });
 
-const messages = defineMessages({
-  by: {
-    id: "xrPv2K",
-    defaultMessage: "by",
-    description: "by preposition",
-  },
+const eventTypeToTitleKey: Partial<Record<OrderEventsEnum, keyof typeof titles>> = {
+  [OrderEventsEnum.DRAFT_CREATED_FROM_REPLACE]: "draftCreatedFromReplace",
+  [OrderEventsEnum.FULFILLMENT_REFUNDED]: "fulfillmentRefunded",
+  [OrderEventsEnum.FULFILLMENT_REPLACED]: "fulfillmentReplaced",
+  [OrderEventsEnum.FULFILLMENT_RETURNED]: "fulfillmentReturned",
+  [OrderEventsEnum.ORDER_DISCOUNT_ADDED]: "orderDiscountAdded",
+  [OrderEventsEnum.ORDER_DISCOUNT_AUTOMATICALLY_UPDATED]: "orderDiscountAutomaticallyUpdated",
+  [OrderEventsEnum.ORDER_DISCOUNT_UPDATED]: "orderDiscountUpdated",
+  [OrderEventsEnum.ORDER_LINE_DISCOUNT_UPDATED]: "orderLineDiscountUpdated",
+};
+
+// Some timeline events intentionally do not map to a dedicated title in this component.
+const FALLBACK_TITLE_TEXT = "";
+
+const localMessages = defineMessages({
   refundedAmount: {
     id: "nngeI3",
     defaultMessage: "Refunded amount",
@@ -143,58 +115,77 @@ interface ExtendedTimelineEventProps {
   event: OrderEventFragment;
   orderCurrency: string;
   hasPlainDate?: boolean;
+  date: string | React.ReactNode;
+  isLastInGroup?: boolean;
 }
 
 const ExtendedTimelineEvent = ({
   event,
   orderCurrency,
   hasPlainDate,
+  date,
+  isLastInGroup,
 }: ExtendedTimelineEventProps) => {
-  const { id, date, type, lines, amount, transactionReference, shippingCostsIncluded } = event;
-  const classes = useStyles({});
+  const { id, type, message, lines, amount, transactionReference, shippingCostsIncluded } = event;
   const intl = useIntl();
-  const eventTypeInCamelCase = camelCase(type);
-  const getEventTitleMessageInCamelCase = () => {
-    if (hasOrderLineDiscountWithNoPreviousValue(event)) {
-      return titles.orderLineDiscountAdded;
-    }
-
-    return titles[eventTypeInCamelCase];
-  };
-  const getTitleProps = () => {
-    if (type === OrderEventsEnum.ORDER_LINE_DISCOUNT_UPDATED) {
-      return { productName: lines[0]?.itemName };
-    }
-
-    return {};
-  };
-  const titleElements = {
-    by: { text: intl.formatMessage(messages.by) },
-    employeeName: getEmployeeNameLink(event, intl),
-    orderNumber: getOrderNumberLink(event),
-    title: {
-      text: intl.formatMessage(getEventTitleMessageInCamelCase(), getTitleProps()),
-    },
-  };
-  const selectTitleElements = () => {
-    const { title, by, employeeName, orderNumber } = titleElements;
-
-    switch (type) {
-      case OrderEventsEnum.DRAFT_CREATED_FROM_REPLACE: {
-        return [title, orderNumber, by, employeeName];
-      }
-      case OrderEventsEnum.ORDER_DISCOUNT_AUTOMATICALLY_UPDATED: {
-        return [title];
-      }
-      default: {
-        return [title, employeeName];
-      }
-    }
-  };
 
   if (isTimelineEventOfDiscountType(type)) {
-    return <ExtendedDiscountTimelineEvent event={event} titleElements={selectTitleElements()} />;
+    if (type === OrderEventsEnum.ORDER_LINE_DISCOUNT_UPDATED) {
+      const productName = lines?.[0]?.itemName;
+      const isAdded = hasOrderLineDiscountWithNoPreviousValue(event);
+      const messageDescriptor = isAdded
+        ? titles.orderLineDiscountAdded
+        : titles.orderLineDiscountUpdated;
+
+      return (
+        <ExtendedDiscountTimelineEvent
+          event={event}
+          title={
+            <FormattedMessage
+              {...messageDescriptor}
+              values={{
+                productName: (
+                  <Text size={3} fontWeight="medium" as="span">
+                    {productName}
+                  </Text>
+                ),
+              }}
+            />
+          }
+          isLastInGroup={isLastInGroup}
+        />
+      );
+    }
+
+    const titleKey = eventTypeToTitleKey[type];
+    const titleMessage = titleKey ? titles[titleKey] : undefined;
+
+    return (
+      <ExtendedDiscountTimelineEvent
+        event={event}
+        titleElements={titleMessage ? [{ text: intl.formatMessage(titleMessage) }] : undefined}
+        isLastInGroup={isLastInGroup}
+      />
+    );
   }
+
+  const titleKey = eventTypeToTitleKey[type];
+  const titleMessage = titleKey ? titles[titleKey] : undefined;
+  const titleText = titleMessage ? intl.formatMessage(titleMessage) : FALLBACK_TITLE_TEXT;
+  const titleElement: TitleElement = { text: titleText };
+
+  const selectTitleElements = (): TitleElement[] => {
+    if (type === OrderEventsEnum.DRAFT_CREATED_FROM_REPLACE) {
+      const orderNumberLink = getOrderNumberLink(event);
+
+      return orderNumberLink ? [titleElement, orderNumberLink] : [titleElement];
+    }
+
+    return [titleElement];
+  };
+
+  const hasFooterContent =
+    amount || amount === 0 || shippingCostsIncluded || !!transactionReference;
 
   return (
     <TimelineEvent
@@ -202,48 +193,56 @@ const ExtendedTimelineEvent = ({
       titleElements={selectTitleElements()}
       key={id}
       hasPlainDate={hasPlainDate}
+      eventData={event}
+      actor={toActor(event.user, event.app)}
+      eventType={type}
+      isLastInGroup={isLastInGroup}
     >
-      {lines && (
-        <>
-          <Label text={intl.formatMessage(productTitles[eventTypeInCamelCase])} />
-          <table>
-            <tbody>
-              {lines.map(({ orderLine, quantity, itemName }, i) => (
-                <tr key={`${itemName}-${i}`}>
-                  <td className={classes.linesTableCell}>{orderLine?.productName || itemName}</td>
-                  <td className={classes.linesTableCell}>
-                    <Label text={orderLine?.variantName} />
-                  </td>
-                  <td className={classes.linesTableCell}>
-                    <Label text={`qty: ${quantity}`} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {(amount || amount === 0) && (
-            <>
-              <Label text={intl.formatMessage(messages.refundedAmount)} />
-              <Money
-                money={{
-                  amount,
-                  currency: orderCurrency,
-                }}
-              />
-            </>
-          )}
-          {shippingCostsIncluded && <Text>{intl.formatMessage(messages.refundedShipment)}</Text>}
-        </>
-      )}
+      <Box display="flex" flexDirection="column" gap={1}>
+        {message && (
+          <Text size={2} style={{ whiteSpace: "pre-wrap" }}>
+            {message}
+          </Text>
+        )}
 
-      {!!transactionReference && (
-        <>
-          <Label text={intl.formatMessage(messages.transactionReference)} />
-          <Text>{transactionReference}</Text>
-        </>
-      )}
+        {lines && lines.length > 0 && (
+          <>
+            {message && <Box paddingTop={1} />}
+            {lines.map(({ orderLine, quantity, itemName }, i) => (
+              <OrderLineItem
+                key={orderLine?.id ? `${id}-line-${orderLine.id}` : `${id}-line-${i}`}
+                orderLine={orderLine}
+                quantity={quantity ?? 0}
+                fallbackItemName={itemName ?? "Product"}
+              />
+            ))}
+          </>
+        )}
+
+        {hasFooterContent && (
+          <Box display="flex" flexDirection="column" gap={1} paddingTop={2}>
+            {(amount || amount === 0) && (
+              <LabelValueRow label={intl.formatMessage(localMessages.refundedAmount)}>
+                <Text size={2}>
+                  <Money money={{ amount, currency: orderCurrency }} />
+                </Text>
+              </LabelValueRow>
+            )}
+            {shippingCostsIncluded && (
+              <LabelValueRow label={intl.formatMessage(localMessages.refundedShipment)}>
+                <CheckIcon size={14} />
+              </LabelValueRow>
+            )}
+            {!!transactionReference && (
+              <LabelValueRow label={intl.formatMessage(localMessages.transactionReference)}>
+                <CopyableText text={transactionReference} />
+              </LabelValueRow>
+            )}
+          </Box>
+        )}
+      </Box>
     </TimelineEvent>
   );
 };
 
-export default ExtendedTimelineEvent;
+export { ExtendedTimelineEvent };

@@ -3,8 +3,9 @@ import { useContextualLink } from "@dashboard/components/AppLayout/ContextualLin
 import SearchInput from "@dashboard/components/AppLayout/ListFilters/components/SearchInput";
 import { DashboardCard } from "@dashboard/components/Card";
 import { ListPageLayout } from "@dashboard/components/Layouts";
-import { Box, ChevronRightIcon, Text } from "@saleor/macaw-ui-next";
-import { useIntl } from "react-intl";
+import { Box, Text } from "@saleor/macaw-ui-next";
+import { Info } from "lucide-react";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { headerTitles, messages } from "../../messages";
 import { ExploreExtensionsActions } from "./components/ExploreExtensionsActions";
@@ -14,7 +15,7 @@ import { useExtensionsFilter } from "./hooks/useExtenstionsFilter";
 
 export const ExploreExtensions = () => {
   const intl = useIntl();
-  const { extensions, loading, error } = useExploreExtensions();
+  const { extensions, loading, error, isFallback } = useExploreExtensions();
   const subtitle = useContextualLink("extensions");
 
   const { handleQueryChange, query, filteredExtensions } = useExtensionsFilter({ extensions });
@@ -33,16 +34,31 @@ export const ExploreExtensions = () => {
         subtitle={subtitle}
       >
         <Box __flex={1} display="flex" justifyContent="space-between" alignItems="center">
-          <Box display="flex">
-            <Box marginX={3} display="flex" alignItems="center">
-              <ChevronRightIcon />
-            </Box>
-            <Text size={6}>{intl.formatMessage(headerTitles.exploreExtensions)}</Text>
-          </Box>
+          <Text size={6} fontWeight="regular">
+            {intl.formatMessage(headerTitles.exploreExtensions)}
+          </Text>
         </Box>
         <ExploreExtensionsActions />
       </TopNav>
       <DashboardCard paddingX={6}>
+        {isFallback && (
+          <Box
+            display="flex"
+            alignItems="center"
+            backgroundColor="info1"
+            padding={4}
+            gap={2}
+            borderRadius={3}
+            marginBottom={4}
+          >
+            <Box flexShrink="0">
+              <Info size={20} />
+            </Box>
+            <Text size={3}>
+              <FormattedMessage {...messages.selfHostedBanner} />
+            </Text>
+          </Box>
+        )}
         <Box __width="370px">
           <SearchInput
             size="medium"

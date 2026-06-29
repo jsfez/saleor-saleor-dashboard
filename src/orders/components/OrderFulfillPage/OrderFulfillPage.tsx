@@ -2,36 +2,36 @@
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import { DashboardCard } from "@dashboard/components/Card";
 import CardSpacer from "@dashboard/components/CardSpacer";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import Form from "@dashboard/components/Form";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
-import ResponsiveTable from "@dashboard/components/ResponsiveTable";
+import { ResponsiveTable } from "@dashboard/components/ResponsiveTable";
 import { Savebar } from "@dashboard/components/Savebar";
 import TableRowLink from "@dashboard/components/TableRowLink";
 import {
-  FulfillOrderMutation,
+  type FulfillOrderMutation,
   OrderErrorCode,
-  OrderFulfillDataQuery,
-  OrderFulfillLineFragment,
-  OrderFulfillStockInput,
-  ShopOrderSettingsFragment,
+  type OrderFulfillDataQuery,
+  type OrderFulfillLineFragment,
+  type OrderFulfillStockInput,
+  type ShopOrderSettingsFragment,
 } from "@dashboard/graphql";
-import { SubmitPromise } from "@dashboard/hooks/useForm";
-import useFormset, { FormsetData } from "@dashboard/hooks/useFormset";
+import { type SubmitPromise } from "@dashboard/hooks/useForm";
+import useFormset, { type FormsetData } from "@dashboard/hooks/useFormset";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { commonMessages } from "@dashboard/intl";
 import { renderCollection } from "@dashboard/misc";
 import OrderChangeWarehouseDialog from "@dashboard/orders/components/OrderChangeWarehouseDialog";
 import {
-  OrderFulfillUrlDialog,
-  OrderFulfillUrlQueryParams,
+  type OrderFulfillUrlDialog,
+  type OrderFulfillUrlQueryParams,
   orderUrl,
 } from "@dashboard/orders/urls";
 import {
   getAttributesCaption,
   getLineAllocationWithHighestQuantity,
   getToFulfillOrderLines,
-  OrderFulfillLineFormData,
+  type OrderFulfillLineFormData,
 } from "@dashboard/orders/utils/data";
 import { TableBody, TableCell, TableHead } from "@material-ui/core";
 import { Box, Checkbox, Input, Skeleton, Text, Tooltip } from "@saleor/macaw-ui-next";
@@ -138,6 +138,7 @@ const OrderFulfillPage = (props: OrderFulfillPageProps) => {
     shopSettings?.fulfillmentAutoApprove && !shopSettings?.fulfillmentAllowUnpaid && !order?.isPaid;
   const areWarehousesSet = formsetData
     .filter(item => !!item?.value) // preorder case
+    .filter(item => item?.value?.[0]?.quantity)
     .every(line => line.value.every(v => v.warehouse));
   const shouldEnableSave = () => {
     if (!order || loading) {
@@ -189,47 +190,51 @@ const OrderFulfillPage = (props: OrderFulfillPageProps) => {
                   </DashboardCard.Title>
                 </DashboardCard.Header>
                 {order ? (
-                  <ResponsiveTable className={classes.table}>
-                    <TableHead>
-                      <TableRowLink>
-                        <TableCell className={classes.colName}>
-                          <FormattedMessage {...messages.productName} />
-                        </TableCell>
-                        <TableCell className={classes.colSku}>
-                          <FormattedMessage {...messages.sku} />
-                        </TableCell>
-                        <TableCell className={clsx(classes.colQuantity, classes.colQuantityHeader)}>
-                          <FormattedMessage {...messages.quantity} />
-                        </TableCell>
-                        <TableCell className={classes.colStock}>
-                          <FormattedMessage {...messages.stock} />
-                        </TableCell>
-                        <TableCell className={classes.colWarehouse}>
-                          <FormattedMessage {...messages.warehouse} />
-                        </TableCell>
-                      </TableRowLink>
-                    </TableHead>
-                    <TableBody>
-                      {renderCollection(
-                        getToFulfillOrderLines(order.lines),
-                        (line: OrderFulfillLineFragment, lineIndex) => (
-                          <OrderFulfillLine
-                            key={line.id}
-                            line={line}
-                            lineIndex={lineIndex}
-                            formsetData={formsetData}
-                            formsetChange={formsetChange}
-                            onWarehouseChange={() =>
-                              openModal("change-warehouse", {
-                                lineId: line.id,
-                                warehouseId: formsetData[lineIndex]?.value?.[0]?.warehouse?.id,
-                              })
-                            }
-                          />
-                        ),
-                      )}
-                    </TableBody>
-                  </ResponsiveTable>
+                  <DashboardCard.Content>
+                    <ResponsiveTable className={classes.table}>
+                      <TableHead>
+                        <TableRowLink>
+                          <TableCell className={classes.colName}>
+                            <FormattedMessage {...messages.productName} />
+                          </TableCell>
+                          <TableCell className={classes.colSku}>
+                            <FormattedMessage {...messages.sku} />
+                          </TableCell>
+                          <TableCell
+                            className={clsx(classes.colQuantity, classes.colQuantityHeader)}
+                          >
+                            <FormattedMessage {...messages.quantity} />
+                          </TableCell>
+                          <TableCell className={classes.colStock}>
+                            <FormattedMessage {...messages.stock} />
+                          </TableCell>
+                          <TableCell className={classes.colWarehouse}>
+                            <FormattedMessage {...messages.warehouse} />
+                          </TableCell>
+                        </TableRowLink>
+                      </TableHead>
+                      <TableBody>
+                        {renderCollection(
+                          getToFulfillOrderLines(order.lines),
+                          (line: OrderFulfillLineFragment, lineIndex) => (
+                            <OrderFulfillLine
+                              key={line.id}
+                              line={line}
+                              lineIndex={lineIndex}
+                              formsetData={formsetData}
+                              formsetChange={formsetChange}
+                              onWarehouseChange={() =>
+                                openModal("change-warehouse", {
+                                  lineId: line.id,
+                                  warehouseId: formsetData[lineIndex]?.value?.[0]?.warehouse?.id,
+                                })
+                              }
+                            />
+                          ),
+                        )}
+                      </TableBody>
+                    </ResponsiveTable>
+                  </DashboardCard.Content>
                 ) : (
                   <DashboardCard.Content>
                     <Skeleton />
@@ -323,5 +328,4 @@ const OrderFulfillPage = (props: OrderFulfillPageProps) => {
   );
 };
 
-OrderFulfillPage.displayName = "OrderFulfillPage";
 export default OrderFulfillPage;

@@ -1,18 +1,18 @@
-import { CategoryListUrlSortField, categoryUrl } from "@dashboard/categories/urls";
+import { type CategoryListUrlSortField, categoryUrl } from "@dashboard/categories/urls";
 import { ColumnPicker } from "@dashboard/components/Datagrid/ColumnPicker/ColumnPicker";
 import { useColumns } from "@dashboard/components/Datagrid/ColumnPicker/useColumns";
-import Datagrid from "@dashboard/components/Datagrid/Datagrid";
+import { Datagrid } from "@dashboard/components/Datagrid/Datagrid";
 import {
   DatagridChangeStateContext,
   useDatagridChangeState,
 } from "@dashboard/components/Datagrid/hooks/useDatagridChange";
-import { TablePaginationWithContext } from "@dashboard/components/TablePagination";
-import { CategoryFragment } from "@dashboard/graphql";
+import { DatagridPagination } from "@dashboard/components/TablePagination";
+import { type CategoryFragment } from "@dashboard/graphql";
 import { getPrevLocationState } from "@dashboard/hooks/useBackLinkWithState";
-import { PageListProps, SortPage } from "@dashboard/types";
-import { Item } from "@glideapps/glide-data-grid";
-import { Box } from "@saleor/macaw-ui-next";
-import { ReactNode, useCallback, useMemo } from "react";
+import useNavigator from "@dashboard/hooks/useNavigator";
+import { type PageListProps, type SortPage } from "@dashboard/types";
+import { type Item } from "@glideapps/glide-data-grid";
+import { type ReactNode, useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useLocation } from "react-router";
 
@@ -39,6 +39,7 @@ export const CategoryListDatagrid = ({
   selectionActionButton = null,
   hasRowHover = true,
 }: CategoryListDatagridProps) => {
+  const navigate = useNavigator();
   const location = useLocation();
   const datagridState = useDatagridChangeState();
   const intl = useIntl();
@@ -94,6 +95,9 @@ export const CategoryListDatagrid = ({
         onHeaderClicked={handleHeaderClick}
         rowAnchor={handleRowAnchor}
         menuItems={() => []}
+        onRowClick={item => {
+          navigate(handleRowAnchor(item));
+        }}
         actionButtonPosition="right"
         selectionActions={() => selectionActionButton}
         onColumnResize={handlers.onResize}
@@ -109,15 +113,13 @@ export const CategoryListDatagrid = ({
         navigatorOpts={{ state: getPrevLocationState(location) }}
       />
 
-      <Box paddingX={6}>
-        <TablePaginationWithContext
-          component="div"
-          colSpan={1}
-          settings={settings}
-          disabled={disabled}
-          onUpdateListSettings={onUpdateListSettings}
-        />
-      </Box>
+      <DatagridPagination
+        component="div"
+        colSpan={1}
+        settings={settings}
+        disabled={disabled}
+        onUpdateListSettings={onUpdateListSettings}
+      />
     </DatagridChangeStateContext.Provider>
   );
 };

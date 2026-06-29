@@ -1,6 +1,6 @@
 import { defineMessage, defineMessages } from "react-intl";
 
-import { TransactionEventType } from "./types";
+import { type TransactionEventType } from "./types";
 
 export const orderMessages = defineMessages({
   headerOrder: {
@@ -92,5 +92,13 @@ export const refundReasonSelectHelperMessages = defineMessages({
   noPermissionsHint: defineMessage({
     defaultMessage: "Use refund settings to configure available reasons (permissions required)",
     id: "lLKEMH",
+  }),
+  reasonRequired: defineMessage({
+    defaultMessage: "Selecting reason is required",
+    id: "T9zLm6",
+  }),
+  reasonRequiredError: defineMessage({
+    defaultMessage: "Reason is required",
+    id: "TTWEc9",
   }),
 });

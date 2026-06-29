@@ -5,8 +5,8 @@ import TranslationsEntitiesList from "@dashboard/translations/components/Transla
 import { languageEntityUrl, TranslatableEntities } from "@dashboard/translations/urls";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 
-import { TranslationsEntityListProps } from "./types";
-import { sumCompleted } from "./utils";
+import { type TranslationsEntityListProps } from "./types";
+import { getPageTranslationCompletion } from "./utils";
 
 const TranslationsPageList = ({ params, variables }: TranslationsEntityListProps) => {
   const { data, loading } = usePageTranslationsQuery({
@@ -26,15 +26,7 @@ const TranslationsPageList = ({ params, variables }: TranslationsEntityListProps
         entities={mapEdgesToItems(data?.translations)?.map(
           node =>
             node.__typename === "PageTranslatableContent" && {
-              completion: {
-                current: sumCompleted([
-                  node.translation?.content,
-                  node.translation?.seoDescription,
-                  node.translation?.seoTitle,
-                  node.translation?.title,
-                ]),
-                max: 4,
-              },
+              completion: getPageTranslationCompletion(node.translation),
               id: node?.page.id,
               name: node?.page.title,
             },

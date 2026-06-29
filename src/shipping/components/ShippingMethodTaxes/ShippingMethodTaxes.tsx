@@ -1,12 +1,14 @@
 import { DashboardCard } from "@dashboard/components/Card";
-import { Combobox } from "@dashboard/components/Combobox";
-import { TaxClassBaseFragment } from "@dashboard/graphql";
-import { ChangeEvent } from "@dashboard/hooks/useForm";
+import { MicrocopyLink } from "@dashboard/components/MicrocopyLink";
+import { type TaxClassBaseFragment } from "@dashboard/graphql";
+import { type ChangeEvent } from "@dashboard/hooks/useForm";
 import { sectionNames } from "@dashboard/intl";
 import { taxesMessages } from "@dashboard/taxes/messages";
-import { FetchMoreProps } from "@dashboard/types";
+import { taxClassesListUrl } from "@dashboard/taxes/urls";
+import { type FetchMoreProps } from "@dashboard/types";
 import { makeStyles } from "@saleor/macaw-ui";
-import { useIntl } from "react-intl";
+import { Box, DynamicCombobox } from "@saleor/macaw-ui-next";
+import { FormattedMessage, useIntl } from "react-intl";
 
 interface ShippingMethodTaxesProps {
   value: string;
@@ -25,7 +27,8 @@ const useStyles = makeStyles(
   },
   { name: "ShippingMethodTaxes" },
 );
-const ShippingMethodTaxes = (props: ShippingMethodTaxesProps) => {
+
+export const ShippingMethodTaxes = (props: ShippingMethodTaxesProps) => {
   const { value, disabled, taxClasses, taxClassDisplayName, onChange, onFetchMore } = props;
   const classes = useStyles(props);
   const intl = useIntl();
@@ -36,8 +39,7 @@ const ShippingMethodTaxes = (props: ShippingMethodTaxesProps) => {
         <DashboardCard.Title>{intl.formatMessage(sectionNames.taxes)}</DashboardCard.Title>
       </DashboardCard.Header>
       <DashboardCard.Content>
-        <Combobox
-          allowEmptyValue
+        <DynamicCombobox
           autoComplete="off"
           data-test-id="taxes"
           disabled={disabled}
@@ -46,19 +48,49 @@ const ShippingMethodTaxes = (props: ShippingMethodTaxesProps) => {
             label: choice.name,
             value: choice.id,
           }))}
-          fetchOptions={() => undefined}
-          fetchMore={onFetchMore}
+          /**
+           * Combobox without "Dynamic" doesnt expose onScrollEnd, when its added to Macaw, we can use simple version of this component (Combobox)
+           */
+          onScrollEnd={() => {
+            if (onFetchMore.hasMore) {
+              onFetchMore.onFetchMore();
+            }
+          }}
           name="taxClassId"
           value={{
             label: taxClassDisplayName,
             value,
           }}
-          onChange={onChange}
+          onChange={v =>
+            onChange({
+              target: {
+                value: v?.value ?? "",
+                name: "taxClassId",
+              },
+            })
+          }
         />
+        <Box marginTop={2}>
+          <DashboardCard.Subtitle
+            fontSize={3}
+            color="default2"
+            data-test-id="tax-class-create-hint"
+          >
+            <FormattedMessage
+              {...taxesMessages.createTaxClassHint}
+              values={{
+                taxSettingsLink: (
+                  <MicrocopyLink to={taxClassesListUrl()}>
+                    {intl.formatMessage(taxesMessages.taxSettingsLink)}
+                  </MicrocopyLink>
+                ),
+              }}
+            />
+          </DashboardCard.Subtitle>
+        </Box>
       </DashboardCard.Content>
     </DashboardCard>
   );
 };
 
 ShippingMethodTaxes.displayName = "ShippingMethodTaxes";
-export default ShippingMethodTaxes;

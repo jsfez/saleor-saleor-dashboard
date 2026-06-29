@@ -1,20 +1,22 @@
 // @ts-strict-ignore
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { useApolloClient } from "@apollo/client";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import {
-  MoneyFragment,
-  OrderDetailsFragment,
+  type MoneyFragment,
+  OrderDetailsDocument,
+  type OrderDetailsFragment,
   useOrderDiscountAddMutation,
   useOrderDiscountDeleteMutation,
   useOrderDiscountUpdateMutation,
 } from "@dashboard/graphql";
-import useNotifier from "@dashboard/hooks/useNotifier";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import { getDefaultNotifierSuccessErrorData } from "@dashboard/hooks/useNotifier/utils";
-import { OrderDiscountCommonInput } from "@dashboard/orders/components/OrderDiscountCommonModal/types";
+import { type OrderDiscountCommonInput } from "@dashboard/orders/components/OrderDiscountModal/types";
+import type * as React from "react";
 import { createContext } from "react";
-import * as React from "react";
 import { useIntl } from "react-intl";
 
-import { OrderDiscountConsumerCommonProps, OrderDiscountData } from "./types";
+import { type OrderDiscountConsumerCommonProps, type OrderDiscountData } from "./types";
 import { getManualOrderDiscount, getParsedDiscountData, useDiscountDialog } from "./utils";
 
 export interface OrderDiscountContextConsumerProps extends OrderDiscountConsumerCommonProps {
@@ -33,6 +35,7 @@ interface OrderDiscountProviderProps {
 }
 
 export const OrderDiscountProvider = ({ children, order }: OrderDiscountProviderProps) => {
+  const apolloClient = useApolloClient();
   const intl = useIntl();
   const notify = useNotifier();
   const { id: orderId } = order;
@@ -47,7 +50,13 @@ export const OrderDiscountProvider = ({ children, order }: OrderDiscountProvider
   const [orderDiscountRemove, orderDiscountRemoveOpts] = useOrderDiscountDeleteMutation({
     onCompleted: ({ orderDiscountDelete: { errors } }) => handleDiscountDataSubmission(errors),
   });
-  const handleDiscountDataSubmission = (errors: any[]) => {
+  const handleDiscountDataSubmission = async (errors: unknown[]) => {
+    if (errors.length === 0) {
+      await apolloClient.refetchQueries({
+        include: [OrderDetailsDocument],
+      });
+    }
+
     closeDialog();
     notify(getDefaultNotifierSuccessErrorData(errors, intl));
   };

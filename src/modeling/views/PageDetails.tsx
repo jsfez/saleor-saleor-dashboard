@@ -10,27 +10,25 @@ import {
   prepareAttributesInput,
 } from "@dashboard/attributes/utils/handlers";
 import ActionDialog from "@dashboard/components/ActionDialog";
-import { AttributeInput } from "@dashboard/components/Attributes";
+import { type AttributeInput } from "@dashboard/components/Attributes";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { DEFAULT_INITIAL_SEARCH_DATA, VALUES_PAGINATE_BY } from "@dashboard/config";
+import { useRegisterEntityRefresh } from "@dashboard/extensions/entity-refresh";
 import {
-  AttributeErrorFragment,
-  AttributeValueInput,
-  PageDetailsFragment,
-  PageErrorFragment,
-  PageInput,
-  UploadErrorFragment,
+  type AttributeErrorFragment,
+  type AttributeValueInput,
+  type PageDetailsFragment,
+  type PageErrorFragment,
+  type PageInput,
+  type UploadErrorFragment,
   useAttributeValueDeleteMutation,
   useFileUploadMutation,
   usePageDetailsQuery,
   usePageRemoveMutation,
   usePageUpdateMutation,
-  useUpdateMetadataMutation,
-  useUpdatePrivateMetadataMutation,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
-import { commonMessages } from "@dashboard/intl";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
 import useCategorySearch from "@dashboard/searches/useCategorySearch";
 import useCollectionSearch from "@dashboard/searches/useCollectionSearch";
 import {
@@ -38,15 +36,17 @@ import {
   useReferenceProductSearch,
 } from "@dashboard/searches/useReferenceSearch";
 import useAttributeValueSearchHandler from "@dashboard/utils/handlers/attributeValueSearchHandler";
-import createMetadataUpdateHandler from "@dashboard/utils/handlers/metadataUpdateHandler";
+import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { getParsedDataForJsonStringField } from "@dashboard/utils/richText/misc";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { useAssignAttributeValueDialogFilterChangeHandlers } from "../../components/AssignAttributeValueDialog/useAssignAttributeValueDialogFilterChangeHandlers";
 import { getStringOrPlaceholder, maybe } from "../../misc";
 import PageDetailsPage from "../components/PageDetailsPage";
-import { PageData, PageSubmitData } from "../components/PageDetailsPage/form";
-import { pageListUrl, pageUrl, PageUrlQueryParams } from "../urls";
+import { type PageData, type PageSubmitData } from "../components/PageDetailsPage/form";
+import { PageMetadataDialog } from "../components/PageMetadataDialog/PageMetadataDialog";
+import { pageListUrl, pageUrl, type PageUrlQueryParams } from "../urls";
 import { getAttributeInputFromPage } from "../utils/data";
 
 interface PageDetailsProps {
@@ -79,36 +79,38 @@ const PageDetails = ({ id, params }: PageDetailsProps) => {
   const navigate = useNavigator();
   const notify = useNotifier();
   const intl = useIntl();
-  const [updateMetadata] = useUpdateMetadataMutation({});
-  const [updatePrivateMetadata] = useUpdatePrivateMetadataMutation({});
+  const [openModal, closeModal] = createDialogActionHandlers(
+    navigate,
+    dialogParams => pageUrl(id, dialogParams),
+    params,
+  );
   const pageDetails = usePageDetailsQuery({
     variables: {
       id,
       firstValues: VALUES_PAGINATE_BY,
     },
   });
+
+  useRegisterEntityRefresh(pageDetails.refetch);
+
   const [uploadFile, uploadFileOpts] = useFileUploadMutation({});
-  const [pageUpdate, pageUpdateOpts] = usePageUpdateMutation({});
+  const [pageUpdate, pageUpdateOpts] = usePageUpdateMutation({
+    disableErrorHandling: true,
+  });
   const [deleteAttributeValue, deleteAttributeValueOpts] = useAttributeValueDeleteMutation({});
   const [pageRemove, pageRemoveOpts] = usePageRemoveMutation({
     onCompleted: data => {
       if (data.pageDelete.errors.length === 0) {
         notify({
           status: "success",
-          text: intl.formatMessage(commonMessages.savedChanges),
+          text: intl.formatMessage({ id: "EAGfdH", defaultMessage: "Page updated" }),
         });
         navigate(pageListUrl());
       }
     },
   });
   const handleAssignAttributeReferenceClick = (attribute: AttributeInput) =>
-    navigate(
-      pageUrl(id, {
-        ...params,
-        action: "assign-attribute-value",
-        id: attribute.id,
-      }),
-    );
+    openModal("assign-attribute-value", { id: attribute.id });
   const handleUpdate = async (data: PageSubmitData) => {
     let errors: Array<AttributeErrorFragment | UploadErrorFragment | PageErrorFragment> = [];
 
@@ -142,12 +144,6 @@ const PageDetails = ({ id, params }: PageDetailsProps) => {
 
     return errors;
   };
-  const handleSubmit = createMetadataUpdateHandler(
-    pageDetails.data?.page,
-    handleUpdate,
-    variables => updateMetadata({ variables }),
-    variables => updatePrivateMetadata({ variables }),
-  );
   const refAttr =
     params.action === "assign-attribute-value" && params.id
       ? pageDetails?.data?.page?.attributes?.find(a => a.attribute.id === params.id)?.attribute
@@ -174,7 +170,11 @@ const PageDetails = ({ id, params }: PageDetailsProps) => {
     search: searchCategories,
     result: searchCategoriesOpts,
   } = useCategorySearch({
-    variables: DEFAULT_INITIAL_SEARCH_DATA,
+    variables: {
+      after: DEFAULT_INITIAL_SEARCH_DATA.after,
+      first: DEFAULT_INITIAL_SEARCH_DATA.first,
+      filter: undefined,
+    },
   });
   const {
     loadMore: loadMoreAttributeValues,
@@ -209,6 +209,13 @@ const PageDetails = ({ id, params }: PageDetailsProps) => {
     onFetchMore: loadMoreAttributeValues,
   };
 
+  const onFilterChange = useAssignAttributeValueDialogFilterChangeHandlers({
+    refetchProducts: searchProductsOpts.refetch,
+    refetchPages: searchPagesOpts.refetch,
+    refetchCategories: searchCategoriesOpts.refetch,
+    refetchCollections: searchCollectionsOpts.refetch,
+  });
+
   return (
     <>
       <WindowTitle title={maybe(() => pageDetails.data.page.title)} />
@@ -223,14 +230,9 @@ const PageDetails = ({ id, params }: PageDetailsProps) => {
         saveButtonBarState={pageUpdateOpts.status}
         page={pageDetails.data?.page}
         attributeValues={attributeValues}
-        onRemove={() =>
-          navigate(
-            pageUrl(id, {
-              action: "remove",
-            }),
-          )
-        }
-        onSubmit={handleSubmit}
+        onRemove={() => openModal("remove", { id: undefined })}
+        onShowMetadata={() => openModal("view-metadata", { id: undefined })}
+        onSubmit={handleUpdate}
         assignReferencesAttributeId={params.action === "assign-attribute-value" && params.id}
         onAssignReferencesClick={handleAssignAttributeReferenceClick}
         referencePages={mapEdgesToItems(searchPagesOpts?.data?.search) || []}
@@ -247,8 +249,15 @@ const PageDetails = ({ id, params }: PageDetailsProps) => {
         fetchMoreReferenceCollections={fetchMoreReferenceCollections}
         fetchAttributeValues={searchAttributeValues}
         fetchMoreAttributeValues={fetchMoreAttributeValues}
-        onCloseDialog={() => navigate(pageUrl(id))}
+        onCloseDialog={closeModal}
         onAttributeSelectBlur={searchAttributeReset}
+        onFilterChange={onFilterChange}
+      />
+      <PageMetadataDialog
+        open={params.action === "view-metadata" && !!pageDetails.data?.page}
+        onClose={closeModal}
+        page={pageDetails.data?.page}
+        refetchPage={pageDetails.refetch}
       />
       <ActionDialog
         open={params.action === "remove"}
@@ -258,7 +267,7 @@ const PageDetails = ({ id, params }: PageDetailsProps) => {
           defaultMessage: "Delete model",
           description: "dialog header",
         })}
-        onClose={() => navigate(pageUrl(id))}
+        onClose={closeModal}
         onConfirm={() => pageRemove({ variables: { id } })}
         variant="delete"
       >

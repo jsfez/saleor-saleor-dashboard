@@ -5,9 +5,10 @@ import useAppChannel from "@dashboard/components/AppLayout/AppChannelContext";
 import ChannelsAvailabilityDialog from "@dashboard/components/ChannelsAvailabilityDialog";
 import NotFoundPage from "@dashboard/components/NotFoundPage";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
+import { useRegisterEntityRefresh } from "@dashboard/extensions/entity-refresh";
 import {
-  CollectionInput,
-  CollectionUpdateMutation,
+  type CollectionInput,
+  type CollectionUpdateMutation,
   useCollectionChannelListingUpdateMutation,
   useCollectionDetailsQuery,
   useCollectionUpdateMutation,
@@ -18,8 +19,8 @@ import {
 import useChannels from "@dashboard/hooks/useChannels";
 import useLocalStorage from "@dashboard/hooks/useLocalStorage";
 import useNavigator from "@dashboard/hooks/useNavigator";
-import useNotifier from "@dashboard/hooks/useNotifier";
-import { commonMessages, errorMessages } from "@dashboard/intl";
+import { useNotifier } from "@dashboard/hooks/useNotifier";
+import { errorMessages } from "@dashboard/intl";
 import { arrayDiff } from "@dashboard/utils/arrays";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import createMetadataUpdateHandler from "@dashboard/utils/handlers/metadataUpdateHandler";
@@ -28,12 +29,12 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { getMutationErrors, getMutationState, maybe } from "../../misc";
 import CollectionDetailsPage from "../components/CollectionDetailsPage/CollectionDetailsPage";
-import { CollectionUpdateData } from "../components/CollectionDetailsPage/form";
+import { type CollectionUpdateData } from "../components/CollectionDetailsPage/form";
 import {
   collectionListUrl,
   collectionUrl,
-  CollectionUrlDialog,
-  CollectionUrlQueryParams,
+  type CollectionUrlDialog,
+  type CollectionUrlQueryParams,
 } from "../urls";
 import { COLLECTION_DETAILS_FORM_ID } from "./consts";
 
@@ -58,7 +59,7 @@ const CollectionDetails = ({ id, params }: CollectionDetailsProps) => {
     if (data.collectionUpdate.errors.length === 0) {
       notify({
         status: "success",
-        text: intl.formatMessage(commonMessages.savedChanges),
+        text: intl.formatMessage({ id: "E2uiWk", defaultMessage: "Collection updated" }),
       });
       navigate(collectionUrl(id));
     } else {
@@ -95,10 +96,12 @@ const CollectionDetails = ({ id, params }: CollectionDetailsProps) => {
   });
 
   const [selectedChannel] = useLocalStorage("collectionListChannel", "");
-  const { data, loading } = useCollectionDetailsQuery({
+  const { data, loading, refetch } = useCollectionDetailsQuery({
     displayLoader: true,
     variables: { id },
   });
+
+  useRegisterEntityRefresh(refetch);
 
   const collection = data?.collection;
   const allChannels = createCollectionChannels(availableChannels)?.sort((channel, nextChannel) =>

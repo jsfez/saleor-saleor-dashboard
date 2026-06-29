@@ -1,6 +1,6 @@
 import { useAppsInstallationsQuery } from "@dashboard/graphql";
 import { useHasManagedAppsPermission } from "@dashboard/hooks/useHasManagedAppsPermission";
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react";
 
 import { usePendingInstallation } from "./usePendingInstallation";
 
@@ -100,6 +100,8 @@ describe("InstalledExtensions / hooks / usePendingInstallation", () => {
           actions: expect.any(Object),
           info: expect.any(Object),
           logo: expect.any(Object),
+          activeProblemCount: 0,
+          criticalProblemCount: 0,
         },
         {
           id: "2",
@@ -107,6 +109,8 @@ describe("InstalledExtensions / hooks / usePendingInstallation", () => {
           actions: expect.any(Object),
           info: expect.any(Object),
           logo: expect.any(Object),
+          activeProblemCount: 0,
+          criticalProblemCount: 0,
         },
       ],
       pendingInstallationsLoading: undefined,

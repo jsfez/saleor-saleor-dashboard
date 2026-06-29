@@ -1,9 +1,9 @@
 import ActionDialog from "@dashboard/components/ActionDialog";
-import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
+import { type ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import { Select } from "@dashboard/components/Select";
 import useStateFromProps from "@dashboard/hooks/useStateFromProps";
 import { buttonMessages } from "@dashboard/intl";
-import { Option, Text } from "@saleor/macaw-ui-next";
+import { type Option, Text } from "@saleor/macaw-ui-next";
 import { defineMessages, useIntl } from "react-intl";
 
 import { useStyles } from "../styles";
@@ -31,9 +31,9 @@ const messages = defineMessages({
     description: "note on currency",
   },
   noAvailableChannel: {
-    id: "Ge+dUe",
+    id: "a24HjK",
     defaultMessage:
-      "To delete {channelSlug} you have to create a chanel with currency: {currency} to be able to move all existing orders.",
+      "To delete {channelSlug} you have to create a channel with currency: {currency} to be able to move all existing orders.",
     description: "currency channel",
   },
   selectChannel: {

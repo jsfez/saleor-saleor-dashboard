@@ -2,14 +2,14 @@
 import {
   AttributeInputTypeEnum,
   AttributeTypeEnum,
-  ProductTypeDetailsQuery,
+  type ProductTypeDetailsQuery,
   ProductTypeKindEnum,
-  ProductTypeListQuery,
-  ProductTypeQuery,
-  SearchProductTypesQuery,
+  type ProductTypeListQuery,
+  type ProductTypeQuery,
+  type SearchProductTypesQuery,
   WeightUnitsEnum,
 } from "@dashboard/graphql";
-import { RelayToFlat } from "@dashboard/types";
+import { type RelayToFlat } from "@dashboard/types";
 
 export const attributes: ProductTypeQuery["productType"]["productAttributes"] = [
   {
@@ -1198,8 +1198,6 @@ export const productType: ProductTypeDetailsQuery["productType"] = {
   productAttributes: [
     {
       __typename: "Attribute" as const,
-      metadata: [],
-      privateMetadata: [],
       filterableInDashboard: true,
       filterableInStorefront: false,
       id: "UHJvZHVjdEF0dHJpYnV0ZTo5",
@@ -1212,8 +1210,6 @@ export const productType: ProductTypeDetailsQuery["productType"] = {
     },
     {
       __typename: "Attribute" as const,
-      metadata: [],
-      privateMetadata: [],
       filterableInDashboard: true,
       filterableInStorefront: false,
       id: "UHJvZHVjdEF0dHJpYnV0ZToxMQ==",
@@ -1226,8 +1222,6 @@ export const productType: ProductTypeDetailsQuery["productType"] = {
     },
     {
       __typename: "Attribute" as const,
-      metadata: [],
-      privateMetadata: [],
       filterableInDashboard: true,
       filterableInStorefront: false,
       id: "UHJvZHVjdEF0dHJpYnV0ZToxMA==",
@@ -1267,8 +1261,6 @@ export const productType: ProductTypeDetailsQuery["productType"] = {
       __typename: "AssignedVariantAttribute" as const,
       attribute: {
         __typename: "Attribute" as const,
-        metadata: [],
-        privateMetadata: [],
         filterableInDashboard: true,
         filterableInStorefront: false,
         id: "UHJvZHVjdEF0dHJpYnV0ATo5",
