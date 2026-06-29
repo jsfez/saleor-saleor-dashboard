@@ -147,17 +147,26 @@ function extractOperations(filePath, operationType) {
   return operations;
 }
 
+// graphql-codegen PascalCases the operation name when building generated artifact
+// names (e.g. `welcomePageNotifications` -> `useWelcomePageNotificationsQuery`,
+// `WelcomePageNotificationsDocument`). Mirror that here, otherwise any operation
+// whose name starts with a lowercase letter is reported as a false positive.
+function toPascalCase(name) {
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 // Generate all possible generated names from an operation
 function getGeneratedNames(operation) {
   const { operationName, type } = operation;
+  const name = toPascalCase(operationName);
   const names = [];
 
   if (type === "fragment") {
     // Fragments generate:
     // - FragmentNameFragmentDoc
     // - FragmentNameFragment (type)
-    names.push(`${operationName}FragmentDoc`);
-    names.push(`${operationName}Fragment`);
+    names.push(`${name}FragmentDoc`);
+    names.push(`${name}Fragment`);
   } else if (type === "query") {
     // Queries generate:
     // - QueryNameDocument
@@ -165,21 +174,21 @@ function getGeneratedNames(operation) {
     // - useQueryNameLazyQuery
     // - QueryNameQuery (type)
     // - QueryNameQueryVariables (type)
-    names.push(`${operationName}Document`);
-    names.push(`use${operationName}Query`);
-    names.push(`use${operationName}LazyQuery`);
-    names.push(`${operationName}Query`);
-    names.push(`${operationName}QueryVariables`);
+    names.push(`${name}Document`);
+    names.push(`use${name}Query`);
+    names.push(`use${name}LazyQuery`);
+    names.push(`${name}Query`);
+    names.push(`${name}QueryVariables`);
   } else if (type === "mutation") {
     // Mutations generate:
     // - MutationNameDocument
     // - useMutationNameMutation
     // - MutationNameMutation (type)
     // - MutationNameMutationVariables (type)
-    names.push(`${operationName}Document`);
-    names.push(`use${operationName}Mutation`);
-    names.push(`${operationName}Mutation`);
-    names.push(`${operationName}MutationVariables`);
+    names.push(`${name}Document`);
+    names.push(`use${name}Mutation`);
+    names.push(`${name}Mutation`);
+    names.push(`${name}MutationVariables`);
   }
 
   return names;
@@ -227,24 +236,38 @@ function main() {
 
   console.log("📄 Loading TypeScript files...");
 
-  // Get all TS files excluding generated files and operation definition files
-  const excludeFiles = [...GENERATED_FILES, ...Array.from(operationFiles)];
-  const tsFiles = getAllTypeScriptFiles(SRC_DIR, [], excludeFiles);
+  // Get all TS files to search. We intentionally INCLUDE the operation definition
+  // files (queries.ts / mutations.ts / fragments/*.ts): fragments are used via
+  // name-based spreads (`...FragmentName`) inside other operation files, and some
+  // operations (e.g. legacy-sdk, which codegen excludes) are imported by their
+  // export name. We only drop codegen output (*.generated.ts), which references
+  // every generated artifact and would otherwise mask real usage.
+  void operationFiles; // no longer used to exclude; kept for the operation scan above
+  void GENERATED_FILES; // superseded by the generic *.generated.ts filter below
+  const tsFiles = getAllTypeScriptFiles(SRC_DIR).filter(f => !f.endsWith(".generated.ts"));
   console.log(`   Found ${tsFiles.length} files to search\n`);
 
   console.log("🔎 Reading files and checking for usage...\n");
 
-  // Build a map of all names we're looking for to their operations
-  const nameToOperation = new Map();
-  for (const operation of allOperations) {
-    const generatedNames = getGeneratedNames(operation);
-    for (const name of generatedNames) {
-      if (!nameToOperation.has(name)) {
-        nameToOperation.set(name, []);
-      }
-      nameToOperation.set(name, operation);
-    }
-  }
+  // Precompute, for each operation, the tokens whose presence in source means the
+  // operation is used:
+  //  - generated artifact names (hooks / documents / types) from graphql-codegen
+  //  - the export name itself (covers direct gql-document imports, e.g. legacy-sdk
+  //    operations, which codegen excludes so they have no generated names)
+  //  - for fragments, the spread token `...FragmentName`. Codegen resolves fragments
+  //    by name through a global document pool, so a fragment is commonly used purely
+  //    by being spread into another operation, without its generated type ever being
+  //    referenced directly. This was the main source of false positives.
+  const searchData = allOperations.map(operation => {
+    const names = [...getGeneratedNames(operation), operation.exportName];
+
+    return {
+      operation,
+      nameRegexes: names.map(name => new RegExp(`\\b${name}\\b`)),
+      spreadRegex:
+        operation.type === "fragment" ? new RegExp(`\\.\\.\\.${operation.operationName}\\b`) : null,
+    };
+  });
 
   // Read all files and check for usage
   const usedOperations = new Set();
@@ -256,19 +279,36 @@ function main() {
       process.stdout.write(`   Processed ${filesProcessed}/${tsFiles.length} files...\r`);
     }
 
+    let content;
     try {
-      const content = fs.readFileSync(filePath, "utf8");
-
-      // Check all names in this file
-      for (const [name, operation] of nameToOperation) {
-        // Use word boundary regex for more accurate matching
-        const regex = new RegExp(`\\b${name}\\b`);
-        if (regex.test(content)) {
-          usedOperations.add(operation);
-        }
-      }
+      content = fs.readFileSync(filePath, "utf8");
     } catch (error) {
       // Skip files we can't read
+      continue;
+    }
+
+    for (const { operation, nameRegexes, spreadRegex } of searchData) {
+      if (usedOperations.has(operation)) {
+        continue;
+      }
+
+      // A fragment spread counts from any file, including the one that defines the
+      // fragment: `...Name` never matches the `fragment Name on ...` definition
+      // line, so there is no self-match to guard against.
+      if (spreadRegex && spreadRegex.test(content)) {
+        usedOperations.add(operation);
+        continue;
+      }
+
+      // Generated-name / export-name usage: ignore the file that defines the
+      // operation, otherwise `export const fooQuery = ...` would mark itself used.
+      if (filePath === operation.filePath) {
+        continue;
+      }
+
+      if (nameRegexes.some(regex => regex.test(content))) {
+        usedOperations.add(operation);
+      }
     }
   }
 
