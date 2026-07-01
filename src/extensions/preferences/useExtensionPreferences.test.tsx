@@ -87,4 +87,36 @@ describe("useExtensionPreferences", () => {
       }),
     );
   });
+
+  it("preserves other metadata keys in the optimistic response", () => {
+    // Arrange
+    mockUser = {
+      id: "user-1",
+      metadata: [
+        { key: "dashboard-extensions-preferences", value: JSON.stringify({ "a:e": "pinned" }) },
+        { key: "some_other_key", value: "keep-me" },
+      ],
+    };
+
+    // Act
+    const { result } = renderHook(() => useExtensionPreferences());
+
+    act(() => {
+      result.current.setState(extension, "hidden");
+    });
+
+    // Assert
+    const optimisticMetadata =
+      mockMutate.mock.calls[0][0].optimisticResponse.accountUpdate.user.metadata;
+
+    expect(optimisticMetadata).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ key: "some_other_key", value: "keep-me" }),
+        expect.objectContaining({
+          key: "dashboard-extensions-preferences",
+          value: JSON.stringify({ "a:e": "hidden" }),
+        }),
+      ]),
+    );
+  });
 });

@@ -7810,10 +7810,6 @@
     "context": "badge for new variant that will be created",
     "string": "New"
   },
-  "cIDxI1": {
-    "context": "error state for extensions visibility list",
-    "string": "Couldn't load extensions."
-  },
   "cIoOf0": {
     "context": "relative time in minutes",
     "string": "{minutes}m ago"

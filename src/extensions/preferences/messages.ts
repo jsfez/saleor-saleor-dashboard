@@ -46,9 +46,4 @@ export const extensionPreferencesMessages = defineMessages({
     defaultMessage: "No extensions available to manage.",
     description: "empty state for extensions visibility list",
   },
-  loadError: {
-    id: "cIDxI1",
-    defaultMessage: "Couldn't load extensions.",
-    description: "error state for extensions visibility list",
-  },
 });

@@ -52,6 +52,12 @@ export const useExtensionPreferences = (): UseExtensionPreferences => {
         value: nextValue,
       };
 
+      const otherMetadata: Array<{ __typename: "MetadataItem"; key: string; value: string }> = (
+        user?.metadata ?? []
+      )
+        .filter(item => item.key !== EXTENSION_PREFERENCES_METADATA_KEY)
+        .map(item => ({ __typename: "MetadataItem", key: item.key, value: item.value }));
+
       updatePreferences({
         variables: { input: { metadata: [metadataInput] } },
         optimisticResponse: {
@@ -62,7 +68,10 @@ export const useExtensionPreferences = (): UseExtensionPreferences => {
             user: {
               __typename: "User",
               id: userId,
-              metadata: [{ __typename: "MetadataItem", key: metadataInput.key, value: nextValue }],
+              metadata: [
+                ...otherMetadata,
+                { __typename: "MetadataItem", key: metadataInput.key, value: nextValue },
+              ],
             },
           },
         },
