@@ -55,6 +55,7 @@ export const useExtensionPreferences = (): UseExtensionPreferences => {
       updatePreferences({
         variables: { input: { metadata: [metadataInput] } },
         optimisticResponse: {
+          __typename: "Mutation",
           accountUpdate: {
             __typename: "AccountUpdate",
             errors: [],
