@@ -7,6 +7,7 @@ import { type ConfirmButtonTransitionState } from "@dashboard/components/Confirm
 import Form from "@dashboard/components/Form";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Savebar } from "@dashboard/components/Savebar";
+import { ExtensionPreferencesSection } from "@dashboard/extensions/preferences/ExtensionPreferencesSection";
 import {
   type SearchPermissionGroupsQuery,
   type StaffErrorFragment,
@@ -141,6 +142,12 @@ export const StaffDetailsPage: React.FC<StaffDetailsPageProps> = ({
                 onImageUpload={onImageUpload}
                 onImageDelete={onImageDelete}
               />
+              {canEditPreferences && (
+                <>
+                  <CardSpacer />
+                  <ExtensionPreferencesSection />
+                </>
+              )}
             </DetailPageLayout.Content>
 
             <DetailPageLayout.RightSidebar>
