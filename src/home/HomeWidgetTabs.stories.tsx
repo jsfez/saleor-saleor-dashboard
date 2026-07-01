@@ -5,9 +5,11 @@ import { HomeWidgetTabs } from "./HomeWidgetTabs";
 
 const buildExtension = (overrides: Partial<Extension>): Extension => ({
   id: "ext-1",
+  identifier: null,
   app: {
     __typename: "App",
     id: "app-1",
+    identifier: null,
     appUrl: "https://my-app.saleor.app",
     name: "Saleor App",
     brand: null,
@@ -30,6 +32,7 @@ const officialExtension = buildExtension({
   app: {
     __typename: "App",
     id: "saleor-app",
+    identifier: null,
     appUrl: "https://insights.saleor.app",
     name: "Saleor Insights",
     brand: null,
@@ -44,6 +47,7 @@ const externalExtension = buildExtension({
   app: {
     __typename: "App",
     id: "external-app",
+    identifier: null,
     appUrl: "https://third-party.example.com",
     name: "Acme Analytics",
     brand: null,
@@ -93,6 +97,7 @@ export const OnlyOfficialApps: Story = {
         app: {
           __typename: "App",
           id: "saleor-orders",
+          identifier: null,
           appUrl: "https://orders.saleor.app",
           name: "Saleor Orders",
           brand: null,
@@ -115,6 +120,7 @@ export const OnlyExternalApps: Story = {
         app: {
           __typename: "App",
           id: "marketing-app",
+          identifier: null,
           appUrl: "https://marketing.example.com",
           name: "Marketing Co.",
           brand: null,

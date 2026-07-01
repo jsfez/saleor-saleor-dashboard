@@ -11270,6 +11270,13 @@ export type AppUpdatePermissionsMutationVariables = Exact<{
 
 export type AppUpdatePermissionsMutation = { __typename: 'Mutation', appUpdate: { __typename: 'AppUpdate', app: { __typename: 'App', permissions: Array<{ __typename: 'Permission', code: PermissionEnum, name: string }> | null } | null, errors: Array<{ __typename: 'AppError', field: string | null, message: string | null, code: AppErrorCode, permissions: Array<PermissionEnum> | null }> } | null };
 
+export type UpdateExtensionPreferencesMutationVariables = Exact<{
+  input: AccountInput;
+}>;
+
+
+export type UpdateExtensionPreferencesMutation = { __typename: 'Mutation', accountUpdate: { __typename: 'AccountUpdate', user: { __typename: 'User', id: string, metadata: Array<{ __typename: 'MetadataItem', key: string, value: string }> } | null, errors: Array<{ __typename: 'AccountError', field: string | null, message: string | null, code: AccountErrorCode }> } | null };
+
 export type InstalledAppsQueryVariables = Exact<{
   before?: InputMaybe<Scalars['String']['input']>;
   after?: InputMaybe<Scalars['String']['input']>;
@@ -11322,7 +11329,7 @@ export type ExtensionListQueryVariables = Exact<{
 }>;
 
 
-export type ExtensionListQuery = { __typename: 'Query', appExtensions: { __typename: 'AppExtensionCountableConnection', edges: Array<{ __typename: 'AppExtensionCountableEdge', node: { __typename: 'AppExtension', id: string, label: string, url: string, mountName: string, targetName: string, settings: unknown, accessToken: string | null, permissions: Array<{ __typename: 'Permission', code: PermissionEnum }>, app: { __typename: 'App', id: string, appUrl: string | null, name: string | null, brand: { __typename: 'AppBrand', logo: { __typename: 'AppBrandLogo', default: string } } | null } } }> } | null };
+export type ExtensionListQuery = { __typename: 'Query', appExtensions: { __typename: 'AppExtensionCountableConnection', edges: Array<{ __typename: 'AppExtensionCountableEdge', node: { __typename: 'AppExtension', id: string, label: string, url: string, mountName: string, targetName: string, settings: unknown, accessToken: string | null, permissions: Array<{ __typename: 'Permission', code: PermissionEnum }>, app: { __typename: 'App', id: string, identifier: string | null, appUrl: string | null, name: string | null, brand: { __typename: 'AppBrand', logo: { __typename: 'AppBrandLogo', default: string } } | null } } }> } | null };
 
 export type AppWebhookDeliveriesQueryVariables = Exact<{
   appId: Scalars['ID']['input'];

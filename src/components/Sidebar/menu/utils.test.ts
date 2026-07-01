@@ -25,6 +25,7 @@ describe("mapToExtensionsItems", () => {
   const mockApp: Extension["app"] = {
     __typename: "App",
     id: "app-1",
+    identifier: null,
     appUrl: "https://app.example.com",
     name: "App name",
     brand: null,
@@ -32,6 +33,7 @@ describe("mapToExtensionsItems", () => {
 
   const mockExtension: Extension = {
     id: "test-extension",
+    identifier: null,
     label: "Test Extension",
     app: mockApp,
     url: "/test",
@@ -274,6 +276,7 @@ describe("getMenuItemExtension", () => {
   const mockAppDefinition: Extension["app"] = {
     __typename: "App",
     id: "app-1",
+    identifier: null,
     appUrl: "https://app.example.com",
     name: "App name",
     brand: null,
@@ -281,6 +284,7 @@ describe("getMenuItemExtension", () => {
 
   const baseMockExtension: Extension = {
     id: "base-id",
+    identifier: null,
     label: "Base Label",
     app: mockAppDefinition,
     url: "/base-url",
@@ -449,6 +453,7 @@ describe("getMenuItemExtension", () => {
     const catalogExtensionApp: Extension["app"] = {
       __typename: "App",
       id: "app-2",
+      identifier: null,
       appUrl: "https://app2.example.com",
       name: "App name",
       brand: null,

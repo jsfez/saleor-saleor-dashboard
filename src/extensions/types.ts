@@ -74,6 +74,9 @@ export type InstalledExtension = {
 
 export interface Extension {
   id: string;
+  // Deferred: always null until Core exposes AppExtension.identifier. The
+  // preference key resolver falls back to `id` when this is null.
+  identifier: string | null;
   app: RelayToFlat<NonNullable<ExtensionListQuery["appExtensions"]>>[0]["app"];
   accessToken: string;
   permissions: PermissionEnum[];

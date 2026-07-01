@@ -56,6 +56,7 @@ describe("Extensions / hooks / useExtensions", () => {
             settings: {},
             app: {
               id: "app1",
+              identifier: null,
               name: "Test App 1",
               __typename: "App",
               appUrl: "https://example.com",
@@ -75,6 +76,7 @@ describe("Extensions / hooks / useExtensions", () => {
             targetName: "APP_PAGE",
             app: {
               id: "app2",
+              identifier: null,
               name: "Test App 2",
               __typename: "App",
               appUrl: "https://example.com",
@@ -97,6 +99,7 @@ describe("Extensions / hooks / useExtensions", () => {
             targetName: "POPUP",
             app: {
               id: "app3",
+              identifier: null,
               name: "Test App 3",
               __typename: "App",
               appUrl: "https://example.com",
@@ -118,6 +121,7 @@ describe("Extensions / hooks / useExtensions", () => {
             targetName: "NEW_TAB",
             app: {
               id: "app4",
+              identifier: null,
               __typename: "App",
               appUrl: "https://example.com",
               brand: null,
@@ -139,6 +143,7 @@ describe("Extensions / hooks / useExtensions", () => {
             targetName: "NEW_TAB",
             app: {
               id: "app5",
+              identifier: null,
               __typename: "App",
               appUrl: "https://example.com",
               brand: null,
@@ -162,6 +167,7 @@ describe("Extensions / hooks / useExtensions", () => {
             targetName: "NEW_TAB",
             app: {
               id: "app6",
+              identifier: null,
               __typename: "App",
               brand: null,
               name: "Test App 6",
@@ -185,6 +191,7 @@ describe("Extensions / hooks / useExtensions", () => {
             targetName: "NEW_TAB",
             app: {
               __typename: "App",
+              identifier: null,
               brand: null,
               id: "app7",
               name: "Test App 7",

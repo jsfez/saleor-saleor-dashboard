@@ -52,6 +52,8 @@ const prepareExtensionsWithActions = ({
 
       return {
         id,
+        // TODO: replace with node `identifier` once Core exposes AppExtension.identifier.
+        identifier: null,
         app,
         accessToken: accessToken || "",
         permissions: permissions.map(({ code }) => code),

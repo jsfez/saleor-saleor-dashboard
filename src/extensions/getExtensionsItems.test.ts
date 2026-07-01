@@ -31,10 +31,12 @@ import { type ExtensionWithParams } from "./types";
 
 const mockedExtension: ExtensionWithParams = {
   id: "ext-1",
+  identifier: null,
   label: "Extension 1",
   app: {
     __typename: "App",
     id: "app-id",
+    identifier: null,
     appUrl: "https://example.com",
     name: "App name",
     brand: {
