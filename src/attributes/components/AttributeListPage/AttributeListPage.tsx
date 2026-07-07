@@ -2,12 +2,18 @@ import { attributeAddUrl, type AttributeListUrlSortField } from "@dashboard/attr
 import { ListFilters } from "@dashboard/components/AppLayout/ListFilters";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import { BulkDeleteButton } from "@dashboard/components/BulkDeleteButton";
+import { BulkUnassignButton } from "@dashboard/components/BulkUnassignButton";
 import { DashboardCard } from "@dashboard/components/Card";
 import { FilterPresetsSelect } from "@dashboard/components/FilterPresetsSelect";
 import { configurationMenuUrl } from "@dashboard/configuration/urls";
 import { type AttributeFragment, type AttributeTypeEnum } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { sectionNames } from "@dashboard/intl";
+import {
+  type ModelTypeTabCount,
+  ModelTypeTabs,
+} from "@dashboard/modeling/components/ModelTypeTabs/ModelTypeTabs";
+import { type ModelTypeTabGrouping } from "@dashboard/modeling/components/ModelTypeTabs/useModelTypeTabGrouping";
 import { Box, Button } from "@saleor/macaw-ui-next";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -15,6 +21,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { type FilterPagePropsWithPresets, type PageListProps, type SortPage } from "../../../types";
 import { AttributeListDatagrid } from "../AttributeListDatagrid";
 import { type AttributeFilterKeys, type AttributeListFilterOpts } from "./filters";
+import { attributeListPageMessages } from "./messages";
 
 interface AttributeListPageProps
   extends PageListProps,
@@ -24,7 +31,19 @@ interface AttributeListPageProps
   selectedAttributesIds: string[];
   builtInFilterPresets?: string[];
   defaultAttributeType?: AttributeTypeEnum;
+  hidePagination?: boolean;
+  canGroupByType?: boolean;
+  groupByType?: boolean;
+  onGroupByTypeChange?: (enabled: boolean) => void;
+  showTypeTabs?: boolean;
+  types?: Array<{ id: string; name: string }>;
+  selectedTypeIds?: string[];
+  typeTabCounts?: Record<string, ModelTypeTabCount | undefined>;
+  onTypeTabChange?: (ids: string[]) => void;
+  typeTabGrouping?: ModelTypeTabGrouping;
   onAttributesDelete: () => void;
+  onAttributesUnassign?: () => void;
+  canUnassignFromType?: boolean;
   onSelectAttributesIds: (rows: number[], clearSelection: () => void) => void;
 }
 
@@ -42,7 +61,20 @@ const AttributeListPage = ({
   defaultAttributeType,
   selectedFilterPreset,
   onAttributesDelete,
+  onAttributesUnassign,
+  canUnassignFromType = false,
   selectedAttributesIds,
+  onSelectAttributesIds,
+  hidePagination = false,
+  canGroupByType = false,
+  groupByType = false,
+  onGroupByTypeChange,
+  showTypeTabs = false,
+  types,
+  selectedTypeIds = [],
+  typeTabCounts = {},
+  onTypeTabChange,
+  typeTabGrouping,
   ...listProps
 }: AttributeListPageProps) => {
   const intl = useIntl();
@@ -78,7 +110,20 @@ const AttributeListPage = ({
               })}
             />
           </Box>
-          <Box>
+          <Box display="flex" alignItems="center" gap={2}>
+            {canGroupByType && onGroupByTypeChange && (
+              <TopNav.Menu
+                dataTestId="attribute-list-view-menu"
+                items={[
+                  {
+                    label: intl.formatMessage(attributeListPageMessages.groupByType),
+                    testId: "attribute-list-group-by-type",
+                    checked: groupByType,
+                    onSelect: () => onGroupByTypeChange(!groupByType),
+                  },
+                ]}
+              />
+            )}
             <Button
               onClick={() =>
                 navigate(
@@ -99,28 +144,52 @@ const AttributeListPage = ({
           </Box>
         </Box>
       </TopNav>
-      <DashboardCard>
-        <ListFilters<AttributeFilterKeys>
-          type="expression-filter"
-          initialSearch={initialSearch}
-          onSearchChange={onSearchChange}
-          searchPlaceholder={intl.formatMessage({
-            id: "9ScmSs",
-            defaultMessage: "Search attributes...",
-          })}
-          actions={
-            <Box display="flex" gap={4}>
-              {selectedAttributesIds.length > 0 && (
-                <BulkDeleteButton onClick={onAttributesDelete}>
-                  <FormattedMessage defaultMessage="Delete attributes" id="g0GAdN" />
-                </BulkDeleteButton>
-              )}
-            </Box>
-          }
-        />
-
-        <AttributeListDatagrid {...listProps} />
-      </DashboardCard>
+      <Box display="flex" flexDirection="column" __minWidth={0} __minHeight={0}>
+        <Box paddingTop={4}>
+          <ListFilters<AttributeFilterKeys>
+            type="expression-filter"
+            initialSearch={initialSearch}
+            onSearchChange={onSearchChange}
+            searchPlaceholder={intl.formatMessage({
+              id: "9ScmSs",
+              defaultMessage: "Search attributes...",
+            })}
+            actions={
+              <Box display="flex" gap={4}>
+                {canUnassignFromType &&
+                  onAttributesUnassign &&
+                  selectedAttributesIds.length > 0 && (
+                    <BulkUnassignButton onClick={onAttributesUnassign}>
+                      {intl.formatMessage(attributeListPageMessages.unassignAttributes)}
+                    </BulkUnassignButton>
+                  )}
+                {selectedAttributesIds.length > 0 && (
+                  <BulkDeleteButton onClick={onAttributesDelete}>
+                    <FormattedMessage defaultMessage="Delete attributes" id="g0GAdN" />
+                  </BulkDeleteButton>
+                )}
+              </Box>
+            }
+          />
+        </Box>
+        {showTypeTabs && onTypeTabChange && typeTabGrouping && (
+          <ModelTypeTabs
+            pageTypes={types}
+            selectedIds={selectedTypeIds}
+            counts={typeTabCounts}
+            onTabChange={onTypeTabChange}
+            grouping={typeTabGrouping}
+          />
+        )}
+        <DashboardCard>
+          <AttributeListDatagrid
+            {...listProps}
+            hidePagination={hidePagination}
+            showTopBorder={!showTypeTabs}
+            onSelectAttributesIds={onSelectAttributesIds}
+          />
+        </DashboardCard>
+      </Box>
     </>
   );
 };

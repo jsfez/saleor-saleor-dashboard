@@ -44,3 +44,95 @@ export const attributeList = gql`
     }
   }
 `;
+
+export const pageTypeAssignedAttributesForList = gql`
+  query PageTypeAssignedAttributesForList($id: ID!) {
+    pageType(id: $id) {
+      id
+      attributes {
+        ...AttributeAssignedList
+      }
+    }
+  }
+`;
+
+export const productTypeAssignedAttributesForList = gql`
+  query ProductTypeAssignedAttributesForList($id: ID!) {
+    productType(id: $id) {
+      id
+      productAttributes {
+        ...AttributeAssignedList
+      }
+      variantAttributes {
+        ...AttributeAssignedList
+      }
+    }
+  }
+`;
+
+export const pageTypeListWithAssignedAttributeCounts = gql`
+  query PageTypeListWithAssignedAttributeCounts(
+    $after: String
+    $before: String
+    $first: Int
+    $last: Int
+    $filter: PageTypeFilterInput
+    $sort: PageTypeSortingInput
+  ) {
+    pageTypes(
+      after: $after
+      before: $before
+      first: $first
+      last: $last
+      filter: $filter
+      sortBy: $sort
+    ) {
+      edges {
+        node {
+          ...PageType
+          attributes {
+            id
+          }
+        }
+      }
+      pageInfo {
+        ...PageInfo
+      }
+    }
+  }
+`;
+
+export const productTypeListWithAssignedAttributeCounts = gql`
+  query ProductTypeListWithAssignedAttributeCounts(
+    $after: String
+    $before: String
+    $first: Int
+    $last: Int
+    $filter: ProductTypeFilterInput
+    $sort: ProductTypeSortingInput
+  ) {
+    productTypes(
+      after: $after
+      before: $before
+      first: $first
+      last: $last
+      filter: $filter
+      sortBy: $sort
+    ) {
+      edges {
+        node {
+          ...ProductType
+          productAttributes {
+            id
+          }
+          variantAttributes {
+            id
+          }
+        }
+      }
+      pageInfo {
+        ...PageInfo
+      }
+    }
+  }
+`;

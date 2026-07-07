@@ -39,6 +39,13 @@ export const attributeFragment = gql`
   }
 `;
 
+export const attributeAssignedListFragment = gql`
+  fragment AttributeAssignedList on Attribute {
+    ...Attribute
+    valueRequired
+  }
+`;
+
 export const attributeUpdateResultFragment = gql`
   fragment AttributeUpdateResult on Attribute {
     ...Attribute

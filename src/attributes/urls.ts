@@ -19,6 +19,7 @@ import {
   type BulkAction,
   type Dialog,
   type Filters,
+  type FiltersWithMultipleValues,
   type Pagination,
   type SingleAction,
   type Sort,
@@ -35,7 +36,12 @@ export enum AttributeListUrlFiltersEnum {
   query = "query",
 }
 export type AttributeListUrlFilters = Filters<AttributeListUrlFiltersEnum>;
-export type AttributeListUrlDialog = "remove" | TabActionDialog;
+
+enum AttributeListUrlFiltersWithMultipleValues {
+  typeIds = "typeIds",
+}
+
+export type AttributeListUrlDialog = "remove" | "unassign" | TabActionDialog;
 export enum AttributeListUrlSortField {
   name = "name",
   slug = "slug",
@@ -45,6 +51,7 @@ export enum AttributeListUrlSortField {
 type AttributeListUrlSort = Sort<AttributeListUrlSortField>;
 export type AttributeListUrlQueryParams = ActiveTab &
   AttributeListUrlFilters &
+  FiltersWithMultipleValues<AttributeListUrlFiltersWithMultipleValues> &
   AttributeListUrlSort &
   BulkAction &
   Dialog<AttributeListUrlDialog> &
