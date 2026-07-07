@@ -1,3 +1,4 @@
+import { rippleAttributeListGroupByType } from "@dashboard/attributes/ripples/attributeListGroupByType";
 import { attributeAddUrl, type AttributeListUrlSortField } from "@dashboard/attributes/urls";
 import { ListFilters } from "@dashboard/components/AppLayout/ListFilters";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
@@ -14,6 +15,7 @@ import {
   ModelTypeTabs,
 } from "@dashboard/modeling/components/ModelTypeTabs/ModelTypeTabs";
 import { type ModelTypeTabGrouping } from "@dashboard/modeling/components/ModelTypeTabs/useModelTypeTabGrouping";
+import { Ripple } from "@dashboard/ripples/components/Ripple";
 import { Box, Button } from "@saleor/macaw-ui-next";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -112,17 +114,22 @@ const AttributeListPage = ({
           </Box>
           <Box display="flex" alignItems="center" gap={2}>
             {canGroupByType && onGroupByTypeChange && (
-              <TopNav.Menu
-                dataTestId="attribute-list-view-menu"
-                items={[
-                  {
-                    label: intl.formatMessage(attributeListPageMessages.groupByType),
-                    testId: "attribute-list-group-by-type",
-                    checked: groupByType,
-                    onSelect: () => onGroupByTypeChange(!groupByType),
-                  },
-                ]}
-              />
+              <Box position="relative">
+                <TopNav.Menu
+                  dataTestId="attribute-list-view-menu"
+                  items={[
+                    {
+                      label: intl.formatMessage(attributeListPageMessages.groupByType),
+                      testId: "attribute-list-group-by-type",
+                      checked: groupByType,
+                      onSelect: () => onGroupByTypeChange(!groupByType),
+                    },
+                  ]}
+                />
+                <Box position="absolute" __top="-4px" __right="-4px">
+                  <Ripple model={rippleAttributeListGroupByType} />
+                </Box>
+              </Box>
             )}
             <Button
               onClick={() =>
