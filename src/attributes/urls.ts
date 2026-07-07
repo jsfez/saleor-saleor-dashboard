@@ -61,6 +61,19 @@ export const attributeListPath = attributeSection;
 export const attributeListUrl = (params?: AttributeListUrlQueryParams) =>
   attributeListPath + "?" + stringifyQs(params);
 
+/**
+ * Updates attribute list type-tab selection in URL params.
+ * Always clears legacy `pageTypes` so bookmarks cannot re-apply a stale tab.
+ */
+export const withAttributeListTypeTabSelection = (
+  params: AttributeListUrlQueryParams,
+  typeIds: string[] | undefined,
+): AttributeListUrlQueryParams => ({
+  ...params,
+  typeIds: typeIds?.length ? typeIds : undefined,
+  pageTypes: undefined,
+});
+
 const createAttributeTypeFilterElement = (attributeType: AttributeTypeEnum): FilterElement => {
   const expressionValue = new ExpressionValue("attributeType", "Type", "attributeType");
   const conditionOptions = ConditionOptions.fromStaticElementName("attributeType");

@@ -64,6 +64,7 @@ import {
   type AttributeListUrlQueryParams,
   type AttributeListUrlSortField,
   getAttributeTypeFromBuiltInPresetTab,
+  withAttributeListTypeTabSelection,
 } from "../../urls";
 import { getSortQueryVariables } from "./sort";
 import { useAttributeTypeTabCounts } from "./useAttributeTypeTabCounts";
@@ -246,13 +247,9 @@ const AttributeList = ({ params }: AttributeListProps) => {
       return;
     }
 
-    navigate(
-      attributeListUrl({
-        ...params,
-        typeIds: undefined,
-      }),
-      { replace: true },
-    );
+    navigate(attributeListUrl(withAttributeListTypeTabSelection(params, undefined)), {
+      replace: true,
+    });
   }, [canGroupByType, groupByType, navigate, params, selectedTypeIds.length]);
 
   useEffect(() => {
@@ -266,13 +263,9 @@ const AttributeList = ({ params }: AttributeListProps) => {
       return;
     }
 
-    navigate(
-      attributeListUrl({
-        ...params,
-        typeIds: validIds.length ? validIds : undefined,
-      }),
-      { replace: true },
-    );
+    navigate(attributeListUrl(withAttributeListTypeTabSelection(params, validIds)), {
+      replace: true,
+    });
   }, [navigate, params, selectedTypeIds, showTypeTabs, types, typesLoading]);
 
   const activeTabCountKey = useMemo(
@@ -449,8 +442,7 @@ const AttributeList = ({ params }: AttributeListProps) => {
       clearRowSelection();
       navigate(
         attributeListUrl({
-          ...params,
-          typeIds: ids.length ? ids : undefined,
+          ...withAttributeListTypeTabSelection(params, ids),
           after: undefined,
           before: undefined,
         }),
@@ -465,12 +457,7 @@ const AttributeList = ({ params }: AttributeListProps) => {
       setGroupByType(enabled);
 
       if (!enabled && selectedTypeIds.length > 0) {
-        navigate(
-          attributeListUrl({
-            ...params,
-            typeIds: undefined,
-          }),
-        );
+        navigate(attributeListUrl(withAttributeListTypeTabSelection(params, undefined)));
       }
     },
     [clearRowSelection, navigate, params, selectedTypeIds.length, setGroupByType],
