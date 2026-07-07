@@ -12,7 +12,7 @@ describe("navigationQueryParams", () => {
     const locationSearch = `?${stringify(
       {
         0: { "s0.attributeType": "PAGE_TYPE" },
-        pageTypes: ["page-type-1"],
+        typeIds: ["page-type-1"],
         activeTab: "2",
         sort: "name",
         asc: true,
@@ -35,6 +35,25 @@ describe("navigationQueryParams", () => {
     // Assert
     expect(tokens.map(token => token.name)).toEqual(["attributeType"]);
     expect(getAttributeListNavigationQueryParams(locationSearch)).toEqual({
+      typeIds: ["page-type-1"],
+    });
+  });
+
+  it("should preserve legacy pageTypes navigation params for bookmarks", () => {
+    // Arrange
+    const locationSearch = `?${stringify(
+      {
+        0: { "s0.attributeType": "PAGE_TYPE" },
+        pageTypes: ["page-type-1"],
+      },
+      { arrayFormat: "indices" },
+    )}`;
+
+    // Act
+    const navigationParams = getAttributeListNavigationQueryParams(locationSearch);
+
+    // Assert
+    expect(navigationParams).toEqual({
       pageTypes: ["page-type-1"],
     });
   });

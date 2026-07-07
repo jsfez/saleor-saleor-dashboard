@@ -43,10 +43,10 @@ const AllTypedAttributesCountFetcher = ({
   const count = computeAttributeListCount(data);
 
   useEffect(() => {
-    if (count) {
+    if (count !== undefined) {
       onCount(tabId, count);
     }
-  }, [count?.hasMore, count?.value, onCount, tabId]);
+  }, [count?.hasMore, count?.value, onCount, tabId, count]);
 
   return null;
 };
@@ -81,6 +81,14 @@ export const useAttributeTypeTabCounts = ({
     });
   }, []);
 
+  const resetCounts = useCallback(() => {
+    setOverrides({});
+  }, []);
+
+  useEffect(() => {
+    setOverrides({});
+  }, [attributeType]);
+
   const counts = useMemo(
     () => ({ ...preloadedCounts, ...overrides }),
     [preloadedCounts, overrides],
@@ -97,5 +105,5 @@ export const useAttributeTypeTabCounts = ({
     />
   ) : null;
 
-  return { counts, setCount, fetchers };
+  return { counts, setCount, resetCounts, fetchers };
 };

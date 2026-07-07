@@ -3,7 +3,7 @@ import { getArrayQueryParam } from "@dashboard/utils/urls";
 
 import { type FilterProviderType } from "../types";
 
-const ATTRIBUTE_LIST_NAVIGATION_QUERY_KEYS = ["pageTypes"] as const;
+const ATTRIBUTE_LIST_NAVIGATION_QUERY_KEYS = ["typeIds", "pageTypes"] as const;
 
 export const stripNavigationQueryParams = (
   params: URLSearchParams,
@@ -24,10 +24,18 @@ export const stripNavigationQueryParams = (
   });
 };
 
-export const getAttributeListNavigationQueryParams = (
+const readNavigationTypeIds = (
   locationSearch: string,
-): { pageTypes?: string[] } => {
+): { typeIds?: string[]; pageTypes?: string[] } => {
   const qs = parseQs(locationSearch.startsWith("?") ? locationSearch.slice(1) : locationSearch);
+  const typeIdsParam = qs.typeIds;
+
+  if (typeIdsParam !== undefined && typeIdsParam !== null) {
+    const typeIds = getArrayQueryParam(typeIdsParam as string | string[]);
+
+    return typeIds?.length ? { typeIds } : {};
+  }
+
   const pageTypesParam = qs.pageTypes;
 
   if (pageTypesParam === undefined || pageTypesParam === null) {
@@ -38,3 +46,7 @@ export const getAttributeListNavigationQueryParams = (
 
   return pageTypes?.length ? { pageTypes } : {};
 };
+
+export const getAttributeListNavigationQueryParams = (
+  locationSearch: string,
+): { typeIds?: string[]; pageTypes?: string[] } => readNavigationTypeIds(locationSearch);

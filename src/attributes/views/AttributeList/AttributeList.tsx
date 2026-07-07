@@ -83,11 +83,12 @@ const AttributeList = ({ params }: AttributeListProps) => {
   const grouping = useModelTypeTabGrouping();
   const { groupByType, setGroupByType } = useAttributeGroupByType();
 
-  const selectedTypeIdsKey = Array.isArray(params.typeIds)
-    ? params.typeIds.join(",")
-    : (params.typeIds ?? "");
+  const selectedTypeIdsKey = [
+    Array.isArray(params.typeIds) ? params.typeIds.join(",") : (params.typeIds ?? ""),
+    Array.isArray(params.pageTypes) ? params.pageTypes.join(",") : (params.pageTypes ?? ""),
+  ].join("|");
   const selectedTypeIds = useMemo(
-    () => normalizeTypeIds(params.typeIds),
+    () => normalizeTypeIds(params.typeIds ?? params.pageTypes),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedTypeIdsKey],
   );
@@ -163,48 +164,73 @@ const AttributeList = ({ params }: AttributeListProps) => {
 
   const typedAttributesScopeForQueries = typedAttributesScope;
 
-  const { data: pageTypesData, loading: pageTypesLoading } =
-    usePageTypeListWithAssignedAttributeCountsQuery({
-      fetchPolicy: "cache-and-network",
-      skip: !showTypeTabs || typedAttributesScopeForQueries !== AttributeTypeEnum.PAGE_TYPE,
-      variables: {
-        first: 100,
-        sort: { field: PageTypeSortField.NAME, direction: OrderDirection.ASC },
-      },
-    });
-  const { data: productTypesData, loading: productTypesLoading } =
-    useProductTypeListWithAssignedAttributeCountsQuery({
-      fetchPolicy: "cache-and-network",
-      skip: !showTypeTabs || typedAttributesScopeForQueries !== AttributeTypeEnum.PRODUCT_TYPE,
-      variables: {
-        first: 100,
-        sort: { field: ProductTypeSortField.NAME, direction: OrderDirection.ASC },
-      },
-    });
+  const {
+    data: pageTypesData,
+    previousData: previousPageTypesData,
+    loading: pageTypesLoading,
+    refetch: refetchPageTypeTabCounts,
+  } = usePageTypeListWithAssignedAttributeCountsQuery({
+    fetchPolicy: "cache-and-network",
+    skip: !showTypeTabs || typedAttributesScopeForQueries !== AttributeTypeEnum.PAGE_TYPE,
+    variables: {
+      first: 100,
+      sort: { field: PageTypeSortField.NAME, direction: OrderDirection.ASC },
+    },
+  });
+  const {
+    data: productTypesData,
+    previousData: previousProductTypesData,
+    loading: productTypesLoading,
+    refetch: refetchProductTypeTabCounts,
+  } = useProductTypeListWithAssignedAttributeCountsQuery({
+    fetchPolicy: "cache-and-network",
+    skip: !showTypeTabs || typedAttributesScopeForQueries !== AttributeTypeEnum.PRODUCT_TYPE,
+    variables: {
+      first: 100,
+      sort: { field: ProductTypeSortField.NAME, direction: OrderDirection.ASC },
+    },
+  });
 
   const types = useMemo(() => {
     if (typedAttributesScopeForQueries === AttributeTypeEnum.PAGE_TYPE) {
-      return mapEdgesToItems(pageTypesData?.pageTypes) ?? undefined;
+      return (
+        mapEdgesToItems(pageTypesData?.pageTypes ?? previousPageTypesData?.pageTypes) ?? undefined
+      );
     }
 
     if (typedAttributesScopeForQueries === AttributeTypeEnum.PRODUCT_TYPE) {
-      return mapEdgesToItems(productTypesData?.productTypes) ?? undefined;
+      return (
+        mapEdgesToItems(productTypesData?.productTypes ?? previousProductTypesData?.productTypes) ??
+        undefined
+      );
     }
 
     return undefined;
-  }, [pageTypesData, productTypesData, typedAttributesScopeForQueries]);
+  }, [
+    pageTypesData,
+    previousPageTypesData,
+    productTypesData,
+    previousProductTypesData,
+    typedAttributesScopeForQueries,
+  ]);
 
   const preloadedTypeTabCounts = useMemo(() => {
     if (typedAttributesScopeForQueries === AttributeTypeEnum.PAGE_TYPE) {
-      return computePageTypeTabCounts(pageTypesData);
+      return computePageTypeTabCounts(pageTypesData ?? previousPageTypesData);
     }
 
     if (typedAttributesScopeForQueries === AttributeTypeEnum.PRODUCT_TYPE) {
-      return computeProductTypeTabCounts(productTypesData);
+      return computeProductTypeTabCounts(productTypesData ?? previousProductTypesData);
     }
 
     return {};
-  }, [pageTypesData, productTypesData, typedAttributesScopeForQueries]);
+  }, [
+    pageTypesData,
+    previousPageTypesData,
+    productTypesData,
+    previousProductTypesData,
+    typedAttributesScopeForQueries,
+  ]);
 
   const typesLoading =
     typedAttributesScopeForQueries === AttributeTypeEnum.PAGE_TYPE
@@ -212,11 +238,11 @@ const AttributeList = ({ params }: AttributeListProps) => {
       : productTypesLoading;
 
   useEffect(() => {
-    if (canGroupByType) {
+    if (selectedTypeIds.length === 0) {
       return;
     }
 
-    if (selectedTypeIds.length === 0) {
+    if (canGroupByType && groupByType) {
       return;
     }
 
@@ -227,19 +253,7 @@ const AttributeList = ({ params }: AttributeListProps) => {
       }),
       { replace: true },
     );
-  }, [canGroupByType, navigate, params, selectedTypeIds.length]);
-
-  useEffect(() => {
-    if (!groupByType && selectedTypeIds.length > 0) {
-      navigate(
-        attributeListUrl({
-          ...params,
-          typeIds: undefined,
-        }),
-        { replace: true },
-      );
-    }
-  }, [groupByType, navigate, params, selectedTypeIds.length]);
+  }, [canGroupByType, groupByType, navigate, params, selectedTypeIds.length]);
 
   useEffect(() => {
     if (!types || typesLoading || !showTypeTabs) {
@@ -266,7 +280,7 @@ const AttributeList = ({ params }: AttributeListProps) => {
     [grouping.groupingOptions, selectedTypeIds, types],
   );
 
-  const { counts, setCount, fetchers } = useAttributeTypeTabCounts({
+  const { counts, setCount, resetCounts, fetchers } = useAttributeTypeTabCounts({
     preloadedCounts: preloadedTypeTabCounts,
     attributeType: typedAttributesScopeForQueries ?? AttributeTypeEnum.PAGE_TYPE,
     selectedTypeIds,
@@ -274,23 +288,39 @@ const AttributeList = ({ params }: AttributeListProps) => {
     pageSize: settings.rowNumber,
   });
 
-  const activeCount: ModelTypeTabCount | undefined = isTypeScoped
-    ? {
+  const activeCount = useMemo((): ModelTypeTabCount | undefined => {
+    if (isTypeScoped) {
+      if (typeScopedLoading) {
+        return undefined;
+      }
+
+      return {
         value: typeScopedAttributes.length,
         hasMore: false,
-      }
-    : data?.attributes
-      ? {
-          value: data.attributes.edges.length,
-          hasMore: !!data.attributes.pageInfo.hasNextPage,
-        }
-      : undefined;
+      };
+    }
+
+    if (loading && !data?.attributes) {
+      return undefined;
+    }
+
+    if (!data?.attributes) {
+      return undefined;
+    }
+
+    return {
+      value: data.attributes.edges.length,
+      hasMore: !!data.attributes.pageInfo.hasNextPage,
+    };
+  }, [data?.attributes, isTypeScoped, loading, typeScopedAttributes.length, typeScopedLoading]);
 
   useEffect(() => {
-    if (activeCount && showTypeTabs) {
-      setCount(activeTabCountKey, activeCount);
+    if (activeCount === undefined || !showTypeTabs) {
+      return;
     }
-  }, [activeCount?.hasMore, activeCount?.value, activeTabCountKey, setCount, showTypeTabs]);
+
+    setCount(activeTabCountKey, activeCount);
+  }, [activeCount, activeTabCountKey, setCount, showTypeTabs]);
 
   const defaultAttributeType = useMemo(() => {
     const { type } = filters;
@@ -302,6 +332,25 @@ const AttributeList = ({ params }: AttributeListProps) => {
     return getAttributeTypeFromBuiltInPresetTab(selectedPreset);
   }, [filters, selectedPreset]);
 
+  const refetchTypeTabCounts = useCallback(async () => {
+    if (!showTypeTabs || !typedAttributesScopeForQueries) {
+      return;
+    }
+
+    if (typedAttributesScopeForQueries === AttributeTypeEnum.PAGE_TYPE) {
+      await refetchPageTypeTabCounts();
+
+      return;
+    }
+
+    await refetchProductTypeTabCounts();
+  }, [
+    refetchPageTypeTabCounts,
+    refetchProductTypeTabCounts,
+    showTypeTabs,
+    typedAttributesScopeForQueries,
+  ]);
+
   const refetchList = useCallback(async () => {
     if (isTypeScoped) {
       await refetchTypeAttributes();
@@ -309,6 +358,12 @@ const AttributeList = ({ params }: AttributeListProps) => {
       await refetch();
     }
   }, [isTypeScoped, refetch, refetchTypeAttributes]);
+
+  const refreshListAndTabCounts = useCallback(async () => {
+    resetCounts();
+    await refetchList();
+    await refetchTypeTabCounts();
+  }, [refetchList, refetchTypeTabCounts, resetCounts]);
 
   const [openModal, closeModal] = createDialogActionHandlers<
     AttributeListUrlDialog,
@@ -326,8 +381,8 @@ const AttributeList = ({ params }: AttributeListProps) => {
       ),
     });
     clearRowSelection();
-    void refetchList();
-  }, [assignedTypeKind, clearRowSelection, closeModal, intl, notify, refetchList]);
+    void refreshListAndTabCounts();
+  }, [assignedTypeKind, clearRowSelection, closeModal, intl, notify, refreshListAndTabCounts]);
 
   const [unassignProductAttribute, unassignProductAttributeOpts] =
     useUnassignProductAttributeMutation({
@@ -366,7 +421,7 @@ const AttributeList = ({ params }: AttributeListProps) => {
           }),
         });
         clearRowSelection();
-        void refetchList();
+        void refreshListAndTabCounts();
       }
     },
   });

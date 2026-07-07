@@ -39,6 +39,7 @@ export type AttributeListUrlFilters = Filters<AttributeListUrlFiltersEnum>;
 
 enum AttributeListUrlFiltersWithMultipleValues {
   typeIds = "typeIds",
+  pageTypes = "pageTypes",
 }
 
 export type AttributeListUrlDialog = "remove" | "unassign" | TabActionDialog;
