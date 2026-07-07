@@ -268,6 +268,32 @@ export const AttributeUpdateResultFragmentDoc = gql`
   }
 }
     ${AttributeFragmentDoc}`;
+export const AttributeAssignedTypesFragmentDoc = gql`
+    fragment AttributeAssignedTypes on Attribute {
+  productTypes(first: 100) {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+    pageInfo {
+      hasNextPage
+    }
+  }
+  productVariantTypes(first: 100) {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+    pageInfo {
+      hasNextPage
+    }
+  }
+}
+    `;
 export const AvailableAttributeFragmentDoc = gql`
     fragment AvailableAttribute on Attribute {
   id
@@ -4313,10 +4339,12 @@ export const AttributeDetailsDocument = gql`
     query AttributeDetails($id: ID!, $firstValues: Int, $afterValues: String, $lastValues: Int, $beforeValues: String, $searchValues: String) {
   attribute(id: $id) {
     ...AttributeDetails
+    ...AttributeAssignedTypes
     ...Metadata
   }
 }
     ${AttributeDetailsFragmentDoc}
+${AttributeAssignedTypesFragmentDoc}
 ${MetadataFragmentDoc}`;
 
 /**

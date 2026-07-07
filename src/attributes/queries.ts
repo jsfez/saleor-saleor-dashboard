@@ -11,6 +11,7 @@ export const attributeDetails = gql`
   ) {
     attribute(id: $id) {
       ...AttributeDetails
+      ...AttributeAssignedTypes
       ...Metadata
     }
   }

@@ -98,7 +98,12 @@ export const useAssignedTypeAttributes = ({
   const refetchByType = useRef<Record<string, () => Promise<unknown>>>({});
 
   const listExpressionFilters = useMemo(() => {
-    const { type: _type, search: _search, ...rest } = expressionFilters;
+    const {
+      type: _type,
+      search: _search,
+      isVariantOnly: _isVariantOnly,
+      ...rest
+    } = expressionFilters;
 
     return rest;
   }, [expressionFilters]);
