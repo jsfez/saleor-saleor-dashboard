@@ -11,8 +11,7 @@ import {
 } from "@dashboard/attributes/utils/handlers";
 import ActionDialog from "@dashboard/components/ActionDialog";
 import { type AttributeInput } from "@dashboard/components/Attributes";
-import { type InitialPageConstraints } from "@dashboard/components/ModalFilters/entityConfigs/ModalPageFilterProvider";
-import { type InitialConstraints } from "@dashboard/components/ModalFilters/entityConfigs/ModalProductFilterProvider";
+import { getReferenceTypeConstraints } from "@dashboard/components/ModalFilters/getReferenceTypeConstraints";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { DEFAULT_INITIAL_SEARCH_DATA, VALUES_PAGINATE_BY } from "@dashboard/config";
 import { useRegisterEntityRefresh } from "@dashboard/extensions/entity-refresh";
@@ -41,7 +40,6 @@ import useAttributeValueSearchHandler from "@dashboard/utils/handlers/attributeV
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { getParsedDataForJsonStringField } from "@dashboard/utils/richText/misc";
-import { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { useAssignAttributeValueDialogFilterChangeHandlers } from "../../components/AssignAttributeValueDialog/useAssignAttributeValueDialogFilterChangeHandlers";
@@ -153,36 +151,7 @@ const PageDetails = ({ id, params }: PageDetailsProps) => {
       : undefined;
 
   // Extract productType and pageType constraints from reference attribute for modal filter
-  const initialConstraints = useMemo(():
-    | (InitialConstraints & InitialPageConstraints)
-    | undefined => {
-    if (!refAttr?.referenceTypes?.length) {
-      return undefined;
-    }
-
-    const productTypeRefs = refAttr.referenceTypes.filter(
-      (t): t is { __typename: "ProductType"; id: string; name: string } =>
-        t?.__typename === "ProductType" && Boolean(t?.id),
-    );
-
-    const pageTypeRefs = refAttr.referenceTypes.filter(
-      (t): t is { __typename: "PageType"; id: string; name: string } =>
-        t?.__typename === "PageType" && Boolean(t?.id),
-    );
-
-    if (productTypeRefs.length === 0 && pageTypeRefs.length === 0) {
-      return undefined;
-    }
-
-    return {
-      ...(productTypeRefs.length > 0 && {
-        productTypes: productTypeRefs.map(t => ({ id: t.id, name: t.name })),
-      }),
-      ...(pageTypeRefs.length > 0 && {
-        pageTypes: pageTypeRefs.map(t => ({ id: t.id, name: t.name })),
-      }),
-    };
-  }, [refAttr?.referenceTypes]);
+  const initialConstraints = getReferenceTypeConstraints(refAttr?.referenceTypes);
 
   const {
     loadMore: loadMoreProducts,
