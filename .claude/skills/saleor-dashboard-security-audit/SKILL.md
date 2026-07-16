@@ -44,17 +44,22 @@ Key config already in `pnpm-workspace.yaml`:
 pnpm audit --json > /tmp/audit.json   # the human table truncates; JSON is the source of truth
 ```
 
-Parse it into a severity-sorted table. The `advisories` object has everything; `actions` only suggests partial fixes. For each advisory capture: `module_name`, current version(s), `patched_versions`, `severity`, `cvss.score`, and the dependency path (top-level dep = 2nd path segment; `path.split(">").length === 2` means it's a **direct** dep). Useful one-liner:
+Parse it into a severity-sorted table. The `advisories` object has everything; `actions` only suggests partial fixes. Each advisory carries: `module_name`, `severity`, `patched_versions`, `vulnerable_versions`, `title`, `github_advisory_id`, `url`, `cwe`, and `findings[].version` / `findings[].paths`. The dependency path (top-level dep = 2nd path segment; `path.split(">").length === 2` means it's a **direct** dep) tells you direct-vs-transitive. Useful one-liner:
 
 ```bash
 node -e '
 const a=Object.values(JSON.parse(require("fs").readFileSync("/tmp/audit.json","utf8")).advisories);
 const o={critical:0,high:1,moderate:2,low:3};
-a.sort((x,y)=>(o[x.severity]-o[y.severity])||(y.cvss?.score||0)-(x.cvss?.score||0));
+a.sort((x,y)=>(o[x.severity]-o[y.severity])||x.module_name.localeCompare(y.module_name));
 for(const v of a){const p=v.findings.flatMap(f=>f.paths);
 const tops=[...new Set(p.map(s=>s.split(">")[1]||s))];const direct=p.some(s=>s.split(">").length===2);
-console.log(`[${v.severity}] ${v.module_name} ${v.findings.map(f=>f.version)} -> ${v.patched_versions} cvss=${v.cvss?.score||"-"} ${direct?"DIRECT":""}\n   ${v.title}\n   via: ${tops.join(" | ")}`);}'
+console.log(`[${v.severity}] ${v.module_name} ${v.findings.map(f=>f.version)} -> ${v.patched_versions} ${v.github_advisory_id} ${direct?"DIRECT":""}\n   ${v.title}\n   via: ${tops.join(" | ")}`);}'
 ```
+
+> **Note — no CVSS in `pnpm audit` output.** pnpm's audit JSON does **not**
+> include a `cvss` field (only `severity`). If you need a numeric CVSS score to
+> break a tie, read it from the advisory's GHSA page (`url` /
+> `github_advisory_id`). Sort by `severity` otherwise.
 
 ### 2. Check the age gate for every proposed target
 
@@ -69,7 +74,7 @@ npm view <pkg> time --json   # find the patched version's publish date
 
 ### 3. Prioritize (in order)
 
-1. **Severity first** — criticals (RCE, injection) before highs before moderate/low. Use CVSS as the tiebreak.
+1. **Severity first** — criticals (RCE, injection) before highs before moderate/low. `pnpm audit` no longer emits CVSS, so sort by `severity`; if you need a numeric tiebreak, pull the CVSS score from the advisory's GHSA page (`url`).
 2. **Patch over major** — a major bump (e.g. `uuid` 9→11) is a breaking change; split it out as its own effort needing code review, never bundle it into a routine audit batch.
 3. **Group related packages** — one override often clears many advisories (e.g. a single `dompurify` bump cleared ~9 findings; one `picomatch`/`ws`/`brace-expansion` bump covers all paths). Bump tool families together (eslint + plugins, all `@graphql-codegen/*`, etc.).
 4. **Prefer the older age-OK fix** over bypassing the age gate (see step 2).
@@ -85,7 +90,7 @@ Split into small, independently-mergeable batches. A good default split:
 - **Batch E — Moderate/low transitive overrides.**
 - **Batch F — Deferred / needs-decision**: fixes whose only patch is too-new (bypass-or-wait), major breaking bumps, and CVEs already in `auditConfig.ignoreCves`. Present these as explicit choices, don't silently skip them.
 
-Present a report: per batch list package, current→target, severity/CVSS, dep path, age status, and the exact `pnpm-workspace.yaml` / `package.json` edit. Ask the user which batches to apply.
+Present a report: per batch list package, current→target, severity (+ GHSA id / CWE), dep path, age status, and the exact `pnpm-workspace.yaml` / `package.json` edit. Ask the user which batches to apply.
 
 ### 5. After acceptance (per batch)
 
