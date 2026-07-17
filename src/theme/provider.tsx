@@ -10,15 +10,33 @@ import { defaultTheme, localStorageKey } from "./consts";
 import { secondaryTextCssVar, secondaryTextDefault2 } from "./secondaryTextContrast";
 
 /**
- * Runs after Macaw applies theme CSS vars on `documentElement`, then
- * nudges secondary text contrast dashboard-wide.
+ * Nudges secondary text contrast dashboard-wide.
+ *
+ * Macaw's ThemeProvider writes all theme CSS vars in a parent `useEffect`.
+ * Child effects run first, so a synchronous write here would be overwritten.
+ * Queue a microtask so our value sticks after Macaw's apply.
  */
 const SecondaryTextContrastOverride = (): null => {
   const { theme } = useTheme();
 
   useEffect(
     function applySecondaryTextContrast() {
-      document.documentElement.style.setProperty(secondaryTextCssVar, secondaryTextDefault2[theme]);
+      let cancelled = false;
+
+      queueMicrotask(() => {
+        if (cancelled) {
+          return;
+        }
+
+        document.documentElement.style.setProperty(
+          secondaryTextCssVar,
+          secondaryTextDefault2[theme],
+        );
+      });
+
+      return (): void => {
+        cancelled = true;
+      };
     },
     [theme],
   );
