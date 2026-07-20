@@ -1,6 +1,11 @@
 import packageInfo from "../package.json";
 import { type SearchVariables } from "./hooks/makeSearch";
-import { type ListSettings, ListViews, type Pagination } from "./types";
+import {
+  type ListSettings,
+  ListViews,
+  type OrderDetailsListSettings,
+  type Pagination,
+} from "./types";
 
 export const getAppDefaultUri = () => "/";
 export const getAppMountUri = () => window?.__SALEOR_CONFIG__?.APP_MOUNT_URI || getAppDefaultUri();
@@ -87,7 +92,8 @@ export interface AppListViewSettings {
   [ListViews.WEBHOOK_LIST]: ListSettings;
   [ListViews.TRANSLATION_ATTRIBUTE_VALUE_LIST]: ListSettings;
   [ListViews.GIFT_CARD_LIST]: ListSettings;
-  [ListViews.ORDER_DETAILS_LIST]: ListSettings;
+  [ListViews.ORDER_DETAILS_LIST]: OrderDetailsListSettings;
+  [ListViews.ORDER_LINE_MATRIX_LIST]: ListSettings;
   [ListViews.ORDER_DRAFT_DETAILS_LIST]: ListSettings;
   [ListViews.PRODUCT_DETAILS]: ListSettings;
   [ListViews.VOUCHER_CODES]: ListSettings;
@@ -129,7 +135,7 @@ export const defaultListSettings: AppListViewSettings = {
   },
   [ListViews.ORDER_LIST]: {
     rowNumber: PAGINATE_BY,
-    columns: ["number", "date", "customer", "payment", "status", "total", "channel"],
+    columns: ["number", "date", "customer", "payment", "status", "net", "total", "channel"],
   },
   [ListViews.PAGES_LIST]: {
     rowNumber: PAGINATE_BY,
@@ -178,10 +184,12 @@ export const defaultListSettings: AppListViewSettings = {
   },
   [ListViews.GIFT_CARD_LIST]: {
     rowNumber: PAGINATE_BY,
-    columns: ["giftCardCode", "status", "tag", "product", "usedBy", "balance"],
+    columns: ["giftCardCode", "status", "tag", "product", "balance"],
   },
   [ListViews.ORDER_DETAILS_LIST]: {
     rowNumber: PAGINATE_BY,
+    viewMode: "matrix",
+    showCanceledFulfillments: false,
     columns: [
       "product",
       "sku",
@@ -192,6 +200,26 @@ export const defaultListSettings: AppListViewSettings = {
       "isGift",
       "reason",
       "metadata",
+    ],
+  },
+  [ListViews.ORDER_LINE_MATRIX_LIST]: {
+    rowNumber: PAGINATE_BY,
+    columns: [
+      "product",
+      "sku",
+      "variantName",
+      "ordered",
+      "allocated",
+      "toFulfill",
+      "pendingApproval",
+      "shipped",
+      "returned",
+      "refunded",
+      "grantedRefund",
+      "price",
+      "total",
+      "replaced",
+      "reason",
     ],
   },
   [ListViews.ORDER_DRAFT_DETAILS_LIST]: {
