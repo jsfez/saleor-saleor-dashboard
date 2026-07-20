@@ -48,6 +48,7 @@ describe("Extensions / hooks / useExtensions", () => {
           node: {
             __typename: "AppExtension",
             id: "ext1",
+            identifier: null,
             accessToken: "token1",
             permissions: [{ code: PermissionEnum.MANAGE_ORDERS, __typename: "Permission" }],
             url: "https://example.com/ext1",
@@ -69,6 +70,7 @@ describe("Extensions / hooks / useExtensions", () => {
         {
           node: {
             id: "ext2",
+            identifier: null,
             accessToken: "token2",
             permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "https://example.com/ext2",
@@ -92,6 +94,7 @@ describe("Extensions / hooks / useExtensions", () => {
           __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext3",
+            identifier: null,
             accessToken: null,
             permissions: [{ code: PermissionEnum.MANAGE_CHANNELS, __typename: "Permission" }],
             url: "https://example.com/ext3",
@@ -114,6 +117,7 @@ describe("Extensions / hooks / useExtensions", () => {
           __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext4",
+            identifier: null,
             accessToken: "token4",
             permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "https://example.com/ext4",
@@ -136,6 +140,7 @@ describe("Extensions / hooks / useExtensions", () => {
           __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext5",
+            identifier: null,
             accessToken: "token5",
             permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "https://example.com/ext5",
@@ -160,6 +165,7 @@ describe("Extensions / hooks / useExtensions", () => {
           __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext6",
+            identifier: null,
             accessToken: "token6",
             permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "/ext6",
@@ -184,6 +190,7 @@ describe("Extensions / hooks / useExtensions", () => {
           __typename: "AppExtensionCountableEdge",
           node: {
             id: "ext7",
+            identifier: null,
             accessToken: "token7",
             permissions: [{ code: PermissionEnum.MANAGE_PRODUCTS, __typename: "Permission" }],
             url: "/ext7",

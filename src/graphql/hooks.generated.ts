@@ -10086,6 +10086,7 @@ export const ExtensionListDocument = gql`
     edges {
       node {
         id
+        identifier
         label
         url
         mountName
