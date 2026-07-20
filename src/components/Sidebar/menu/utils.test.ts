@@ -355,6 +355,7 @@ describe("getMenuItemExtension", () => {
     GIFT_CARD_DETAILS_WIDGETS: [],
     TRANSLATIONS_MORE_ACTIONS: [],
     HOMEPAGE_WIDGETS: [],
+    SEARCH_ACTION: [],
   };
 
   const emptyExtensionsRecord: Record<AllAppExtensionMounts, Extension[]> = {
@@ -409,6 +410,7 @@ describe("getMenuItemExtension", () => {
     GIFT_CARD_DETAILS_WIDGETS: [],
     TRANSLATIONS_MORE_ACTIONS: [],
     HOMEPAGE_WIDGETS: [],
+    SEARCH_ACTION: [],
   };
 
   it("should return the corresponding Extension object when a menu item ID represents a registered extension", () => {
