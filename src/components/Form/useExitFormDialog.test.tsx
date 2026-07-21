@@ -164,6 +164,40 @@ describe("useExitFormDialog", () => {
     expect(result.current.exit.shouldBlockNavigation()).toBe(false);
     expect(result.current.history.location.search).toBe("");
   });
+  it("allows clearing channel focus param on same pathname when form is dirty", async () => {
+    // Given - start with channel focus from "Set up pricing"
+    const submitFn = jest.fn(() => Promise.resolve([]));
+    const { result } = renderHook(
+      () => {
+        const form = useForm({ field: "" }, submitFn, { confirmLeave: true });
+        const exit = useExitFormDialog();
+        const history = useHistory();
+
+        return { form, exit, history };
+      },
+      {
+        wrapper: ({ children }) => (
+          <MemoryRouter initialEntries={[{ pathname: "/", search: "?channelId=ch-1" }]}>
+            <MockExitFormDialogProvider>{children}</MockExitFormDialogProvider>
+          </MemoryRouter>
+        ),
+      },
+    );
+
+    // When - clearing the transient channelId param (e.g. from "Set up pricing")
+    act(() => {
+      result.current.form.change({
+        target: { name: "field", value: "something" },
+      });
+    });
+    act(() => {
+      result.current.history.replace("/");
+    });
+
+    // Then - URL updates without an exit prompt
+    expect(result.current.exit.shouldBlockNavigation()).toBe(false);
+    expect(result.current.history.location.search).toBe("");
+  });
   it("allows query navigation on same pathname when form is clean", async () => {
     // Given
     const submitFn = jest.fn(() => Promise.resolve([]));
@@ -386,6 +420,25 @@ describe("isDialogOnlyQueryChange", () => {
       isDialogOnlyQueryChange(
         "?activeField=name&action=remove&id=1",
         "?action=assign-attribute-value&activeField=name",
+      ),
+    ).toBe(true);
+  });
+  it("treats clearing channel focus as a dialog-only change", () => {
+    expect(isDialogOnlyQueryChange("?channelId=ch-1", "")).toBe(true);
+  });
+  it("treats adding modal filter tokens (numeric keys) as a dialog-only change", () => {
+    expect(
+      isDialogOnlyQueryChange(
+        "?action=assign-attribute-value&id=123",
+        "?action=assign-attribute-value&id=123&0%5Bs0.productType%5D=pt-1",
+      ),
+    ).toBe(true);
+  });
+  it("treats clearing modal filter tokens as a dialog-only change", () => {
+    expect(
+      isDialogOnlyQueryChange(
+        "?action=assign-attribute-value&id=123&0%5Bs0.productType%5D=pt-1",
+        "?action=assign-attribute-value&id=123",
       ),
     ).toBe(true);
   });

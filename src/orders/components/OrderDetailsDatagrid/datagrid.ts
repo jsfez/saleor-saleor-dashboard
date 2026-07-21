@@ -22,9 +22,15 @@ import { type IntlShape } from "react-intl";
 
 import { columnsMessages } from "./messages";
 
+export interface LineReasonDisplay {
+  reason: string | null;
+  reasonType: string | null;
+}
+
 export const orderDetailsStaticColumnsAdapter = (
   intl: IntlShape,
   emptyColumn: AvailableColumn,
+  { withReasonColumn }: { withReasonColumn?: boolean } = {},
 ): AvailableColumn[] => [
   emptyColumn,
   {
@@ -62,6 +68,20 @@ export const orderDetailsStaticColumnsAdapter = (
     title: intl.formatMessage(columnsMessages.isGift),
     width: 150,
   },
+  {
+    id: "priceOverrideReason",
+    title: intl.formatMessage(columnsMessages.priceOverrideReason),
+    width: 200,
+  },
+  ...(withReasonColumn
+    ? [
+        {
+          id: "reason",
+          title: intl.formatMessage(columnsMessages.reason),
+          width: 200,
+        },
+      ]
+    : []),
 ];
 
 interface GetCellContentProps {
@@ -74,11 +94,19 @@ interface GetCellContentProps {
   /** When true, discounted price/total cells render with a pointer cursor
    *  to signal that clicking them opens the per-line price breakdown modal. */
   interactivePricing?: boolean;
+  /** Per-line reasons aligned by index with `data`; enables the `reason` column. */
+  lineReasons?: LineReasonDisplay[];
 }
 
 const isLineDiscounted = (line: OrderLineFragment): boolean =>
   line.unitPrice.gross.amount < line.undiscountedUnitPrice.gross.amount ||
   (line.discounts?.length ?? 0) > 0;
+
+/** A line has a price breakdown worth opening when it was discounted or when
+ *  its unit price was set custom (overridden). Override-only lines have no
+ *  discount factors but still explain "why is this price custom" in the modal. */
+const isLineExplainable = (line: OrderLineFragment): boolean =>
+  isLineDiscounted(line) || Boolean(line.isPriceOverridden);
 
 /** Columns whose discounted cells open the per-line price breakdown modal. */
 const PRICE_BREAKDOWN_COLUMN_IDS = ["price", "total"] as const;
@@ -107,12 +135,9 @@ export const createGetCellContent =
     intl,
     locale,
     interactivePricing,
+    lineReasons,
   }: GetCellContentProps) =>
   ([column, row]: Item, { added, removed }: GetCellContentOpts): GridCell => {
-    const discountedOpts: Partial<GridCell> = interactivePricing
-      ? { ...readonlyOptions, cursor: "pointer" }
-      : readonlyOptions;
-
     const columnId = columns[column]?.id;
 
     if (loading) {
@@ -146,7 +171,19 @@ export const createGetCellContent =
         return readonlyTextCell(rowData?.variant?.name ?? "-", false);
       case "quantity":
         return readonlyTextCell(rowData.quantity.toString(), false);
-      case "price":
+      case "reason": {
+        const lineReason = lineReasons?.[getDatagridRowDataIndex(row, removed)];
+        const parts = [lineReason?.reasonType, lineReason?.reason].filter(Boolean);
+
+        return readonlyTextCell(parts.join(": "), false);
+      }
+      case "price": {
+        // The breakdown marker and pointer only make sense when the modal is
+        // wired (interactivePricing); otherwise the cue would promise a click
+        // that does nothing.
+        const showBreakdown = interactivePricing && isLineExplainable(rowData);
+        const priceOpts = showBreakdown ? pointerOptions : readonlyOptions;
+
         if (isLineDiscounted(rowData)) {
           return moneyDiscountedCell(
             {
@@ -154,18 +191,26 @@ export const createGetCellContent =
               currency: rowData.unitPrice.gross.currency,
               undiscounted: rowData.undiscountedUnitPrice.gross.amount,
               locale,
+              hasBreakdown: showBreakdown,
             },
-            discountedOpts,
+            priceOpts,
           );
         }
 
         return moneyCell(
           rowData.unitPrice.gross.amount,
           rowData.unitPrice.gross.currency,
-          readonlyOptions,
+          priceOpts,
+          {
+            hasBreakdown: showBreakdown,
+          },
         );
+      }
 
-      case "total":
+      case "total": {
+        const totalOpts =
+          interactivePricing && isLineExplainable(rowData) ? pointerOptions : readonlyOptions;
+
         if (isLineDiscounted(rowData)) {
           return moneyDiscountedCell(
             {
@@ -174,20 +219,23 @@ export const createGetCellContent =
               undiscounted: rowData.undiscountedTotalPrice.gross.amount,
               locale,
             },
-            discountedOpts,
+            totalOpts,
           );
         }
 
         return moneyCell(
           rowData.totalPrice.gross.amount,
           rowData.totalPrice.gross.currency,
-          readonlyOptions,
+          totalOpts,
         );
+      }
       case "isGift":
         return booleanCell(rowData?.isGift, {
           readonly: true,
           allowOverlay: false,
         });
+      case "priceOverrideReason":
+        return readonlyTextCell(rowData.priceOverrideReason ?? "", false);
       case "metadata":
         return buttonCell(intl.formatMessage(commonMessages.viewMetadata), () => {
           onOrderLineShowMetadata(rowData.id);
@@ -198,9 +246,16 @@ export const createGetCellContent =
     }
   };
 
-export { isLineDiscounted };
+export { isLineDiscounted, isLineExplainable };
 
 const readonlyOptions: Partial<GridCell> = {
   allowOverlay: false,
   readonly: true,
+};
+
+/** Readonly cell that signals interactivity — used on price/total cells whose
+ *  line has a breakdown the user can open. */
+const pointerOptions: Partial<GridCell> = {
+  ...readonlyOptions,
+  cursor: "pointer",
 };

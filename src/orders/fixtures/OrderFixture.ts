@@ -222,6 +222,8 @@ export class OrderFixture {
       quantityFulfilled: 2,
       quantityToFulfill: 0,
       unitDiscountReason: null,
+      priceOverrideReason: null,
+      isPriceOverridden: null,
       unitDiscountType: null,
       allocations: [],
       unitDiscount: {
@@ -357,9 +359,11 @@ export class OrderFixture {
         __typename: "FulfillmentLine",
         id: "",
         quantity: 0,
+        reason: null,
+        reasonReference: null,
         orderLine: {
           __typename: "OrderLine",
-          id: "",
+          id: "line-id-1",
           isShippingRequired: false,
           productName: "",
           productSku: "",
@@ -369,6 +373,8 @@ export class OrderFixture {
           quantityToFulfill: 0,
           unitDiscountValue: undefined,
           unitDiscountReason: "",
+          priceOverrideReason: null,
+          isPriceOverridden: null,
           unitDiscountType: DiscountValueTypeEnum.FIXED,
           allocations: [],
           variant: {
@@ -481,6 +487,18 @@ export class OrderFixture {
       __typename: "Warehouse",
       id: "warehouse-id-1",
       name: "Americas",
+    },
+    reason: null,
+    reasonReference: null,
+    totalRefundedAmount: {
+      __typename: "Money",
+      amount: 0,
+      currency: "USD",
+    },
+    shippingRefundedAmount: {
+      __typename: "Money",
+      amount: 0,
+      currency: "USD",
     },
   } satisfies FulfillmentFragment;
 

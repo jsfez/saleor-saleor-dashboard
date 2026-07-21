@@ -22,6 +22,7 @@ const buildExtension = (overrides: Partial<Extension>): Extension => ({
   targetName: "WIDGET",
   settings: null,
   isSaleorOfficial: true,
+  fromCache: false,
   ...overrides,
 });
 

@@ -11,6 +11,7 @@ import {
   type AttributeErrorFragment,
   ErrorPolicyEnum,
   type ProductChannelListingErrorFragment,
+  type ProductDetailsVariantFragment,
   type ProductErrorFragment,
   type ProductErrorWithAttributesFragment,
   type ProductFragment,
@@ -24,9 +25,11 @@ import {
   useProductVariantBulkUpdateMutation,
 } from "@dashboard/graphql";
 import { useNotifier } from "@dashboard/hooks/useNotifier";
-import { getMutationErrors } from "@dashboard/misc";
 import { type ProductUpdateSubmitData } from "@dashboard/products/components/ProductUpdatePage/types";
-import { getProductErrorMessage } from "@dashboard/utils/errors";
+import {
+  getProductSubmitErrorNotificationMessages,
+  splitProductSubmitErrors,
+} from "@dashboard/products/utils/splitSubmitErrors";
 import { useState } from "react";
 import { useIntl } from "react-intl";
 
@@ -65,29 +68,23 @@ interface UseProductUpdateHandlerOpts {
 
 export function useProductUpdateHandler(
   product: ProductFragment | undefined,
+  variants: ProductDetailsVariantFragment[] = [],
 ): [UseProductUpdateHandler, UseProductUpdateHandlerOpts] {
   const intl = useIntl();
   const notify = useNotifier();
   const [variantListErrors, setVariantListErrors] = useState<ProductVariantListError[]>([]);
+  const [submitErrors, setSubmitErrors] = useState<ProductErrorWithAttributesFragment[]>([]);
+  const [submitChannelsErrors, setSubmitChannelsErrors] = useState<
+    ProductChannelListingErrorFragment[]
+  >([]);
   const [called, setCalled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [updateVariants] = useProductVariantBulkUpdateMutation();
   const [createVariants] = useProductVariantBulkCreateMutation();
   const [deleteVariants] = useProductVariantBulkDeleteMutation();
   const [uploadFile] = useFileUploadMutation();
-  const [updateProduct, updateProductOpts] = useProductUpdateMutation();
-  const [updateChannels, updateChannelsOpts] = useProductChannelListingUpdateMutation({
-    onCompleted: data => {
-      if (data.productChannelListingUpdate.errors.length) {
-        data.productChannelListingUpdate.errors.forEach(error =>
-          notify({
-            status: "error",
-            text: getProductErrorMessage(error, intl),
-          }),
-        );
-      }
-    },
-  });
+  const [updateProduct] = useProductUpdateMutation();
+  const [updateChannels] = useProductChannelListingUpdateMutation();
   const [deleteAttributeValue] = useAttributeValueDeleteMutation();
   const sendMutations = async (
     data: ProductUpdateSubmitData,
@@ -109,7 +106,19 @@ export function useProductUpdateHandler(
     );
     const updateProductChannelsData = getProductChannelsUpdateVariables(product, data);
 
-    if (hasProductChannelsUpdate(updateProductChannelsData.input)) {
+    // Persist product fields (including category) before channel listing updates so
+    // publish validation sees the latest saved product state in the same submit.
+    const updateProductResult = await updateProduct({
+      variables: getProductUpdateVariables(product, data, uploadFilesResult),
+    });
+    const productUpdateErrors = updateProductResult?.data?.productUpdate?.errors ?? [];
+
+    errors = [...errors, ...productUpdateErrors];
+
+    if (
+      productUpdateErrors.length === 0 &&
+      hasProductChannelsUpdate(updateProductChannelsData.input)
+    ) {
       const updateChannelsResult = await updateChannels({
         variables: updateProductChannelsData,
       });
@@ -119,19 +128,23 @@ export function useProductUpdateHandler(
       }
     }
 
-    if (data.variants.removed.length > 0) {
-      const deleteVaraintsResult = await deleteVariants({
-        variables: {
-          ids: data.variants.removed.map(index => product.variants[index].id),
-        },
-      });
+    if (data.variants.removedVariantIds?.length || data.variants.removed.length > 0) {
+      const idsFromIndexes = data.variants.removed
+        .map(index => variants[index]?.id)
+        .filter((id): id is string => Boolean(id));
+      // Prefer staged cross-page ids; fall back / union with page-local indexes.
+      const ids = Array.from(
+        new Set([...(data.variants.removedVariantIds ?? []), ...idsFromIndexes]),
+      );
 
-      errors = [...errors, ...deleteVaraintsResult.data.productVariantBulkDelete.errors];
+      if (ids.length > 0) {
+        const deleteVaraintsResult = await deleteVariants({
+          variables: { ids },
+        });
+
+        errors = [...errors, ...deleteVaraintsResult.data.productVariantBulkDelete.errors];
+      }
     }
-
-    const updateProductResult = await updateProduct({
-      variables: getProductUpdateVariables(product, data, uploadFilesResult),
-    });
 
     if (data.variants.added.length > 0) {
       const createVariantsResults = await createVariants({
@@ -152,28 +165,37 @@ export function useProductUpdateHandler(
       variantErrors.push(...createVariantsErrors);
     }
 
-    if (data.variants.updates.length > 0) {
+    const updateChanges = data.variants.stagedUpdateChanges ?? data.variants;
+    const variantsForBulkUpdate = data.variants.stagedUpdateVariants ?? variants;
+
+    if (updateChanges.updates.length > 0) {
       const updateInputdData = getBulkVariantUpdateInputs(
-        product.variants,
-        data.variants,
+        variantsForBulkUpdate,
+        updateChanges,
         product?.productType?.variantAttributes ?? [],
       );
 
       if (updateInputdData.length) {
-        const updateVariantsResults = await updateVariants({
-          variables: {
-            product: product.id,
-            input: updateInputdData,
-            errorPolicy: ErrorPolicyEnum.REJECT_FAILED_ROWS,
-          },
-        });
-        const updateVariantsErrors = getVariantUpdateMutationErrors(
-          updateVariantsResults,
-          updateInputdData.map(data => data.id),
-        );
+        // Chunk to stay within API comfort zone for large catalogs.
+        const CHUNK_SIZE = 100;
 
-        variantErrors.push(...updateVariantsErrors);
-        errors.push(...updateVariantsErrors);
+        for (let offset = 0; offset < updateInputdData.length; offset += CHUNK_SIZE) {
+          const chunk = updateInputdData.slice(offset, offset + CHUNK_SIZE);
+          const updateVariantsResults = await updateVariants({
+            variables: {
+              product: product.id,
+              input: chunk,
+              errorPolicy: ErrorPolicyEnum.REJECT_FAILED_ROWS,
+            },
+          });
+          const updateVariantsErrors = getVariantUpdateMutationErrors(
+            updateVariantsResults,
+            chunk.map(row => row.id),
+          );
+
+          variantErrors.push(...updateVariantsErrors);
+          errors.push(...updateVariantsErrors);
+        }
       }
     }
 
@@ -181,7 +203,6 @@ export function useProductUpdateHandler(
       ...errors,
       ...mergeFileUploadErrors(uploadFilesResult),
       ...mergeAttributeValueDeleteErrors(deleteAttributeValuesResult),
-      ...(updateProductResult?.data?.productUpdate?.errors ?? []),
     ];
     setVariantListErrors(variantErrors);
 
@@ -194,6 +215,8 @@ export function useProductUpdateHandler(
 
     setCalled(true);
     setLoading(true);
+    setSubmitErrors([]);
+    setSubmitChannelsErrors([]);
 
     const errors = await sendMutations(data);
 
@@ -207,20 +230,30 @@ export function useProductUpdateHandler(
           defaultMessage: "Product updated",
         }),
       });
+    } else {
+      getProductSubmitErrorNotificationMessages(errors, intl).forEach(text =>
+        notify({
+          status: "error",
+          text,
+        }),
+      );
+
+      const { productErrors, channelsErrors } = splitProductSubmitErrors(errors);
+
+      setSubmitErrors(productErrors);
+      setSubmitChannelsErrors(channelsErrors);
     }
 
     return errors;
   };
-  const errors = getMutationErrors(updateProductOpts) as ProductErrorWithAttributesFragment[];
-  const channelsErrors = updateChannelsOpts?.data?.productChannelListingUpdate?.errors ?? [];
 
   return [
     submit,
     {
       called,
       loading,
-      channelsErrors,
-      errors,
+      channelsErrors: submitChannelsErrors,
+      errors: submitErrors,
       variantListErrors,
     },
   ];

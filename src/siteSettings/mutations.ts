@@ -22,25 +22,3 @@ export const shopSettingsUpdate = gql`
     }
   }
 `;
-
-export const refundSettingsUpdate = gql`
-  mutation RefundSettingsUpdate($refundSettingsInput: RefundSettingsUpdateInput!) {
-    refundSettingsUpdate(input: $refundSettingsInput) {
-      errors {
-        code
-        message
-      }
-    }
-  }
-`;
-
-export const refundReasonReferenceClear = gql`
-  mutation RefundReasonReferenceClear {
-    refundReasonReferenceClear {
-      errors {
-        code
-        message
-      }
-    }
-  }
-`;

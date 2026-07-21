@@ -54,6 +54,7 @@ const mockedExtension: ExtensionWithParams = {
   targetName: "POPUP",
   settings: {},
   isSaleorOfficial: false,
+  fromCache: false,
 };
 
 describe("getExtensionsItems", () => {

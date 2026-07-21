@@ -1,22 +1,44 @@
 import { gql } from "@apollo/client";
 
-export const setRefundReasonType = gql`
-  mutation SetRefundReasonType($modelTypeId: ID!) {
-    refundSettingsUpdate(input: { refundReasonReferenceType: $modelTypeId }) {
+export const refundSettingsUpdate = gql`
+  mutation RefundSettingsUpdate($refundSettingsInput: RefundSettingsUpdateInput!) {
+    refundSettingsUpdate(input: $refundSettingsInput) {
       errors {
-        message
         code
+        message
       }
     }
   }
 `;
 
-export const clearRefundReasonType = gql`
-  mutation ClearRefundReasonType {
+export const refundReasonReferenceClear = gql`
+  mutation RefundReasonReferenceClear {
     refundReasonReferenceClear {
       errors {
-        message
         code
+        message
+      }
+    }
+  }
+`;
+
+export const returnSettingsUpdate = gql`
+  mutation ReturnSettingsUpdate($returnSettingsInput: ReturnSettingsUpdateInput!) {
+    returnSettingsUpdate(input: $returnSettingsInput) {
+      errors {
+        code
+        message
+      }
+    }
+  }
+`;
+
+export const returnReasonReferenceClear = gql`
+  mutation ReturnReasonReferenceClear {
+    returnReasonReferenceClear {
+      errors {
+        code
+        message
       }
     }
   }

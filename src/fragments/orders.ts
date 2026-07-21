@@ -29,8 +29,14 @@ export const fragmentOrderEvent = gql`
       id
       number
     }
+    composedId
     related {
       id
+      type
+    }
+    warehouse {
+      id
+      name
     }
     message
     quantity
@@ -141,6 +147,8 @@ export const fragmentOrderLine = gql`
     }
     unitDiscountValue
     unitDiscountReason
+    priceOverrideReason
+    isPriceOverridden
     unitDiscountType
     undiscountedUnitPrice {
       currency
@@ -329,6 +337,11 @@ export const fulfillmentFragment = gql`
     lines {
       id
       quantity
+      reason
+      reasonReference {
+        id
+        title
+      }
       orderLine {
         ...OrderLine
       }
@@ -336,9 +349,22 @@ export const fulfillmentFragment = gql`
     fulfillmentOrder
     status
     trackingNumber
+    reason
+    reasonReference {
+      id
+      title
+    }
     warehouse {
       id
       name
+    }
+    totalRefundedAmount {
+      amount
+      currency
+    }
+    shippingRefundedAmount {
+      amount
+      currency
     }
   }
 `;
@@ -557,17 +583,13 @@ export const fragmentFulfillmentMetadata = gql`
   }
 `;
 
-export const fragmentOrderSettings = gql`
-  fragment OrderSettings on OrderSettings {
-    automaticallyConfirmAllNewOrders
-    automaticallyFulfillNonShippableGiftCard
-  }
-`;
-
 export const fragmentShopOrderSettings = gql`
   fragment ShopOrderSettings on Shop {
     fulfillmentAutoApprove
     fulfillmentAllowUnpaid
+    reserveStockDurationAnonymousUser
+    reserveStockDurationAuthenticatedUser
+    limitQuantityPerCheckout
   }
 `;
 
@@ -823,7 +845,7 @@ export const fragmentOrderGrantedRefunds = gql`
       amount
     }
     transactionEvents {
-      id
+      ...TransactionBaseEvent
     }
     reason
     reasonReference {
@@ -845,8 +867,18 @@ export const fragmentOrderGrantedRefunds = gql`
     lines {
       id
       quantity
+      reason
+      reasonReference {
+        id
+        title
+      }
       orderLine {
         id
+        productName
+        variantName
+        thumbnail(size: 64) {
+          url
+        }
       }
     }
   }
@@ -890,6 +922,10 @@ export const orderDetailsGrantedRefund = gql`
       id
       quantity
       reason
+      reasonReference {
+        id
+        title
+      }
       orderLine {
         ...OrderLine
       }
