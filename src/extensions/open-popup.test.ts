@@ -25,6 +25,7 @@ const makeExtension = (overrides: Partial<Extension>): Extension => ({
   targetName: "POPUP",
   settings: {},
   isSaleorOfficial: false,
+  fromCache: false,
   ...overrides,
 });
 

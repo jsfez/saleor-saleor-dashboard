@@ -3110,12 +3110,6 @@ type AppExtension implements Node @doc(category: "Apps") {
 
   """JWT token used to authenticate by third-party app extension."""
   accessToken: String
-
-  """
-  App-defined identifier of the extension, unique per app. Used to reference a
-  specific extension (e.g. opening a POPUP extension from a widget).
-  """
-  identifier: String
 }
 
 scalar JSON
