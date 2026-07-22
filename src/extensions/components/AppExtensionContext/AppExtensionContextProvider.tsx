@@ -1,6 +1,7 @@
 import { APP_VERSION } from "@dashboard/config";
 import { useExtensionFormPayloadUpdate } from "@dashboard/extensions/app-extension-form-payload-update";
 import { useRegisteredExtensions } from "@dashboard/extensions/extension-registry";
+import { isTokenFresh } from "@dashboard/extensions/isTokenFresh";
 import { isUrlAbsolute } from "@dashboard/extensions/isUrlAbsolute";
 import { findOpenPopupExtension, validateOpenPopupParams } from "@dashboard/extensions/open-popup";
 import { ExtensionsUrls } from "@dashboard/extensions/urls";
@@ -120,6 +121,19 @@ export const useActiveAppExtension = () => {
       return {
         ok: false,
         reason: `Extension "${extensionIdentifier}" has no access token yet`,
+      };
+    }
+
+    // On a long-open dashboard the JWT can expire before the widget's refresh
+    // timer fires (e.g. after the machine wakes from sleep). Never open a popup
+    // with a stale token - kick a refetch and reject so the retry gets a fresh
+    // one (the widget's own refresh loop also keeps this list current).
+    if (!isTokenFresh(extension.accessToken)) {
+      extension.refetch?.();
+
+      return {
+        ok: false,
+        reason: `Extension "${extensionIdentifier}" access token is stale; refreshing, retry shortly`,
       };
     }
 

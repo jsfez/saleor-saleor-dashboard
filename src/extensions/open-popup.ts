@@ -84,7 +84,7 @@ export const validateOpenPopupParams = (appParams?: string): ValidateOpenPopupPa
  */
 export type PopupCandidate = Pick<
   Extension,
-  "id" | "app" | "identifier" | "targetName" | "url" | "label" | "accessToken"
+  "id" | "app" | "identifier" | "targetName" | "url" | "label" | "accessToken" | "refetch"
 >;
 
 /**
