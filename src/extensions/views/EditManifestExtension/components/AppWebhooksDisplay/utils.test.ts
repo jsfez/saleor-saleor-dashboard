@@ -6,6 +6,8 @@ const DEFAULT_WEBHOOK = {
   isActive: true,
   asyncEvents: [],
   syncEvents: [],
+  targetUrl: "https://example.com/webhook",
+  subscriptionQuery: "subscription { event { __typename } }",
   __typename: "Webhook",
 };
 

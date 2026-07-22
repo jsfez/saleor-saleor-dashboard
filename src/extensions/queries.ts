@@ -88,6 +88,7 @@ export const appDetails = gql`
   query App($id: ID!, $hasManagedAppsPermission: Boolean!) {
     app(id: $id) {
       ...App
+      identifier
       aboutApp
       author
       permissions {
@@ -138,15 +139,20 @@ export const extensionList = gql`
 export const appWebhookDeliveries = gql`
   query AppWebhookDeliveries($appId: ID!) {
     app(id: $appId) {
+      id
       webhooks {
         id
         name
         isActive
+        targetUrl
+        subscriptionQuery
         syncEvents {
           name
+          eventType
         }
         asyncEvents {
           name
+          eventType
         }
         eventDeliveries(first: 10, sortBy: { field: CREATED_AT, direction: DESC }) {
           edges {

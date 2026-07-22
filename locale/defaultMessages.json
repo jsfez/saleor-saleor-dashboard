@@ -1076,6 +1076,9 @@
     "context": "order history message",
     "string": "Payment was refunded"
   },
+  "3io9BC": {
+    "string": "Refresh extension webhooks?"
+  },
   "3kVRE2": {
     "context": "Checkbox label for setting publication date",
     "string": "Set publication date"
@@ -1246,6 +1249,9 @@
   },
   "4Za2EN": {
     "string": "Returns Model Type"
+  },
+  "4bL3w3": {
+    "string": "Obsolete webhooks will stop receiving events"
   },
   "4bNRr4": {
     "string": "Reason note"
@@ -3695,6 +3701,9 @@
     "context": "shipping method description",
     "string": "Description"
   },
+  "GqEjgQ": {
+    "string": "Create ({count})"
+  },
   "GrMiRT": {
     "context": "fallback product name in remove product confirmation dialog",
     "string": "this product"
@@ -4411,6 +4420,9 @@
   "K8xNLe": {
     "context": "products section name",
     "string": "Products"
+  },
+  "K95yte": {
+    "string": "Deactivate ({count})"
   },
   "KAhzcY": {
     "context": "product export dialog step two intro",
@@ -5598,6 +5610,9 @@
   "Q8Qw5B": {
     "string": "Description"
   },
+  "Q8bEXE": {
+    "string": "Update ({count})"
+  },
   "Q8wHwJ": {
     "string": "Deleted collection"
   },
@@ -5616,6 +5631,9 @@
   "QBxN6z": {
     "context": "is filter range or value",
     "string": "between"
+  },
+  "QCQK3o": {
+    "string": "Refresh webhooks"
   },
   "QEXGYB": {
     "context": "Reassurance under verification badge when product is purchasable in legacy mode",
@@ -6233,6 +6251,9 @@
     "context": "intro for model type tab grouping help tooltip",
     "string": "Each model type name is split at the first matching separator. The part before becomes the tab name; the part after appears in the tab menu."
   },
+  "Ta4gMj": {
+    "string": "Webhook names must be unique before Dashboard can refresh them safely. Duplicates: {names}"
+  },
   "Ta9j04": {
     "context": "orders section name",
     "string": "Orders"
@@ -6323,6 +6344,9 @@
   "U5dMfQ": {
     "context": "Label for published toggle",
     "string": "Published"
+  },
+  "U6VitM": {
+    "string": "Dashboard will apply these changes one at a time. If a request fails, earlier changes won't be rolled back."
   },
   "U86VKF": {
     "context": "number of structures",
@@ -6552,6 +6576,9 @@
   "V8M174": {
     "context": "embedded attribute values section hint",
     "string": "The choices merchants can select. Add at least one."
+  },
+  "VAq18O": {
+    "string": "They will be disabled only. Dashboard won't delete their configuration or delivery history."
   },
   "VEE4gD": {
     "context": "error message",
@@ -7733,6 +7760,9 @@
     "context": "Taxes section title",
     "string": "Channels"
   },
+  "b2T+bU": {
+    "string": "Update the extension permissions before refreshing its webhooks. Missing: {permissions}"
+  },
   "b6J/B9": {
     "context": "attribute input type helper in embedded create form",
     "string": "How merchants enter values for this attribute."
@@ -8026,6 +8056,9 @@
   "cFVgOo": {
     "context": "Channel label",
     "string": "Channel"
+  },
+  "cFxfaO": {
+    "string": "The manifest identifier doesn't match this installed extension."
   },
   "cHsr1m": {
     "context": "badge for new variant that will be created",
@@ -9000,6 +9033,9 @@
     "context": "docs link label",
     "string": "Learn more..."
   },
+  "hnhB4/": {
+    "string": "{count, plural, one {Webhooks differ from the manifest in one place.} other {Webhooks differ from the manifest in # places.}}"
+  },
   "hniz8Z": {
     "string": "here"
   },
@@ -9406,6 +9442,9 @@
   },
   "jmZSK1": {
     "string": "Product is not available in selected channels"
+  },
+  "jmlQB3": {
+    "string": "Extension webhooks refreshed."
   },
   "joN8sy": {
     "string": "Extension doesn't have any permissions granted."
@@ -9915,6 +9954,9 @@
     "context": "webhook input help text",
     "string": "Secret key is used to create a hash signature with each payload. *optional field"
   },
+  "lqxnnt": {
+    "string": "Dashboard couldn't read this extension's manifest. Refresh requires the manifest to allow browser access."
+  },
   "lrTQWC": {
     "context": "label for promotion discount type in order summary",
     "string": "Promotion"
@@ -10195,6 +10237,9 @@
   },
   "nLML8Y": {
     "string": "Default Shipping Address"
+  },
+  "nLMe/p": {
+    "string": "Checking the extension manifest…"
   },
   "nMQ3ZW": {
     "context": "label for voucher discount type in order summary",
@@ -10621,6 +10666,9 @@
     "context": "shipping method channel status when price is not set",
     "string": "Missing price"
   },
+  "pXShHA": {
+    "string": "The extension manifest doesn't contain valid webhook definitions."
+  },
   "pY/9R2": {
     "context": "gift card currency redemption info callout",
     "string": "This {currency} gift card can only be redeemed in channels that use {currency}. The delivery channel above only controls which email notification is sent."
@@ -10724,6 +10772,9 @@
   "q5Lfp4": {
     "context": "tooltip",
     "string": "Order contains products that have \"Track inventory\" enabled."
+  },
+  "q72EeK": {
+    "string": "Extension webhooks already match the manifest."
   },
   "q7bXR4": {
     "string": "Payments summary"
@@ -11974,6 +12025,9 @@
   "ve/Sph": {
     "context": "there are more elements of list that are hidden",
     "string": "and {number} more"
+  },
+  "vf+BJF": {
+    "string": "Webhook refresh stopped. Some changes may already have been applied. Review the mismatch and try again."
   },
   "vf56In": {
     "context": "address type",

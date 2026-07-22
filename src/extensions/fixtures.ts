@@ -18,6 +18,7 @@ export const appDetails: NonNullable<AppQuery["app"]> = {
   dataPrivacyUrl: "http://localhost:8888/app-data-privacy",
   homepageUrl: "http://localhost:8888/homepage",
   id: "QXBwOjE4MQ==",
+  identifier: "example.app",
   isActive: true,
   metadata: [],
   name: "app1",

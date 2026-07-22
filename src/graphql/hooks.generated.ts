@@ -9929,6 +9929,7 @@ export const AppDocument = gql`
     query App($id: ID!, $hasManagedAppsPermission: Boolean!) {
   app(id: $id) {
     ...App
+    identifier
     aboutApp
     author
     permissions {
@@ -10034,15 +10035,20 @@ export type ExtensionListQueryResult = Apollo.QueryResult<Types.ExtensionListQue
 export const AppWebhookDeliveriesDocument = gql`
     query AppWebhookDeliveries($appId: ID!) {
   app(id: $appId) {
+    id
     webhooks {
       id
       name
       isActive
+      targetUrl
+      subscriptionQuery
       syncEvents {
         name
+        eventType
       }
       asyncEvents {
         name
+        eventType
       }
       eventDeliveries(first: 10, sortBy: {field: CREATED_AT, direction: DESC}) {
         edges {

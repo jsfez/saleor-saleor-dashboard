@@ -114,7 +114,13 @@ export const AppDetailsPage = ({
             loading={loading}
           />
         </Box>
-        <AppWebhooksDisplay padding={6} appId={data.id} />
+        <AppWebhooksDisplay
+          padding={6}
+          appId={data.id}
+          appIdentifier={data.identifier}
+          appPermissions={data.permissions?.map(({ code }) => code) ?? []}
+          manifestUrl={data.manifestUrl}
+        />
       </Box>
     </ErrorBoundary>
   );
