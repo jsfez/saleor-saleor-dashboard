@@ -2,7 +2,7 @@ import { APP_VERSION } from "@dashboard/config";
 import { useExtensionFormPayloadUpdate } from "@dashboard/extensions/app-extension-form-payload-update";
 import { useRegisteredExtensions } from "@dashboard/extensions/extension-registry";
 import { isUrlAbsolute } from "@dashboard/extensions/isUrlAbsolute";
-import { findOpenPopupExtension, serializeOpenPopupParams } from "@dashboard/extensions/open-popup";
+import { findOpenPopupExtension, validateOpenPopupParams } from "@dashboard/extensions/open-popup";
 import { ExtensionsUrls } from "@dashboard/extensions/urls";
 import { AppDialog } from "@dashboard/extensions/views/ViewManifestExtension/components/AppDialog/AppDialog";
 import { AppFrame } from "@dashboard/extensions/views/ViewManifestExtension/components/AppFrame/AppFrame";
@@ -79,11 +79,11 @@ export const useActiveAppExtension = () => {
   const openPopupByIdentifier = ({
     requestingAppId,
     extensionIdentifier,
-    params,
+    appParams,
   }: {
     requestingAppId: string;
     extensionIdentifier: string;
-    params?: unknown;
+    appParams?: string;
   }): OpenPopupByIdentifierResult => {
     const extension = findOpenPopupExtension(registeredExtensions, {
       requestingAppId,
@@ -108,19 +108,29 @@ export const useActiveAppExtension = () => {
       };
     }
 
-    const serialized = serializeOpenPopupParams(params);
+    const validation = validateOpenPopupParams(appParams);
 
-    if (!serialized.ok) {
-      return { ok: false, reason: serialized.reason };
+    if (!validation.ok) {
+      return { ok: false, reason: validation.reason };
+    }
+
+    // The popup handshake requires a valid JWT - never open with an empty token
+    // (e.g. extensions still painting from cache before the network response).
+    if (!extension.accessToken) {
+      return {
+        ok: false,
+        reason: `Extension "${extensionIdentifier}" has no access token yet`,
+      };
     }
 
     setActive({
       id: extension.app.id,
-      appToken: extension.accessToken || "",
+      appToken: extension.accessToken,
       src: absoluteUrl,
       label: extension.label,
       targetName: "POPUP",
-      params: serialized.value === undefined ? {} : { appParams: serialized.value },
+      // Forward the app's already-serialized payload verbatim.
+      params: appParams === undefined ? {} : { appParams },
       formState: {},
     });
 

@@ -338,7 +338,7 @@ const useHandleOpenPopupAction = (appId: string, target: "POPUP" | "WIDGET" | "A
 
   return {
     handle: (action: OpenPopupAction) => {
-      const { actionId, extensionIdentifier, params } = action.payload;
+      const { actionId, extensionIdentifier, appParams } = action.payload;
 
       debug(`Handling OpenPopup action with ID: %s, identifier: %s`, actionId, extensionIdentifier);
 
@@ -354,7 +354,7 @@ const useHandleOpenPopupAction = (appId: string, target: "POPUP" | "WIDGET" | "A
       const result = openPopupByIdentifier({
         requestingAppId: appId,
         extensionIdentifier,
-        params,
+        appParams,
       });
 
       if (!result.ok) {

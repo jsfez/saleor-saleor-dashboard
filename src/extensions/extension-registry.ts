@@ -20,10 +20,15 @@ export const useRegisterExtensions = (key: string, extensions: PopupCandidate[])
 
   // The extensions array is rebuilt on every render, so depend on a stable
   // signature instead of the array identity to avoid an update loop.
+  //
+  // `accessToken` is part of the signature on purpose: extensions first paint
+  // from cache with an empty token (`cache-and-network`), then the network
+  // response fills in the real JWT. Without it the registry would keep the
+  // cached empty token and open popups with an invalid JWT.
   const signature = extensions
     .map(
-      ({ app, identifier, targetName, url }) =>
-        `${app.id}:${identifier ?? ""}:${targetName}:${url}`,
+      ({ app, identifier, targetName, url, accessToken }) =>
+        `${app.id}:${identifier ?? ""}:${targetName}:${url}:${accessToken}`,
     )
     .join("|");
 

@@ -2,7 +2,7 @@ import {
   findOpenPopupExtension,
   isOpenPopupAction,
   OPEN_POPUP_MAX_PARAMS_LENGTH,
-  serializeOpenPopupParams,
+  validateOpenPopupParams,
 } from "./open-popup";
 import { type Extension } from "./types";
 
@@ -34,7 +34,11 @@ describe("isOpenPopupAction", () => {
     // Arrange
     const action = {
       type: "openPopup",
-      payload: { actionId: "a-1", extensionIdentifier: "main-popup", params: { mode: "full" } },
+      payload: {
+        actionId: "a-1",
+        extensionIdentifier: "main-popup",
+        appParams: "eyJtb2RlIjoiZnVsbCJ9",
+      },
     };
 
     // Act + Assert
@@ -53,32 +57,26 @@ describe("isOpenPopupAction", () => {
   });
 });
 
-describe("serializeOpenPopupParams", () => {
-  it("returns undefined value when params are absent", () => {
+describe("validateOpenPopupParams", () => {
+  it("accepts an absent payload", () => {
     // Act
-    const result = serializeOpenPopupParams(undefined);
+    const result = validateOpenPopupParams(undefined);
 
     // Assert
-    expect(result).toEqual({ ok: true, value: undefined });
+    expect(result).toEqual({ ok: true });
   });
 
-  it("serializes arbitrary nested JSON", () => {
-    // Arrange
-    const params = { mode: "full", ids: [1, 2], nested: { a: true } };
-
+  it("accepts an already-serialized string payload", () => {
     // Act
-    const result = serializeOpenPopupParams(params);
+    const result = validateOpenPopupParams("eyJtb2RlIjoiZnVsbCJ9");
 
     // Assert
-    expect(result).toEqual({ ok: true, value: JSON.stringify(params) });
+    expect(result).toEqual({ ok: true });
   });
 
   it("rejects a payload over the size cap", () => {
-    // Arrange
-    const params = { big: "x".repeat(OPEN_POPUP_MAX_PARAMS_LENGTH) };
-
     // Act
-    const result = serializeOpenPopupParams(params);
+    const result = validateOpenPopupParams("x".repeat(OPEN_POPUP_MAX_PARAMS_LENGTH + 1));
 
     // Assert
     expect(result.ok).toBe(false);

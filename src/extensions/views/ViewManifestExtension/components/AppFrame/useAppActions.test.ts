@@ -189,7 +189,11 @@ describe("useAppActions", () => {
     // Arrange
     const openPopupAction = {
       type: "openPopup",
-      payload: { actionId: "popup-1", extensionIdentifier: "main-popup", params: { mode: "full" } },
+      payload: {
+        actionId: "popup-1",
+        extensionIdentifier: "main-popup",
+        appParams: "eyJtb2RlIjoiZnVsbCJ9",
+      },
     } as unknown as Actions;
 
     renderHook(() =>

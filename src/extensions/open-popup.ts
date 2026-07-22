@@ -13,8 +13,11 @@ export interface OpenPopupAction {
     actionId: string;
     /** App-defined, per-app-unique identifier of the target POPUP extension. */
     extensionIdentifier: string;
-    /** Arbitrary JSON payload, serialized into the popup iframe URL. */
-    params?: unknown;
+    /**
+     * Payload the app already serialized (base64). The Dashboard forwards it
+     * verbatim into the popup iframe URL; the receiving app decodes it back.
+     */
+    appParams?: string;
   };
 }
 
@@ -42,47 +45,36 @@ export const OPEN_POPUP_MAX_PARAMS_LENGTH = 2048;
 /**
  * Not a discriminated union on purpose: these helpers are consumed from
  * non-strict files where boolean-literal discriminants don't narrow, so callers
- * read the optional `value`/`reason` directly after checking `ok`.
+ * read the optional `reason` directly after checking `ok`.
  */
-export interface SerializeOpenPopupParamsResult {
+export interface ValidateOpenPopupParamsResult {
   ok: boolean;
-  /** Serialized payload to append to the URL; undefined when there's nothing. */
-  value?: string;
   /** Failure description, set when `ok` is false. */
   reason?: string;
 }
 
 /**
- * Serialize the action's arbitrary `params` into a single string to be appended
- * to the popup URL. Returns `value: undefined` when there's nothing to append.
+ * Validate the app-supplied `appParams` before it goes into the popup URL. The
+ * app already serialized it (base64) - the Dashboard doesn't decode it, only
+ * guards its length so a malformed/huge value can't blow past the URL ceiling.
  */
-export const serializeOpenPopupParams = (params: unknown): SerializeOpenPopupParamsResult => {
-  if (params === undefined || params === null) {
-    return { ok: true, value: undefined };
+export const validateOpenPopupParams = (appParams?: string): ValidateOpenPopupParamsResult => {
+  if (appParams === undefined) {
+    return { ok: true };
   }
 
-  let serialized: string;
-
-  try {
-    serialized = JSON.stringify(params);
-  } catch {
-    return { ok: false, reason: "params is not JSON-serializable" };
+  if (typeof appParams !== "string") {
+    return { ok: false, reason: "appParams must be a string" };
   }
 
-  // JSON.stringify returns undefined for values like functions/symbols, which
-  // cannot reach us via postMessage, but guard anyway.
-  if (serialized === undefined) {
-    return { ok: false, reason: "params is not JSON-serializable" };
-  }
-
-  if (serialized.length > OPEN_POPUP_MAX_PARAMS_LENGTH) {
+  if (appParams.length > OPEN_POPUP_MAX_PARAMS_LENGTH) {
     return {
       ok: false,
-      reason: `params too large: ${serialized.length} chars (max ${OPEN_POPUP_MAX_PARAMS_LENGTH})`,
+      reason: `appParams too large: ${appParams.length} chars (max ${OPEN_POPUP_MAX_PARAMS_LENGTH})`,
     };
   }
 
-  return { ok: true, value: serialized };
+  return { ok: true };
 };
 
 /**
