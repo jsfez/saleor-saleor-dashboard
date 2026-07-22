@@ -1,16 +1,9 @@
-import { type OpenPopupAction } from "@dashboard/extensions/open-popup";
 import { type Actions, type DispatchResponseEvent } from "@saleor/app-sdk/app-bridge";
 import { captureMessage } from "@sentry/react";
 import { useEffect, useState } from "react";
 
 import { AppActionsHandler } from "./appActionsHandler";
 import { usePostToExtension } from "./usePostToExtension";
-
-/**
- * Actions handled by the Dashboard. `OpenPopupAction` is not yet part of the
- * `@saleor/app-sdk` `Actions` union, so it's added explicitly here.
- */
-type HandledActions = Actions | OpenPopupAction;
 
 /**
  * TODO Refactor to named attributes
@@ -46,7 +39,7 @@ export const useAppActions = (
    * Store if app has performed a handshake with Dashboard, to avoid sending events before that
    */
   const [handshakeDone, setHandshakeDone] = useState(false);
-  const handleAction = (action: HandledActions | undefined): DispatchResponseEvent | void => {
+  const handleAction = (action: Actions | undefined): DispatchResponseEvent | void => {
     switch (action?.type) {
       case "notification": {
         return handleNotification(action);
@@ -108,7 +101,7 @@ export const useAppActions = (
   };
 
   useEffect(() => {
-    const handler = (event: MessageEvent<HandledActions>) => {
+    const handler = (event: MessageEvent<Actions>) => {
       if (event.origin !== appOrigin) {
         return;
       }

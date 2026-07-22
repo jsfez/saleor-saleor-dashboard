@@ -1,6 +1,5 @@
 import {
   findOpenPopupExtension,
-  isOpenPopupAction,
   OPEN_POPUP_MAX_PARAMS_LENGTH,
   validateOpenPopupParams,
 } from "./open-popup";
@@ -27,34 +26,6 @@ const makeExtension = (overrides: Partial<Extension>): Extension => ({
   isSaleorOfficial: false,
   fromCache: false,
   ...overrides,
-});
-
-describe("isOpenPopupAction", () => {
-  it("accepts a well-formed openPopup action", () => {
-    // Arrange
-    const action = {
-      type: "openPopup",
-      payload: {
-        actionId: "a-1",
-        extensionIdentifier: "main-popup",
-        appParams: "eyJtb2RlIjoiZnVsbCJ9",
-      },
-    };
-
-    // Act + Assert
-    expect(isOpenPopupAction(action)).toBe(true);
-  });
-
-  it.each([
-    ["wrong type", { type: "redirect", payload: { actionId: "a", extensionIdentifier: "x" } }],
-    ["missing actionId", { type: "openPopup", payload: { extensionIdentifier: "x" } }],
-    ["missing extensionIdentifier", { type: "openPopup", payload: { actionId: "a" } }],
-    ["null", null],
-    ["string", "openPopup"],
-  ])("rejects %s", (_label, input) => {
-    // Act + Assert
-    expect(isOpenPopupAction(input)).toBe(false);
-  });
 });
 
 describe("validateOpenPopupParams", () => {

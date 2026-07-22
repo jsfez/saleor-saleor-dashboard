@@ -1,46 +1,12 @@
+import { OpenPopupParams } from "@saleor/app-sdk/app-bridge";
+
 import { type Extension } from "./types";
 
 /**
- * `openPopup` App Bridge action.
- *
- * Sent by a WIDGET-type extension to ask the Dashboard to open one of the SAME
- * app's POPUP extensions ("full mode"). Not yet part of `@saleor/app-sdk`'s
- * `Actions` union, so it's declared locally until the SDK ships it.
+ * Upper bound on the serialized payload length (chars). Sourced from the SDK so
+ * the Dashboard rejects exactly what the app-side serializer refuses to emit.
  */
-export interface OpenPopupAction {
-  type: "openPopup";
-  payload: {
-    actionId: string;
-    /** App-defined, per-app-unique identifier of the target POPUP extension. */
-    extensionIdentifier: string;
-    /**
-     * Payload the app already serialized (base64). The Dashboard forwards it
-     * verbatim into the popup iframe URL; the receiving app decodes it back.
-     */
-    appParams?: string;
-  };
-}
-
-export const isOpenPopupAction = (data: unknown): data is OpenPopupAction => {
-  if (typeof data !== "object" || data === null) {
-    return false;
-  }
-
-  const action = data as Partial<OpenPopupAction>;
-
-  return (
-    action.type === "openPopup" &&
-    typeof action.payload?.actionId === "string" &&
-    typeof action.payload?.extensionIdentifier === "string"
-  );
-};
-
-/**
- * Upper bound on the serialized payload length (chars). Keeps the resulting
- * iframe `src` well under the ~8 KB browser URL ceiling, leaving room for the
- * Dashboard context params (saleorApiUrl, theme, mount ids, ...).
- */
-export const OPEN_POPUP_MAX_PARAMS_LENGTH = 2048;
+export const OPEN_POPUP_MAX_PARAMS_LENGTH = OpenPopupParams.maxParamsLength;
 
 /**
  * Not a discriminated union on purpose: these helpers are consumed from

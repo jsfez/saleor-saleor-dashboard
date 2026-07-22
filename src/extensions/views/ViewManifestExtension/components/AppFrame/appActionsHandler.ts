@@ -5,7 +5,6 @@ import {
   applyWidgetHeightToFrame,
   createWidgetResizeOkResponse,
 } from "@dashboard/extensions/hooks/widgetIframeResize";
-import { type OpenPopupAction } from "@dashboard/extensions/open-popup";
 import { ExtensionsUrls, LegacyAppPaths } from "@dashboard/extensions/urls";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { useNotifier } from "@dashboard/hooks/useNotifier";
@@ -15,6 +14,7 @@ import {
   type FormPayloadUpdate,
   type NotificationAction,
   type NotifyReady,
+  type OpenPopup,
   type PopupClose,
   type RedirectAction,
   type RefreshEntity,
@@ -337,7 +337,7 @@ const useHandleOpenPopupAction = (appId: string, target: "POPUP" | "WIDGET" | "A
   const { openPopupByIdentifier } = useActiveAppExtension();
 
   return {
-    handle: (action: OpenPopupAction) => {
+    handle: (action: OpenPopup) => {
       const { actionId, extensionIdentifier, appParams } = action.payload;
 
       debug(`Handling OpenPopup action with ID: %s, identifier: %s`, actionId, extensionIdentifier);
