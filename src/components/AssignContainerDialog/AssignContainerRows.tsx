@@ -25,6 +25,9 @@ export const SingleSelectionRows = ({
           data-test-id="dialog-row"
           onClick={() => onSelect(container.id)}
         >
+          <TableCell style={{ width: "100%" }} data-test-id={container.name}>
+            {container.name}
+          </TableCell>
           <TableCell padding="checkbox">
             <Radio
               checked={isSelected}
@@ -32,9 +35,6 @@ export const SingleSelectionRows = ({
               value={container.id}
               name="container-selection"
             />
-          </TableCell>
-          <TableCell style={{ width: "100%" }} data-test-id={container.name}>
-            {container.name}
           </TableCell>
         </TableRowLink>
       );
@@ -56,11 +56,11 @@ export const MultiSelectionRows = ({
   <>
     {containers?.map(container => (
       <TableRowLink key={container.id} data-test-id="dialog-row">
-        <TableCell padding="checkbox">
-          <Checkbox checked={isSelected(container.id)} onChange={() => onToggle(container)} />
-        </TableCell>
         <TableCell style={{ width: "100%" }} data-test-id={container.name}>
           {container.name}
+        </TableCell>
+        <TableCell padding="checkbox">
+          <Checkbox checked={isSelected(container.id)} onChange={() => onToggle(container)} />
         </TableCell>
       </TableRowLink>
     ))}
