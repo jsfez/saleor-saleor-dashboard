@@ -1,0 +1,10 @@
+{
+  "name": "argos-visual-testing",
+  "private": true,
+  "type": "module",
+  "description": "Isolated dependencies for the Argos visual testing run, kept outside the pnpm workspace so package.json and pnpm-lock.yaml stay untouched.",
+  "dependencies": {
+    "@argos-ci/playwright": "7.3.6",
+    "@playwright/test": "1.58.2"
+  }
+}

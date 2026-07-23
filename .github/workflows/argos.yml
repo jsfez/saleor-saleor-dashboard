@@ -1,0 +1,50 @@
+name: Argos
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  argos:
+    name: Argos visual testing
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "package.json"
+          cache: "pnpm"
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Argos dependencies
+        run: npm install --prefix argos --no-package-lock --no-audit --no-fund
+
+      - name: Install Chromium
+        run: ./argos/node_modules/.bin/playwright install chromium --with-deps
+
+      - name: Build Storybook
+        run: pnpm run build-storybook
+
+      - name: Run Argos visual tests
+        run: ./argos/node_modules/.bin/playwright test --config argos/playwright.config.ts
+        env:
+          CI: "true"
